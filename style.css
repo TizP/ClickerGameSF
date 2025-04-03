@@ -57,7 +57,7 @@ body {
     align-items: center;
     gap: 8px;
 }
-.top-bar .simple-button, .simple-button {
+.top-bar .simple-button, .simple-button { /* Includes side panel simple buttons */
     margin-top: 0;
     width: auto;
     padding: 7px 14px;
@@ -68,21 +68,28 @@ body {
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease; /* Added color/opacity */
     white-space: nowrap;
 }
 .top-bar .simple-button:hover, .simple-button:hover { background-color: #0056b3; }
-.top-bar .simple-button:disabled, .simple-button:disabled { background-color: #6c757d; cursor: not-allowed; opacity: 0.65; }
+/* Generic Disabled Simple Button Style */
+.top-bar .simple-button:disabled, .simple-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.65;
+    color: #ccc; /* Lighter text when disabled */
+}
+/* Ensure hover doesn't override disabled state */
+.top-bar .simple-button:disabled:hover, .simple-button:disabled:hover {
+    background-color: #6c757d;
+}
+
 .top-bar .save-button { background-color: #28a745; }
 .top-bar .save-button:hover { background-color: #218838; }
 .top-bar .delete-button { background-color: #dc3545; }
 .top-bar .delete-button:hover { background-color: #c82333; }
 .top-bar .pause-acq-button.paused { background-color: #ffc107; color: #333; }
 .top-bar .pause-acq-button.paused:hover { background-color: #e0a800; }
-/* Settings button can use default blue or add specific style */
-/* .top-bar #settings-button { background-color: #17a2b8; } */
-/* .top-bar #settings-button:hover { background-color: #138496; } */
-
 
 .save-status-text {
     position: absolute;
@@ -126,37 +133,10 @@ body {
     height: 100%;
     box-sizing: border-box;
 }
-.center-area h1 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    flex-shrink: 0;
-}
-.stats-display {
-    margin-bottom: 25px;
-    font-size: 1.15em;
-    background-color: #e9ecef;
-    padding: 15px 25px;
-    border-radius: 6px;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-    min-width: 360px;
-    width: 95%;
-    max-width: 550px;
-    flex-shrink: 0;
-    box-sizing: border-box;
-}
-.stats-display p {
-    margin: 5px 0;
-    line-height: 1.45;
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-}
-.stats-display p span {
-    font-weight: bold;
-    margin-left: 15px;
-    white-space: nowrap;
-}
-/* Stat colors */
+.center-area h1 { margin-top: 0; margin-bottom: 15px; flex-shrink: 0; }
+.stats-display { margin-bottom: 25px; font-size: 1.15em; background-color: #e9ecef; padding: 15px 25px; border-radius: 6px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); min-width: 360px; width: 95%; max-width: 550px; flex-shrink: 0; box-sizing: border-box; }
+.stats-display p { margin: 5px 0; line-height: 1.45; display: flex; justify-content: space-between; align-items: baseline; }
+.stats-display p span { font-weight: bold; margin-left: 15px; white-space: nowrap; }
 #leads, #lps, #leads-per-click { color: #007bff; }
 #opportunities, #ops, #opps-per-click { color: #fd7e14; }
 #customers { color: #6f42c1; }
@@ -165,60 +145,15 @@ body {
 #success-chance { color: #17a2b8; }
 #cvr { color: #dc3545; }
 #cust-cost { color: #5a6268; }
+.money-display { font-size: 1.3em; font-weight: bold; margin-top: 10px !important; margin-bottom: 10px !important; }
+.stats-hr { border: 0; height: 1px; background-color: #ccc; margin: 8px 0; width: 100%; }
 
-.money-display {
-    font-size: 1.3em;
-    font-weight: bold;
-    margin-top: 10px !important;
-    margin-bottom: 10px !important;
-}
-.stats-hr {
-    border: 0;
-    height: 1px;
-    background-color: #ccc;
-    margin: 8px 0;
-    width: 100%;
-}
-
-.click-zone {
-    margin-top: 20px;
-    display: flex;
-    gap: 30px;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 0;
-}
-#click-lead-button, #click-opp-button {
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    border-radius: 50%;
-    transition: transform 0.1s ease-out;
-    flex-shrink: 0;
-    width: 150px; /* Set size on button */
-    height: 150px;
-    overflow: hidden; /* Ensure image doesn't overflow button boundaries */
-    border: 3px solid #ccc; /* Moved border to button */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Moved shadow to button */
-    background-color: #eee; /* Moved background to button */
-}
-#click-lead-button img, #click-opp-button img {
-    display: block;
-    width: 100%; /* Fill button width */
-    height: 100%; /* Fill button height */
-    object-fit: cover; /* Cover area, crop if needed */
-    border-radius: 0; /* Remove img border-radius if button handles it */
-    border: none; /* Remove image border */
-    box-shadow: none; /* Remove image shadow */
-    background-color: transparent; /* Remove image background */
-}
+.click-zone { margin-top: 20px; display: flex; gap: 30px; justify-content: center; align-items: center; flex-shrink: 0; }
+#click-lead-button, #click-opp-button { background: none; border: none; padding: 0; cursor: pointer; border-radius: 50%; transition: transform 0.1s ease-out, border-color 0.2s ease; flex-shrink: 0; width: 150px; height: 150px; overflow: hidden; border: 3px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.2); background-color: #eee; }
+#click-lead-button img, #click-opp-button img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 0; border: none; box-shadow: none; background-color: transparent; }
 #click-lead-button:hover { border-color: #007bff; }
 #click-opp-button:hover { border-color: #fd7e14; }
-#click-lead-button:active, #click-opp-button:active {
-    transform: scale(0.95);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.2); /* Adjust active shadow */
-}
+#click-lead-button:active, #click-opp-button:active { transform: scale(0.95); box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
 
 /* --- Side Panels --- */
 .side-panel {
@@ -229,48 +164,19 @@ body {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 7px;
+    gap: 7px; /* Consistent gap between all direct children, including upgrade and toggle button */
     overflow-y: auto;
-    overflow-x: hidden; /* Prevent horizontal scrolling */
+    overflow-x: hidden;
     height: 100%;
     position: relative;
 }
 
-.side-panel h2 {
-    margin: -20px -15px 8px -15px; /* Pull up to counteract panel padding */
-    border-bottom: 2px solid #007bff;
-    padding: 15px 15px 6px 15px;
-    color: #0056b3;
-    font-size: 1.35em;
-    flex-shrink: 0;
-    position: sticky;
-    top: 0; /* Stick to the very top of the scroll container */
-    background-color: inherit; /* Inherit from panel */
-    z-index: 10;
-    width: calc(100% + 30px); /* Extend background/border across padding */
-}
-.side-panel hr.side-panel-hr {
-    border: 0;
-    height: 1px;
-    background-color: #dee2e6;
-    margin: 10px 0;
-    width: 100%;
-    flex-shrink: 0;
-}
+.side-panel h2 { margin: -20px -15px 8px -15px; border-bottom: 2px solid #007bff; padding: 15px 15px 6px 15px; color: #0056b3; font-size: 1.35em; flex-shrink: 0; position: sticky; top: 0; background-color: inherit; z-index: 10; width: calc(100% + 30px); }
+.side-panel hr.side-panel-hr { border: 0; height: 1px; background-color: #dee2e6; margin: 10px 0; width: 100%; flex-shrink: 0; }
 
 /* --- Group Titles --- */
-.group-title {
-    font-size: 0.95em;
-    font-weight: bold;
-    color: #495057;
-    margin: 12px 0 4px 0;
-    padding-bottom: 3px;
-    border-bottom: 1px solid #ced4da;
-    flex-shrink: 0;
-}
-.side-panel h4.group-title:first-of-type {
-    margin-top: 5px; /* Keep a small gap after the sticky header */
-}
+.group-title { font-size: 0.95em; font-weight: bold; color: #495057; margin: 12px 0 4px 0; padding-bottom: 3px; border-bottom: 1px solid #ced4da; flex-shrink: 0; }
+.side-panel h4.group-title:first-of-type { margin-top: 5px; }
 
 /* --- Button Styles (Upgrades & Buildables) --- */
 .upgrade-button, .build-button {
@@ -291,68 +197,58 @@ body {
     flex-shrink: 0;
     transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
-.upgrade-button span, .build-button span {
-    display: block;
-    line-height: 1.3;
-}
-.upgrade-button span:first-child, .build-button .build-title {
-    font-weight: bold;
-    font-size: 1.0em;
-    color: #333;
-}
-.upgrade-button .cost, .build-button .cost {
-    font-size: 0.9em;
-    color: #dc3545;
-}
-.upgrade-button .effect, .build-button .effect {
-    font-size: 0.85em;
-    color: #007bff;
-}
-.build-button .build-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    width: 100%;
-}
-.build-button .effect {
-    text-align: right;
-    flex-shrink: 0;
-    margin-left: 8px;
-}
-.build-button .count {
-    font-weight: normal;
-    color: #6c757d;
-    font-size: 0.95em;
-    margin-left: 5px;
-}
-.upgrade-button:not(:disabled), .build-button:not(:disabled) {
-    background-color: #d4edda;
-    border-color: #c3e6cb;
-    cursor: pointer;
-    opacity: 1;
-}
+.upgrade-button span, .build-button span { display: block; line-height: 1.3; }
+.upgrade-button span:first-child, .build-button .build-title { font-weight: bold; font-size: 1.0em; color: #333; }
+.upgrade-button .cost, .build-button .cost { font-size: 0.9em; color: #dc3545; }
+.upgrade-button .effect, .build-button .effect { font-size: 0.85em; color: #007bff; }
+.build-button .build-info { display: flex; justify-content: space-between; align-items: baseline; width: 100%; }
+.build-button .effect { text-align: right; flex-shrink: 0; margin-left: 8px; white-space: nowrap; }
+.build-button .count { font-weight: normal; color: #6c757d; font-size: 0.95em; margin-left: 5px; }
+.upgrade-button:not(:disabled), .build-button:not(:disabled) { background-color: #d4edda; border-color: #c3e6cb; cursor: pointer; opacity: 1; }
 .upgrade-button:not(:disabled):hover, .build-button:not(:disabled):hover { background-color: #c3e6cb; }
 
-/* Purchased Upgrade Button Styling - Natural Shrink */
-.upgrade-button.purchased {
-    background-color: #d6d8db;
-    border-color: #adb5bd;
-    opacity: 0.5;
-    cursor: default;
-}
-.upgrade-button.purchased:hover {
-     background-color: #d6d8db; /* No hover effect */
-}
-/* Style the title span specifically when purchased */
-.upgrade-button.purchased span:first-child {
-    text-decoration: line-through;
-    color: #6c757d;
-}
-/* Hide Cost and Effect completely, removing them from layout flow */
+/* Purchased Upgrade Button Styling */
+.upgrade-button.purchased { background-color: #d6d8db; border-color: #adb5bd; opacity: 0.5; cursor: default; }
+.upgrade-button.purchased:hover { background-color: #d6d8db; }
+.upgrade-button.purchased span:first-child { text-decoration: line-through; color: #6c757d; }
 .upgrade-button.purchased .cost,
-.upgrade-button.purchased .effect {
-    display: none; /* Removes the element from flow */
+.upgrade-button.purchased .effect { display: none; }
+
+/* --- Special Upgrade Button Styles --- */
+
+/* The purchase button (#upgrade-flexibleWorkflow) uses standard .upgrade-button styles */
+
+/* Styles for the TOGGLE button (#toggle-flexible-workflow) */
+.side-panel #toggle-flexible-workflow {
+    width: 100%; /* Make it full width */
+    text-align: center; /* Center text */
+    /* margin-top: 0; */ /* Use parent flex gap for spacing */
+    padding: 8px 10px; /* Adjust padding */
+    font-size: 0.9em; /* Match general button size */
+    /* Default state uses .simple-button styles (blue background) */
 }
+
+/* Style for when Flexible Workflow TOGGLE is active */
+.side-panel #toggle-flexible-workflow.active {
+    background-color: #ffc107; /* Warning yellow */
+    color: #333;
+    border-color: #e0a800; /* Slightly darker border for active */
+}
+.side-panel #toggle-flexible-workflow.active:hover:not(:disabled) { /* Add :not(:disabled) */
+    background-color: #e0a800; /* Darker yellow on hover */
+}
+
+/* Style for TOGGLE button when disabled (overrides .simple-button:disabled slightly if needed) */
+/* This uses the generic .simple-button:disabled rule above, which should be sufficient */
+/* .side-panel #toggle-flexible-workflow:disabled { */
+    /* background-color: #6c757d; */
+    /* cursor: not-allowed; */
+    /* opacity: 0.65; */
+    /* color: #ccc; */
+/* } */
+/* .side-panel #toggle-flexible-workflow:disabled:hover { */
+    /* background-color: #6c757d; */ /* Prevent hover effect when disabled */
+/* } */
 
 
 /* --- Music Player Styles --- */
@@ -375,6 +271,7 @@ body {
 .modal-content h2 { margin-top: 0; color: #0056b3; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 15px; }
 .modal-content p, .modal-content ul { margin-bottom: 15px; line-height: 1.5; text-align: left; }
 .modal-content ul { padding-left: 20px; }
+.modal-content li { margin-bottom: 5px; }
 .modal-content a { color: #007bff; text-decoration: none; }
 .modal-content a:hover { text-decoration: underline; }
 #win-modal .modal-content { text-align: center; }
@@ -386,6 +283,10 @@ body {
 .stats-list p { display: flex; justify-content: space-between; margin-bottom: 8px; }
 .stats-list span { font-weight: bold; margin-left: 15px; }
 .stats-list hr { border: 0; height: 1px; background-color: #eee; margin: 12px 0; }
+
+/* --- Tutorial Modal Specific Styles --- */
+#tutorial-modal .modal-content { max-width: 650px; }
+#tutorial-modal h4 { margin-top: 20px; margin-bottom: 8px; color: #495057; }
 
 /* --- Animations --- */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
