@@ -1,165 +1,145 @@
 /* --- Base Styles --- */
 html {
-    height: 100%; /* Ensure html takes full height */
+    height: 100%;
 }
 body {
     font-family: sans-serif;
     margin: 0;
     background: linear-gradient(135deg, #e0f7fa 0%, #e1f5fe 100%);
     color: #333;
-    display: flex; /* Use flex to manage vertical space */
-    flex-direction: column; /* Stack container vertically */
-    height: 100vh; /* Full viewport height */
-    overflow: hidden; /* Prevent body scrollbars */
-    padding: 15px; /* Reduced padding */
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    padding: 15px;
     box-sizing: border-box;
 }
 
 .game-container {
     display: flex;
-    flex-direction: column; /* Stack top-bar and main-content */
-    width: 100%; /* Take full padded width */
-    max-width: 1800px; /* Allow wider max width */
+    flex-direction: column;
+    width: 100%;
+    max-width: 1800px;
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     border: 1px solid #ddd;
-    flex-grow: 1; /* Allow container to take available vertical space */
-    overflow: hidden; /* Prevent internal content from causing scroll */
-    margin: 0 auto; /* Center container horizontally if max-width is reached */
+    flex-grow: 1;
+    overflow: hidden; /* Important: Child spawn area uses absolute positioning relative to this */
+    margin: 0 auto;
+    position: relative; /* Needed for absolute positioning of children like spawn area */
 }
 
 /* --- Top Bar Styles --- */
 .top-bar {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* Pushes music left, buttons right, center grows */
     align-items: center;
     padding: 10px 15px;
     background-color: #f8f9fa;
     border-bottom: 1px solid #dee2e6;
     width: 100%;
     box-sizing: border-box;
-    flex-shrink: 0; /* Prevent shrinking */
+    flex-shrink: 0;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
-    position: relative;
-    height: 70px; /* Fixed height */
+    position: relative; /* For absolute positioning of save-status if needed */
+    min-height: 70px; /* Use min-height in case center content needs to wrap */
+    height: auto; /* Allow height to adjust */
+    z-index: 10;
 }
-.top-bar .music-player {
-    margin-bottom: 0;
-    width: 280px;
-    flex-shrink: 0;
-    padding: 8px 10px;
-    box-sizing: border-box;
-}
-.top-bar-buttons {
+.top-bar .music-player { margin-bottom: 0; width: 280px; flex-shrink: 0; padding: 8px 10px; box-sizing: border-box; }
+.top-bar-buttons { display: flex; align-items: center; gap: 8px; flex-shrink: 0; /* Prevent buttons shrinking */ }
+
+/* Center Status Area in Top Bar */
+.top-bar-center-status {
+    flex-grow: 1; /* Allows this area to take up space */
     display: flex;
-    align-items: center; /* Vertically align items */
-    gap: 8px; /* Space between buttons */
+    flex-direction: column; /* Stack powerup display and save status */
+    align-items: center; /* Center items horizontally */
+    justify-content: center; /* Center items vertically */
+    text-align: center;
+    min-width: 150px; /* Prevent it getting too squished */
+    padding: 0 15px; /* Add some horizontal padding */
+    position: relative; /* For positioning save-status within it */
+    height: 100%; /* Take full available height */
+    /* overflow: hidden; */ /* REMOVED: This was causing save status text clipping */
 }
 
-/* Version Display Style */
-#game-version {
-    font-size: 0.8em; /* Smaller text */
-    color: #6c757d; /* Grey color */
-    margin-left: 10px; /* Add some space after the last button */
-    white-space: nowrap; /* Prevent wrapping */
-    align-self: center; /* Ensure vertical alignment if container uses align-items */
-}
-
-.top-bar .simple-button, .simple-button { /* Includes side panel simple buttons */
-    margin-top: 0;
-    width: auto;
-    padding: 7px 14px;
-    flex-shrink: 0;
+/* Active Powerup Display */
+#active-powerup-display {
     font-size: 0.9em;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
-    white-space: nowrap;
-}
-.top-bar .simple-button:hover, .simple-button:hover { background-color: #0056b3; }
-/* Generic Disabled Simple Button Style */
-.top-bar .simple-button:disabled, .simple-button:disabled {
-    background-color: #6c757d;
-    cursor: not-allowed;
-    opacity: 0.65;
-    color: #ccc; /* Lighter text when disabled */
-}
-/* Ensure hover doesn't override disabled state */
-.top-bar .simple-button:disabled:hover, .simple-button:disabled:hover {
-    background-color: #6c757d;
+    font-weight: bold;
+    color: #28a745; /* Green for positive effect */
+    /* height: 1.5em; REMOVED fixed height */
+    line-height: 1.4; /* Adjusted for potential wrapping */
+    /* white-space: nowrap; REMOVED to allow wrapping */
+    /* overflow: hidden; REMOVED */
+    /* text-overflow: ellipsis; REMOVED */
+    max-width: 100%;
+    min-height: 2.8em; /* Ensure space is kept even if empty, allows for two lines */
+    display: flex; /* Use flex to center vertically if less than min-height */
+    align-items: center;
+    justify-content: center;
+    padding: 2px 0; /* Add slight vertical padding */
 }
 
-.top-bar .save-button { background-color: #28a745; }
-.top-bar .save-button:hover:not(:disabled) { background-color: #218838; } /* Added :not(:disabled) */
-.top-bar .delete-button { background-color: #dc3545; }
-.top-bar .delete-button:hover:not(:disabled) { background-color: #c82333; } /* Added :not(:disabled) */
-.top-bar .pause-acq-button.paused { background-color: #ffc107; color: #333; }
-.top-bar .pause-acq-button.paused:hover:not(:disabled) { background-color: #e0a800; } /* Added :not(:disabled) */
 
+/* Save Status positioning (relative to center status area) */
 .save-status-text {
     position: absolute;
-    bottom: -18px;
+    /* bottom: -18px; Adjusted slightly upwards */
+    bottom: -15px;
     left: 50%;
     transform: translateX(-50%);
     font-size: 0.8em;
     color: #6c757d;
-    text-align: center;
-    height: 1.2em;
-    background-color: rgba(248, 249, 250, 0.9);
-    padding: 0 8px;
+    /* height: 1.2em; Allow height to be auto */
+    line-height: 1.2;
+    background-color: rgba(248, 249, 250, 0.95); /* Slightly less transparent */
+    padding: 2px 8px; /* Added vertical padding */
     border-radius: 3px;
-    z-index: 20;
+    z-index: 20; /* Above parent but below modals */
     white-space: nowrap;
     opacity: 0;
     transition: opacity 0.5s ease-in-out;
     pointer-events: none;
+    border: 1px solid #dee2e6; /* Added subtle border */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* Added subtle shadow */
 }
 .save-status-text.visible { opacity: 1; }
 
-/* --- Main Content Area --- */
-.main-content-area {
-    display: flex;
-    flex-grow: 1;
-    width: 100%;
-    overflow: hidden;
-}
+#game-version { font-size: 0.8em; color: #6c757d; margin-left: 10px; white-space: nowrap; align-self: center; }
+.top-bar .simple-button, .simple-button { margin-top: 0; width: auto; padding: 7px 14px; flex-shrink: 0; font-size: 0.9em; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease; white-space: nowrap; }
+.top-bar .simple-button:hover, .simple-button:hover { background-color: #0056b3; }
+.top-bar .simple-button:disabled, .simple-button:disabled { background-color: #6c757d; cursor: not-allowed; opacity: 0.65; color: #ccc; }
+.top-bar .simple-button:disabled:hover, .simple-button:disabled:hover { background-color: #6c757d; }
+.top-bar .save-button { background-color: #28a745; }
+.top-bar .save-button:hover:not(:disabled) { background-color: #218838; }
+.top-bar .delete-button { background-color: #dc3545; }
+.top-bar .delete-button:hover:not(:disabled) { background-color: #c82333; }
+.top-bar .pause-acq-button.paused { background-color: #ffc107; color: #333; }
+.top-bar .pause-acq-button.paused:hover:not(:disabled) { background-color: #e0a800; }
 
-.center-area {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px 25px;
-    text-align: center;
-    border-left: 1px solid #dee2e6;
-    border-right: 1px solid #dee2e6;
-    min-width: 400px;
-    overflow-y: auto;
-    height: 100%;
-    box-sizing: border-box;
-}
+/* --- Main Content Area --- */
+.main-content-area { display: flex; flex-grow: 1; width: 100%; overflow: hidden; position: relative; z-index: 5; }
+
+/* Center Area & Stats Display */
+.center-area { flex-grow: 1; display: flex; flex-direction: column; align-items: center; padding: 20px 25px; text-align: center; border-left: 1px solid #dee2e6; border-right: 1px solid #dee2e6; min-width: 400px; overflow-y: auto; height: 100%; box-sizing: border-box; }
 .center-area h1 { margin-top: 0; margin-bottom: 15px; flex-shrink: 0; }
 .stats-display { margin-bottom: 25px; font-size: 1.15em; background-color: #e9ecef; padding: 15px 25px; border-radius: 6px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); min-width: 360px; width: 95%; max-width: 550px; flex-shrink: 0; box-sizing: border-box; }
 .stats-display p { margin: 5px 0; line-height: 1.45; display: flex; justify-content: space-between; align-items: baseline; }
-/* Styling for the value part (span) in stats */
 .stats-display p span { font-weight: bold; margin-left: 15px; white-space: nowrap; }
-/* Color coding for specific stat values */
 #leads, #lps, #leads-per-click { color: #007bff; }
 #opportunities, #ops, #opps-per-click { color: #fd7e14; }
 #customers { color: #6f42c1; }
-#money, #mps { color: #28a745; /* font-weight applied via span rule */ }
+#money, #mps { color: #28a745; }
 #car { color: #ffc107; }
 #success-chance { color: #17a2b8; }
 #cvr { color: #dc3545; }
 #cust-cost { color: #5a6268; }
 .money-display { font-size: 1.3em; font-weight: bold; margin-top: 10px !important; margin-bottom: 10px !important; }
 .stats-hr { border: 0; height: 1px; background-color: #ccc; margin: 8px 0; width: 100%; }
-
 .click-zone { margin-top: 20px; display: flex; gap: 30px; justify-content: center; align-items: center; flex-shrink: 0; }
 #click-lead-button, #click-opp-button { background: none; border: none; padding: 0; cursor: pointer; border-radius: 50%; transition: transform 0.1s ease-out, border-color 0.2s ease; flex-shrink: 0; width: 150px; height: 150px; overflow: hidden; border: 3px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.2); background-color: #eee; }
 #click-lead-button img, #click-opp-button img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 0; border: none; box-shadow: none; background-color: transparent; }
@@ -168,47 +148,14 @@ body {
 #click-lead-button:active, #click-opp-button:active { transform: scale(0.95); box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
 
 /* --- Side Panels --- */
-.side-panel {
-    width: 340px;
-    flex-shrink: 0;
-    padding: 20px 15px 15px 15px;
-    background-color: #f8f9fa;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    gap: 7px; /* Consistent gap between all direct children */
-    overflow-y: auto;
-    overflow-x: hidden;
-    height: 100%;
-    position: relative;
-}
-
+.side-panel { width: 340px; flex-shrink: 0; padding: 20px 15px 15px 15px; background-color: #f8f9fa; box-sizing: border-box; display: flex; flex-direction: column; gap: 7px; overflow-y: auto; overflow-x: hidden; height: 100%; position: relative; }
 .side-panel h2 { margin: -20px -15px 8px -15px; border-bottom: 2px solid #007bff; padding: 15px 15px 6px 15px; color: #0056b3; font-size: 1.35em; flex-shrink: 0; position: sticky; top: 0; background-color: inherit; z-index: 10; width: calc(100% + 30px); }
 .side-panel hr.side-panel-hr { border: 0; height: 1px; background-color: #dee2e6; margin: 10px 0; width: 100%; flex-shrink: 0; }
-
-/* --- Group Titles --- */
 .group-title { font-size: 0.95em; font-weight: bold; color: #495057; margin: 12px 0 4px 0; padding-bottom: 3px; border-bottom: 1px solid #ced4da; flex-shrink: 0; }
 .side-panel h4.group-title:first-of-type { margin-top: 5px; }
 
 /* --- Button Styles (Upgrades & Buildables) --- */
-.upgrade-button, .build-button {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
-    padding: 7px 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: #e9ecef;
-    cursor: not-allowed;
-    opacity: 0.7;
-    font-size: 0.86em;
-    box-sizing: border-box;
-    text-align: left;
-    gap: 2px;
-    flex-shrink: 0;
-    transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
-}
+.upgrade-button, .build-button { display: flex; flex-direction: column; align-items: stretch; width: 100%; padding: 7px 10px; border: 1px solid #ccc; border-radius: 4px; background-color: #e9ecef; cursor: not-allowed; opacity: 0.7; font-size: 0.86em; box-sizing: border-box; text-align: left; gap: 2px; flex-shrink: 0; transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease; }
 .upgrade-button span, .build-button span { display: block; line-height: 1.3; }
 .upgrade-button span:first-child, .build-button .build-title { font-weight: bold; font-size: 1.0em; color: #333; }
 .upgrade-button .cost, .build-button .cost { font-size: 0.9em; color: #dc3545; }
@@ -216,11 +163,8 @@ body {
 .build-button .build-info { display: flex; justify-content: space-between; align-items: baseline; width: 100%; }
 .build-button .effect { text-align: right; flex-shrink: 0; margin-left: 8px; white-space: nowrap; }
 .build-button .count { font-weight: normal; color: #6c757d; font-size: 0.95em; margin-left: 5px; }
-/* Affordable state */
 .upgrade-button:not(:disabled), .build-button:not(:disabled) { background-color: #d4edda; border-color: #c3e6cb; cursor: pointer; opacity: 1; }
 .upgrade-button:not(:disabled):hover, .build-button:not(:disabled):hover { background-color: #c3e6cb; }
-
-/* Purchased Upgrade Button Styling */
 .upgrade-button.purchased { background-color: #d6d8db; border-color: #adb5bd; opacity: 0.5; cursor: default; }
 .upgrade-button.purchased:hover { background-color: #d6d8db; }
 .upgrade-button.purchased span:first-child { text-decoration: line-through; color: #6c757d; }
@@ -228,28 +172,9 @@ body {
 .upgrade-button.purchased .effect { display: none; }
 
 /* --- Special Upgrade Button Styles --- */
-/* The purchase button (#upgrade-flexibleWorkflow) uses standard .upgrade-button styles */
-
-/* Styles for the TOGGLE button (#toggle-flexible-workflow) */
-.side-panel #toggle-flexible-workflow {
-    width: 100%; /* Make it full width */
-    text-align: center; /* Center text */
-    /* Uses parent flex gap for spacing */
-    padding: 8px 10px;
-    font-size: 0.9em;
-    /* Default state uses .simple-button styles */
-}
-/* Style for when Flexible Workflow TOGGLE is active */
-.side-panel #toggle-flexible-workflow.active {
-    background-color: #ffc107; /* Warning yellow */
-    color: #333;
-    border-color: #e0a800;
-}
-.side-panel #toggle-flexible-workflow.active:hover:not(:disabled) {
-    background-color: #e0a800;
-}
-/* Disabled state uses generic .simple-button:disabled rule */
-
+.side-panel #toggle-flexible-workflow { width: 100%; text-align: center; padding: 8px 10px; font-size: 0.9em; }
+.side-panel #toggle-flexible-workflow.active { background-color: #ffc107; color: #333; border-color: #e0a800; }
+.side-panel #toggle-flexible-workflow.active:hover:not(:disabled) { background-color: #e0a800; }
 
 /* --- Music Player Styles --- */
 .track-info { font-size: 0.85em; color: #555; margin: 0 0 5px 0; text-align: center; font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
@@ -261,6 +186,58 @@ body {
 #volume-slider { flex-grow: 1; cursor: pointer; height: 6px; background: #d3d3d3; outline: none; border-radius: 3px; appearance: none; -webkit-appearance: none; max-width: 100px; }
 #volume-slider::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 14px; height: 14px; background: #007bff; border-radius: 50%; cursor: pointer; }
 #volume-slider::-moz-range-thumb { width: 14px; height: 14px; background: #007bff; border-radius: 50%; cursor: pointer; border: none; }
+
+/* --- Power-up Styles --- */
+#powerup-spawn-area {
+    position: absolute;
+    top: 70px; /* Start below the top bar */
+    left: 0;
+    width: 100%;
+    height: calc(100% - 70px); /* Avoid top bar */
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 500;
+}
+
+.powerup-token {
+    position: absolute;
+    width: 90px;  /* Doubled size */
+    height: 90px; /* Doubled size */
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 3px solid #aaa; /* Slightly thicker border */
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.35); /* Slightly stronger shadow */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px; /* Larger icon/text if needed */
+    pointer-events: auto;
+    user-select: none;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 501;
+    transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+}
+
+.powerup-token:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.45); /* Stronger hover shadow */
+}
+
+@keyframes fallAnimation {
+    from {
+        transform: translateY(-100px); /* Start higher for bigger token */
+        opacity: 0.8;
+    }
+    to {
+        transform: translateY(calc(100vh - 70px - 15px - 90px)); /* vh - top bar - body pad - NEW token height */
+        opacity: 1;
+    }
+}
+/* --- End Power-up Styles --- */
+
 
 /* --- Modal Styles --- */
 .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center; text-align: center; }
