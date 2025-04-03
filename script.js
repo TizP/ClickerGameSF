@@ -27,10 +27,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Powerup Configuration ---
     const powerupTypes = [
-        { id: 'prodBoost', name: 'Pipeline Frenzy', duration: 30000, magnitude: 1.0, effectTarget: 'prod', image: 'powerup_prod.png', description: '+100% L/S & O/S' },
-        { id: 'clickBoost', name: 'Click Power', duration: 30000, magnitude: 2.5, effectTarget: 'clicks', image: 'powerup_click.png', description: '+250% Click Value' },
-        { id: 'moneyBoost', name: 'Revenue Surge', duration: 30000, magnitude: 1.0, effectTarget: 'mps', image: 'powerup_money.png', description: '+100% M/S' },
-        { id: 'cvrBoost', name: 'Value Boost', duration: 30000, magnitude: 5.0, effectTarget: 'cvr', image: 'powerup_cvr.png', description: '+500% CVR' }
+        { id: 'prodBoost', name: 'Pipeline Frenzy', duration: 30000, magnitude: 1.0, effectTarget: 'prod', image: 'pipelinePowerUp.jpg', description: '+100% L/S & O/S' },
+        { id: 'clickBoost', name: 'Click Power', duration: 30000, magnitude: 2.5, effectTarget: 'clicks', image: 'clickPowerUP.jpg', description: '+250% Click Value' },
+        { id: 'moneyBoost', name: 'Revenue Surge', duration: 30000, magnitude: 1.0, effectTarget: 'mps', image: 'revenuePowerUp.jpg', description: '+100% M/S' },
+        { id: 'cvrBoost', name: 'Value Boost', duration: 30000, magnitude: 5.0, effectTarget: 'cvr', image: 'valuePowerUp.jpg', description: '+500% CVR' }
     ];
 
     // --- Music Playlist ---
