@@ -63,7 +63,6 @@ body {
     padding: 0 15px; /* Add some horizontal padding */
     position: relative; /* For positioning save-status within it */
     height: 100%; /* Take full available height */
-    /* overflow: hidden; */ /* REMOVED: This was causing save status text clipping */
 }
 
 /* Active Powerup Display */
@@ -71,11 +70,7 @@ body {
     font-size: 0.9em;
     font-weight: bold;
     color: #28a745; /* Green for positive effect */
-    /* height: 1.5em; REMOVED fixed height */
     line-height: 1.4; /* Adjusted for potential wrapping */
-    /* white-space: nowrap; REMOVED to allow wrapping */
-    /* overflow: hidden; REMOVED */
-    /* text-overflow: ellipsis; REMOVED */
     max-width: 100%;
     min-height: 2.8em; /* Ensure space is kept even if empty, allows for two lines */
     display: flex; /* Use flex to center vertically if less than min-height */
@@ -83,18 +78,22 @@ body {
     justify-content: center;
     padding: 2px 0; /* Add slight vertical padding */
 }
+#active-powerup-display span { /* Style for the description line */
+    display: block; /* Ensure it's on its own line */
+    font-size: 0.9em;
+    font-weight: normal;
+    color: #555; /* Slightly dimmer color */
+}
 
 
 /* Save Status positioning (relative to center status area) */
 .save-status-text {
     position: absolute;
-    /* bottom: -18px; Adjusted slightly upwards */
     bottom: -15px;
     left: 50%;
     transform: translateX(-50%);
     font-size: 0.8em;
     color: #6c757d;
-    /* height: 1.2em; Allow height to be auto */
     line-height: 1.2;
     background-color: rgba(248, 249, 250, 0.95); /* Slightly less transparent */
     padding: 2px 8px; /* Added vertical padding */
@@ -180,9 +179,37 @@ body {
 .track-info { font-size: 0.85em; color: #555; margin: 0 0 5px 0; text-align: center; font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 #current-track-name { font-weight: bold; color: #333; }
 .music-controls { display: flex; align-items: center; gap: 8px; justify-content: center; }
-#play-pause-button, #next-track-button { background-color: #007bff; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 0.85em; cursor: pointer; display: flex; justify-content: center; align-items: center; padding: 0; flex-shrink: 0; transition: background-color 0.2s ease; }
-#play-pause-button:hover, #next-track-button:hover { background-color: #0056b3; }
-#play-pause-icon, #next-track-button span { line-height: 1; }
+#play-pause-button,
+#next-track-button,
+#mute-button { /* Group common styles */
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 0.85em;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    flex-shrink: 0;
+    transition: background-color 0.2s ease;
+    line-height: 1; /* Ensure icon vertical centering */
+}
+#play-pause-button:hover,
+#next-track-button:hover,
+#mute-button:hover { background-color: #0056b3; }
+
+#mute-button.muted { /* Style when audio is muted */
+    background-color: #6c757d; /* Grey background */
+}
+#mute-button.muted:hover {
+    background-color: #5a6268;
+}
+
+
 #volume-slider { flex-grow: 1; cursor: pointer; height: 6px; background: #d3d3d3; outline: none; border-radius: 3px; appearance: none; -webkit-appearance: none; max-width: 100px; }
 #volume-slider::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 14px; height: 14px; background: #007bff; border-radius: 50%; cursor: pointer; }
 #volume-slider::-moz-range-thumb { width: 14px; height: 14px; background: #007bff; border-radius: 50%; cursor: pointer; border: none; }
