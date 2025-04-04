@@ -1,7 +1,7 @@
 // js/config.js
 "use strict";
 
-export const GAME_VERSION = "v1.36-cvr-boost"; // Version bump for CVR boost
+export const GAME_VERSION = "v1.37-cust-growth-rebal"; // Version bump for customer growth rebalance
 export const SAVE_KEY = `salesforcePipelineSaveData_v${GAME_VERSION}`; // Updated key
 export const TICK_INTERVAL_MS = 100;
 export const DISPLAY_UPDATE_INTERVAL_MS = 250;
@@ -227,60 +227,104 @@ export const upgradesConfig = {
             }
         }
     },
-    customerValue: { // Customer Value Rate Category - UPDATED
+    customerValue: { // Customer Value Rate Category
         name: "Customer Value Rate",
         tier1: {
             cvrBoost1:  {
                 name: "Customer Onboarding", cost: 25000, costCurrency: 'leads',
-                effect: (state) => { state.baseCVR += 1.00; }, // Changed from +0.50
-                description: "+$1.00 Value Rate" // Changed from +$0.50
+                effect: (state) => { state.baseCVR += 1.00; },
+                description: "+$1.00 Value Rate"
             },
             cvrBoost2:  {
                 name: "Enhanced Support Tier", cost: 300000, costCurrency: 'leads',
-                effect: (state) => { state.baseCVR += 5.00; }, // Changed from +1.00
-                description: "+$5.00 Value Rate" // Changed from +$1.00
+                effect: (state) => { state.baseCVR += 5.00; },
+                description: "+$5.00 Value Rate"
             },
             cvrBoost3:  {
                 name: "Dedicated CSM Program", cost: 2000000, costCurrency: 'leads',
-                effect: (state) => { state.baseCVR += 25.00; }, // Changed from +5.00
-                description: "+$25.00 Value Rate" // Changed from +$5.00
+                effect: (state) => { state.baseCVR += 25.00; },
+                description: "+$25.00 Value Rate"
             },
-            cvrBoostPercent: { // Unchanged
+            cvrBoostPercent: {
                 name: "Premier Success Plan", cost: 15000000, costCurrency: 'leads',
                 effect: (state) => { state.cvrMultiplierBonus = (state.cvrMultiplierBonus || 1.0) * 1.25; },
                 description: "+25% Value Rate"
             },
-            cvrBoostPercent2: { // Unchanged
+            cvrBoostPercent2: {
                 name: "Signature Success Plan", cost: 100000000, costCurrency: 'opportunities',
                 effect: (state) => { state.cvrMultiplierBonus = (state.cvrMultiplierBonus || 1.0) * 1.50; },
                 description: "+50% Value Rate"
             },
         },
         tier2: {
-            cvrMastery: { // Unchanged
+            cvrMastery: {
                 name: "Customer Value Mastery", cost: 500000000, costCurrency: 'leads',
                 effect: (state) => { state.cvrMultiplierBonus = (state.cvrMultiplierBonus || 1.0) * 2.00; },
                 description: "x2 Value Rate"
             }
         }
     },
-     customerGrowth: {
+     customerGrowth: { // Customer Driven Growth Category - UPDATED
         name: "Customer Driven Growth",
         tier1: {
-            custGrowth1: { name: "Loyal Customer Referrals", cost: 10, costCurrency: 'customers', effect: (state) => { state.custUpgradeBonusCAR += 0.10; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.03); }, description: "+0.1 Acq Rate/s, +3% Success" },
-            custGrowth2: { name: "Customer Advisory Board", cost: 50, costCurrency: 'customers', effect: (state) => { state.custUpgradeBonusCAR += 0.30; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.05); }, description: "+0.3 Acq Rate/s, +5% Success" },
-            custGrowth3: { name: "Voice of Customer Program", cost: 250, costCurrency: 'customers', effect: (state) => { state.custUpgradeBonusCAR += 0.50; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.10); state.custUpgradeBonusCVR += 1.00; }, description: "+0.5 Acq Rate/s, +10% Success, +$1 CVR" },
-            custGrowth4: { name: "Strategic Account Management", cost: 1000, costCurrency: 'customers', effect: (state) => { state.customerCostReductionMultiplier *= 0.90; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.10); state.custUpgradeBonusCVR += 1.00; }, description: "-10% Acq Cost, +10% Success, +$1 CVR" },
-            custGrowth5: { name: "Community Champion Program", cost: 5000, costCurrency: 'customers', effect: (state) => { state.custUpgradeBonusCAR += 1.00; state.custGlobalMultiplier = (state.custGlobalMultiplier || 1.0) * 1.25; state.cvrCustomerMultiplier = (state.cvrCustomerMultiplier || 1.0) * 1.15; }, description: "+1.0 Acq Rate/s, +25% Output, +15% CVR" },
+            custGrowth1: { // Unchanged
+                name: "Loyal Customer Referrals", cost: 10, costCurrency: 'customers',
+                effect: (state) => {
+                    state.custUpgradeBonusCAR += 0.10;
+                    state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.03);
+                },
+                description: "+0.1 Acq Rate/s, +3% Success"
+            },
+            custGrowth2: { // CAR increased
+                name: "Customer Advisory Board", cost: 50, costCurrency: 'customers',
+                effect: (state) => {
+                    state.custUpgradeBonusCAR += 0.50; // Was +0.30
+                    state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.05);
+                },
+                description: "+0.5 Acq Rate/s, +5% Success" // Updated desc
+            },
+            custGrowth3: { // CAR & CVR increased
+                name: "Voice of Customer Program", cost: 250, costCurrency: 'customers',
+                effect: (state) => {
+                    state.custUpgradeBonusCAR += 1.50; // Was +0.50
+                    state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.10);
+                    state.custUpgradeBonusCVR += 3.00; // Was +1.00
+                },
+                description: "+1.5 Acq Rate/s, +10% Success, +$3 CVR" // Updated desc
+            },
+            custGrowth4: { // Cost reduction & CVR increased
+                name: "Strategic Account Management", cost: 1000, costCurrency: 'customers',
+                effect: (state) => {
+                    state.customerCostReductionMultiplier *= 0.85; // Was 0.90 (-10% -> -15%)
+                    state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.10);
+                    state.custUpgradeBonusCVR += 7.00; // Was +1.00
+                },
+                description: "-15% Acq Cost, +10% Success, +$7 CVR" // Updated desc
+            },
+            custGrowth5: { // Changed CAR to Cost reduction, increased CVR%
+                name: "Community Champion Program", cost: 5000, costCurrency: 'customers',
+                effect: (state) => {
+                    // state.custUpgradeBonusCAR += 1.00; // Removed CAR boost
+                    state.customerCostReductionMultiplier *= 0.75; // Added -25% Cost
+                    state.custGlobalMultiplier = (state.custGlobalMultiplier || 1.0) * 1.25; // Kept +25% Output
+                    state.cvrCustomerMultiplier = (state.cvrCustomerMultiplier || 1.0) * 1.25; // Was 1.15 (+15% -> +25% CVR)
+                },
+                description: "-25% Acq Cost, +25% Output, +25% CVR" // Updated desc
+            },
         },
         tier2: {
-             custGrowthMastery: { name: "Customer Growth Mastery", cost: 15000, costCurrency: 'customers', effect: (state) => {
-                 state.custUpgradeBonusCAR += 1.50;
-                 state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.10);
-                 state.customerCostReductionMultiplier *= 0.85;
-                 state.custUpgradeBonusCVR += 3.00;
-                 state.custGlobalMultiplier = (state.custGlobalMultiplier || 1.0) * 1.20;
-             }, description: "+1.5 CAR, +10% Success, -15% Cost, +$3 CVR, +20% Output" }
+             custGrowthMastery: { // All effects modified
+                 name: "Customer Growth Mastery", cost: 15000, costCurrency: 'customers',
+                 effect: (state) => {
+                     state.custUpgradeBonusCAR += 2.50; // Was +1.50
+                     state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.10); // Kept +10% Success
+                     state.customerCostReductionMultiplier *= 0.67; // Was 0.85 (-15% -> -33%)
+                     // state.custUpgradeBonusCVR += 3.00; // Removed flat CVR boost
+                     state.cvrCustomerMultiplier = (state.cvrCustomerMultiplier || 1.0) * 1.33; // Added +33% CVR Multiplier
+                     state.custGlobalMultiplier = (state.custGlobalMultiplier || 1.0) * 1.33; // Was 1.20 (+20% -> +33% Output)
+                 },
+                 description: "+2.5 CAR, +10% Success, -33% Cost, +33% CVR, +33% Output" // Updated desc
+             }
         }
     },
     // Special Category

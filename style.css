@@ -30,7 +30,7 @@ body {
     position: relative;
 }
 
-/* --- Top Bar Styles (Unchanged) --- */
+/* --- Top Bar Styles --- */
 .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; width: 100%; box-sizing: border-box; flex-shrink: 0; border-top-left-radius: 8px; border-top-right-radius: 8px; position: relative; min-height: 70px; height: auto; z-index: 10; }
 .top-bar .music-player { margin-bottom: 0; width: 280px; flex-shrink: 0; padding: 8px 10px; box-sizing: border-box; }
 .top-bar-buttons { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
@@ -51,7 +51,7 @@ body {
 .top-bar .pause-acq-button.paused { background-color: #ffc107; color: #333; }
 .top-bar .pause-acq-button.paused:hover:not(:disabled) { background-color: #e0a800; }
 
-/* --- Main Content Area (Unchanged) --- */
+/* --- Main Content Area --- */
 .main-content-area { display: flex; flex-grow: 1; width: 100%; overflow: hidden; position: relative; z-index: 5; }
 .center-area { flex-grow: 1; display: flex; flex-direction: column; align-items: center; padding: 20px 25px; text-align: center; border-left: 1px solid #dee2e6; border-right: 1px solid #dee2e6; min-width: 400px; overflow-y: auto; height: 100%; box-sizing: border-box; background: linear-gradient(135deg, #e0f7fa 0%, #e1f5fe 100%); }
 .center-area h1 { margin-top: 0; margin-bottom: 15px; flex-shrink: 0; }
@@ -70,58 +70,45 @@ body {
 .side-panel {
     width: 340px;
     flex-shrink: 0;
-    /* Remove top padding, handle spacing via sticky title */
     padding: 0px 15px 15px 15px;
     background-color: #f8f9fa;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 0; /* Let containers manage gap */
+    gap: 0;
     overflow-y: auto;
     overflow-x: hidden;
     height: 100%;
     position: relative;
 }
-/* REMOVED .side-panel h2 rule */
-
-/* NEW Sticky Title Style */
 .panel-sticky-title {
     position: sticky;
-    top: 0; /* Stick to the top of the scrolling .side-panel */
-    background-color: #f8f9fa; /* Match panel background */
-    z-index: 15; /* Above scrolling content but below modals */
-    /* Re-apply visual styles from old h2 */
-    padding: 15px 0 6px 0; /* Adjust padding (removed side padding as panel has it) */
-    margin-bottom: 8px; /* Space below title */
+    top: 0;
+    background-color: #f8f9fa;
+    z-index: 15;
+    padding: 15px 0 6px 0;
+    margin-bottom: 8px;
     border-bottom: 2px solid #007bff;
     color: #0056b3;
     font-size: 1.35em;
-    font-weight: normal; /* Or bold if preferred */
-    flex-shrink: 0; /* Prevent shrinking */
+    font-weight: normal;
+    flex-shrink: 0;
 }
-
 .side-panel hr.side-panel-hr { border: 0; height: 1px; background-color: #dee2e6; margin: 10px 0; width: 100%; flex-shrink: 0; }
-
-/* Group Title & Collapse Button */
 .group-title {
     font-size: 0.95em; font-weight: bold; color: #495057;
     margin: 12px 0 4px 0; padding-bottom: 3px; border-bottom: 1px solid #ced4da;
     flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;
     cursor: pointer; user-select: none;
 }
-/* Adjust margin for first title after sticky header */
 .side-panel h4.group-title:first-of-type { margin-top: 10px; }
-
 .toggle-icon { font-size: 0.8em; font-weight: bold; color: #888; padding: 0 5px; transition: transform 0.2s ease-in-out; }
 .group-title .toggle-icon::before { content: "[-] "; }
 .group-title.collapsed .toggle-icon::before { content: "[+] "; }
-
-/* Content Containers */
 .upgrade-category-container, .build-category-container { display: flex; flex-direction: column; gap: 7px; padding-top: 4px; }
 .content-collapsed { display: none; }
 
-
-/* --- Button Styles (Upgrades & Buildables - Unchanged) --- */
+/* --- Button Styles (Upgrades & Buildables) --- */
 .upgrade-button, .build-button { display: flex; flex-direction: column; align-items: stretch; width: 100%; padding: 7px 10px; border: 1px solid #ccc; border-radius: 4px; background-color: #e9ecef; cursor: not-allowed; opacity: 0.7; font-size: 0.86em; box-sizing: border-box; text-align: left; gap: 3px; flex-shrink: 0; transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease; }
 .upgrade-button span, .build-button span { line-height: 1.35; }
 .upgrade-button span:first-child, .build-button .build-title { font-weight: bold; font-size: 1.0em; color: #333; }
@@ -136,12 +123,12 @@ body {
 .upgrade-button.purchased .cost,
 .upgrade-button.purchased .effect { display: none; }
 
-/* --- Special Upgrade Button Styles (Unchanged) --- */
+/* --- Special Upgrade Button Styles --- */
 .side-panel #toggle-flexible-workflow { width: 100%; text-align: center; padding: 8px 10px; font-size: 0.9em; }
 .side-panel #toggle-flexible-workflow.active { background-color: #ffc107; color: #333; border-color: #e0a800; }
 .side-panel #toggle-flexible-workflow.active:hover:not(:disabled) { background-color: #e0a800; }
 
-/* --- Music Player Styles (Unchanged) --- */
+/* --- Music Player Styles --- */
 .track-info { font-size: 0.85em; color: #555; margin: 0 0 5px 0; text-align: center; font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 #current-track-name { font-weight: bold; color: #333; }
 .music-controls { display: flex; align-items: center; gap: 8px; justify-content: center; }
@@ -153,13 +140,89 @@ body {
 #volume-slider::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 14px; height: 14px; background: #007bff; border-radius: 50%; cursor: pointer; }
 #volume-slider::-moz-range-thumb { width: 14px; height: 14px; background: #007bff; border-radius: 50%; cursor: pointer; border: none; }
 
-/* --- Power-up Styles (Unchanged) --- */
-#powerup-spawn-area { position: absolute; top: 70px; left: 0; width: 100%; height: calc(100% - 70px); overflow: hidden; pointer-events: none; z-index: 500; }
-.powerup-token { position: absolute; width: 90px; height: 90px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.8); border: 3px solid #aaa; box-shadow: 0 3px 7px rgba(0, 0, 0, 0.35); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 30px; pointer-events: auto; user-select: none; background-size: contain; background-repeat: no-repeat; background-position: center; z-index: 501; transition: transform 0.1s ease-out, box-shadow 0.1s ease-out; }
-.powerup-token:hover { transform: scale(1.1); box-shadow: 0 5px 10px rgba(0, 0, 0, 0.45); }
-@keyframes fallAnimation { from { transform: translateY(-100px); opacity: 0.8; } to { transform: translateY(calc(100vh - 70px - 15px - 90px)); opacity: 1; } }
+/* --- Power-up Styles --- */
+#powerup-spawn-area {
+    position: absolute;
+    top: 70px; /* Below top bar */
+    left: 0;
+    width: 100%;
+    height: calc(100% - 70px); /* Fill remaining space */
+    overflow: hidden;
+    pointer-events: none; /* Area itself doesn't block clicks */
+    z-index: 500; /* Above main content, below modals */
+}
 
-/* --- Modal Styles (Unchanged) --- */
+.powerup-token {
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 3px solid #aaa;
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+    display: flex; /* For potential future content inside token */
+    align-items: center;
+    justify-content: center;
+    font-size: 30px; /* Example if text was inside */
+    pointer-events: auto; /* Tokens themselves ARE clickable */
+    user-select: none;
+    background-size: contain; /* Ensure image fits */
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 501; /* Above spawn area */
+    transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+
+    /* Apply BOTH falling and rotating animations */
+    /* Format: name duration timing-function delay iteration-count direction fill-mode */
+    /* Fall: 8s linear, stays at bottom | Rotate: 4s linear, infinite loop */
+    animation:
+        fallAnimation 8000ms linear 0s 1 normal forwards,
+        rotateAnimation 4000ms linear 0s infinite normal none;
+}
+
+.powerup-token:hover {
+    transform: scale(1.1); /* Existing hover effect */
+    /* Rotation continues during hover */
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.45);
+}
+
+/* --- Animations --- */
+/* Existing fall animation */
+@keyframes fallAnimation {
+    from {
+        /* Start above screen, slightly transparent */
+        transform: translateY(-100px);
+        opacity: 0.8;
+    }
+    to {
+        /* End near bottom, fully opaque */
+        /* Adjust end position calc: viewport height - top bar - bottom padding - token height */
+        transform: translateY(calc(100vh - 70px - 15px - 90px));
+        opacity: 1;
+    }
+}
+
+/* NEW rotation animation */
+@keyframes rotateAnimation {
+    from {
+        /* Start rotation (transform combines with translateY from fall) */
+        transform: rotate(0deg);
+    }
+    to {
+        /* End rotation (one full circle) */
+        transform: rotate(360deg);
+    }
+}
+
+/* Generic fade-in for modals */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* --- Modal Styles --- */
 .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center; text-align: center; }
 .modal.show { display: flex; }
 .modal-content { background-color: #fefefe; margin: auto; padding: 25px 30px; border: 1px solid #888; width: 80%; max-width: 550px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); position: relative; animation: fadeIn 0.3s ease-out; }
@@ -181,10 +244,7 @@ body {
 #tutorial-modal .modal-content { max-width: 650px; }
 #tutorial-modal h4 { margin-top: 20px; margin-bottom: 8px; color: #495057; }
 
-/* --- Animations (Unchanged) --- */
-@keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-
-/* --- Scrollbar styling (Unchanged) --- */
+/* --- Scrollbar styling --- */
 .side-panel::-webkit-scrollbar, .center-area::-webkit-scrollbar { width: 8px; }
 .side-panel::-webkit-scrollbar-track, .center-area::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
 .side-panel::-webkit-scrollbar-thumb, .center-area::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
