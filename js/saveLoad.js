@@ -1,106 +1,108 @@
 // js/saveLoad.js
 "use strict";
+// Imports gameState to allow modification during load
 import { gameState, initializeStructureState, getDefaultGameState } from './state.js';
-import { SAVE_KEY, buildingsConfig, upgradesConfig } from './config.js';
+import { SAVE_KEY, buildingsConfig, upgradesConfig } from './config.js'; // upgradesConfig needed for sanitization check
 import { restartBoostTimersOnLoad } from './powerups.js';
 import { calculateDerivedStats } from './engine.js';
 import { displaySaveStatus } from './ui.js';
 import { stopAllIntervals } from './main.js'; // Import interval control
 
 export function saveGame() {
-    // Allow saving even if paused, but maybe not if won? Or allow always?
-    // if (isGamePaused && !isGameWon) return; // Original logic
+    // Allow saving even if paused or won
     try {
-        // Create a shallow copy to avoid modifying the original gameState object directly
         const stateToSave = { ...gameState };
-        // Remove transient data that shouldn't be saved
+        // Don't save transient data like interval IDs or timeout IDs
         delete stateToSave.powerupTimeouts;
+
+        // --- Add potentially missing states if needed before saving ---
+        // Ensure audio related states are present if they exist in the running game
+        const musicEl = document.getElementById('background-music'); // Check directly if needed
+        if (musicEl) {
+             stateToSave.currentTrackIndex = stateToSave.currentTrackIndex ?? 0;
+             stateToSave.musicShouldBePlaying = stateToSave.musicShouldBePlaying ?? false;
+             stateToSave.lastVolume = stateToSave.lastVolume ?? 0.1;
+        }
+        // -----------------------------------------------------------
 
         localStorage.setItem(SAVE_KEY, JSON.stringify(stateToSave));
         displaySaveStatus(`Saved: ${new Date().toLocaleTimeString()}`);
     } catch (e) {
         console.error("Save error:", e);
-        displaySaveStatus("Save Error!", 5000);
-        // Consider more robust error handling, e.g., trying to save a backup
+        // Provide more specific feedback if possible (e.g., storage full)
+        if (e.name === 'QuotaExceededError') {
+            displaySaveStatus("Save Error: Storage Full!", 5000);
+        } else {
+            displaySaveStatus("Save Error!", 5000);
+        }
     }
 }
 
 export function loadGame() {
     const json = localStorage.getItem(SAVE_KEY);
-    let loadedState = getDefaultGameState(); // Start with default
+    let loadedState = null; // Start with null to clearly distinguish between load success/fail/no save
     let loadSuccessful = false;
 
     if (json) {
         try {
-            const data = JSON.parse(json);
-            // Carefully merge loaded data into the default state structure
-            // This prevents issues if the save format is slightly outdated
-            for (const key in loadedState) {
-                if (key === 'powerupTimeouts') continue; // Skip transient
+            loadedState = JSON.parse(json); // Attempt to parse saved data
 
-                if (data.hasOwnProperty(key)) {
-                    if (key === 'activeBoosts' && typeof data.activeBoosts === 'object' && data.activeBoosts !== null) {
-                        loadedState.activeBoosts = data.activeBoosts; // Overwrite boosts entirely
-                    } else if ((key === 'buildings' || key === 'upgrades') && typeof data[key] === 'object' && data[key] !== null) {
-                       // Merge buildings/upgrades carefully
-                       for(const id in data[key]) {
-                            // Only load data for buildings/upgrades that still exist in config
-                           if ((key === 'buildings' && buildingsConfig[id]) || (key === 'upgrades' && upgradesConfig[id])) {
-                               if (!loadedState[key][id]) loadedState[key][id] = {}; // Ensure sub-object exists
-                               // Merge known properties (e.g., count, purchased)
-                               if (data[key][id].hasOwnProperty('count')) loadedState[key][id].count = data[key][id].count;
-                               if (data[key][id].hasOwnProperty('purchased')) loadedState[key][id].purchased = data[key][id].purchased;
-                           }
-                       }
-                    } else if (typeof loadedState[key] !== 'object' || loadedState[key] === null) {
-                        // Overwrite simple values (numbers, strings, booleans)
-                        loadedState[key] = data[key];
-                    } else {
-                         // Potentially log unhandled object types during load
-                         console.warn(`Unhandled object type during load merge: ${key}`);
-                        // loadedState[key] = data[key]; // Or avoid overwriting complex objects unless explicitly handled
-                    }
-                }
-            }
-
-            // Once merged, sanitize and validate the structure
+            // IMPORTANT: Sanitize the loaded state AFTER parsing but BEFORE assigning to global state
+            // This applies defaults, removes deprecated items, checks types based on current config
             initializeStructureState(loadedState, false); // isInitial = false
             loadSuccessful = true;
+            console.log("Save data parsed successfully.");
 
         } catch (e) {
             console.error("Load error - save corrupted or incompatible:", e);
             displaySaveStatus("Load Error! Resetting.", 5000);
             localStorage.removeItem(SAVE_KEY); // Delete bad save
-            loadedState = getDefaultGameState(); // Reset to default
+            // Get a fresh default state
+            loadedState = getDefaultGameState(); // This already calls initializeStructureState(..., true)
+            loadSuccessful = false; // Indicate load failed, using defaults now
         }
     } else {
         console.log("No save found, starting new game.");
-        // No need to do anything, loadedState is already default
+        // Get a fresh default state
+        loadedState = getDefaultGameState(); // This already calls initializeStructureState(..., true)
+        loadSuccessful = false; // Not really a 'success' but indicates we're using defaults
     }
 
-     // Assign the potentially loaded (or default) state to the global gameState
-     Object.assign(gameState, loadedState);
+    // Assign the loaded (or default/reset) state to the global gameState
+    // Overwrite existing properties instead of reassigning the reference
+    Object.keys(loadedState).forEach(key => {
+        gameState[key] = loadedState[key];
+    });
+     // Remove keys from gameState that are no longer in the loaded/default state (e.g., after a reset or config change)
+     Object.keys(gameState).forEach(key => {
+         if (!loadedState.hasOwnProperty(key)) {
+             delete gameState[key];
+         }
+     });
 
 
-    // Restart timers AFTER gameState is fully updated
-    if (loadSuccessful) {
-        restartBoostTimersOnLoad();
-        console.log("Save Loaded.");
+    // Restart timers AFTER gameState is fully updated from loadedState
+    if (loadSuccessful && gameState.activeBoosts) { // Check if activeBoosts exists
+        restartBoostTimersOnLoad(); // Handles activeBoosts and clears old timeouts
+        console.log("Save Loaded and boost timers restarted.");
         displaySaveStatus("Save loaded.");
+    } else if (!loadSuccessful && !json) {
+        displaySaveStatus("New game started.");
     }
 
-    // Initial calculation after load/default setup
+    // Initial calculation after load/default setup is applied to gameState
     calculateDerivedStats();
 
+    // Return value could indicate if a *saved game* was successfully loaded vs starting fresh/reset
     return loadSuccessful;
 }
 
 export function deleteSave() {
     if (confirm("Are you sure you want to delete your save data? This cannot be undone.")) {
+        stopAllIntervals(); // Stop game loops before deleting/reloading
         localStorage.removeItem(SAVE_KEY);
         displaySaveStatus("Save deleted. Reloading...", 3000);
-        stopAllIntervals(); // Stop game loops before reloading
-        // Reload the page to start fresh
+        // Use a slightly longer timeout to ensure the message is seen before reload
         setTimeout(() => window.location.reload(), 1500);
     }
 }

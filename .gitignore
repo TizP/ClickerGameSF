@@ -1,2 +1,3 @@
 # Ignore the local Python server startup script
 /start_server.bat
+/script.js.old
