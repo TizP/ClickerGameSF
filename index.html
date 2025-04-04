@@ -57,7 +57,7 @@
             <div class="side-panel upgrades-panel">
                 <div class="panel-sticky-title">Upgrades & Training</div>
 
-                 <!-- Tiered Upgrade Categories (Containers populated by JS) -->
+                 <!-- Tiered Upgrade Categories -->
                  <h4 class="group-title">Manual Generation <span class="toggle-icon"></span></h4>
                  <div id="upgrade-category-manualGen" class="upgrade-category-container"></div>
                  <hr class="side-panel-hr">
@@ -73,23 +73,9 @@
                  <h4 class="group-title">Pipeline Efficiency <span class="toggle-icon"></span></h4>
                  <div id="upgrade-category-pipelineEfficiency" class="upgrade-category-container"></div>
                  <hr class="side-panel-hr">
-
-                 <!-- REMOVED Acquisition Rate Section -->
-                 <!-- <h4 class="group-title">Acquisition Rate <span class="toggle-icon"></span></h4>
-                 <div id="upgrade-category-acquisitionRate" class="upgrade-category-container"></div>
-                 <hr class="side-panel-hr"> -->
-
-                 <!-- REMOVED Acquisition Success Rate Section -->
-                 <!-- <h4 class="group-title">Acquisition Success Rate <span class="toggle-icon"></span></h4>
-                 <div id="upgrade-category-acquisitionSuccess" class="upgrade-category-container"></div>
-                 <hr class="side-panel-hr"> -->
-
-                 <!-- NEW Merged Acquisition Enhancement Section -->
                  <h4 class="group-title">Acquisition Enhancement <span class="toggle-icon"></span></h4>
                  <div id="upgrade-category-acquisitionEnhancement" class="upgrade-category-container"></div>
                  <hr class="side-panel-hr">
-                 <!-- END NEW Section -->
-
                  <h4 class="group-title">Acquisition Cost Reduction <span class="toggle-icon"></span></h4>
                  <div id="upgrade-category-acquisitionCost" class="upgrade-category-container"></div>
                  <hr class="side-panel-hr">
@@ -100,7 +86,7 @@
                  <div id="upgrade-category-customerGrowth" class="upgrade-category-container"></div>
                  <hr class="side-panel-hr">
 
-                 <!-- Special Upgrades Section (Unchanged Content Order) -->
+                 <!-- Special Upgrades Section -->
                  <h4 class="group-title">Special Upgrades</h4>
                  <button id="upgrade-costReductStrategic" class="upgrade-button" disabled title="Re-engineers the acquisition process for a massive reduction in cost per attempt (-33% multiplicative).">
                     <span>Strategic Cost Optimization</span> <span class="cost">Cost: $5M</span> <span class="effect">-33% Acq. Cost</span>
@@ -148,7 +134,7 @@
             <!-- Right Panel (Buildables) -->
              <div class="side-panel buildables-panel">
                 <div class="panel-sticky-title">Teams & Features</div>
-                 <!-- Build Categories (Structure unchanged) -->
+                 <!-- Build Categories -->
                  <h4 class="group-title">Lead Generation Teams <span class="toggle-icon"></span></h4>
                  <div class="build-category-container">
                      <button id="buy-sdr" class="build-button" disabled title="..."> <span class="build-title">SDR (<span class="count" id="sdr-count">0</span>)</span> <span class="effect" id="sdr-effect">...</span> <span class="cost" id="sdr-cost">...</span> </button>
@@ -192,18 +178,141 @@
 
     </div> <!-- End game-container -->
 
-    <!-- Modals (Update Tutorial Text) -->
-    <div id="credits-modal" class="modal"> <div class="modal-content"> <span class="close-button" id="close-credits-button" title="Close">×</span> <h2>Credits</h2> <!-- ... content ... --> </div> </div>
-    <div id="win-modal" class="modal"> <div class="modal-content"> <h2>Congratulations!</h2> <p>You've built a pipeline generating over <strong>$1 Billion!</strong></p> <p>You are a true Salesforce Pipeline Master!</p> <p>(Game Paused)</p> <button id="close-win-button" class="simple-button">Keep Playing</button> </div> </div>
-    <div id="stats-modal" class="modal"> <div class="modal-content"> <span class="close-button" id="close-stats-button" title="Close">×</span> <h2>Statistics</h2> <!-- ... content ... --> </div> </div>
-    <div id="tutorial-modal" class="modal"> <div class="modal-content"> <span class="close-button" id="close-tutorial-button" title="Close">×</span> <h2>Tutorial: How to Play</h2> <p>Welcome to the <strong>Salesforce Pipeline Simulator!</strong> Your goal is to build a massive sales pipeline and reach <strong>$1 Billion</strong> in revenue.</p> <h4>Core Resources:</h4> <!-- ... --> <h4>Generating Resources:</h4> <!-- ... --> <h4>Getting Customers (Acquisition):</h4> <!-- ... --> <h4>Generating Money:</h4> <!-- ... -->
-        <h4>Upgrades & Training (Left Panel):</h4>
-        <ul> <li>Spend L, O, $, or Cust on upgrades to: <ul> <li>Boost manual clicks.</li> <li>Boost Team/Feature output (multipliers, percentages).</li> <li>Improve overall efficiency.</li>
-                <!-- Updated line -->
-                <li>Improve Acquisition Rate (CAR), Success %, or reduce Cost.</li>
-                <!-- End Update -->
-                <li>Increase Customer Value Rate (CVR).</li> <li>Purchase special upgrades (e.g., Flexible Workflow, Veteran Pipeline Operator).</li> <li>Gain bonuses by spending Customers.</li> </ul> </li> <li><strong>Tiered Upgrades:</strong> Purchase all Tier 1 upgrades in a category to unlock powerful Tier 2 upgrades.</li></ul> <h4>Teams & Features (Right Panel):</h4> <!-- ... --><h4>Special Upgrades:</h4> <!-- ... --> <h4>Power-ups (Falling Tokens):</h4> <!-- ... --> <h4>Goal & Saving:</h4> <!-- ... --> <p>Good luck!</p> </div> </div>
-    <div id="settings-modal" class="modal"> <div class="modal-content"> <span class="close-button" id="close-settings-button" title="Close">×</span> <h2>Settings</h2> <!-- ... content ... --> </div> </div>
+    <!-- Modals -->
+    <div id="credits-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="close-credits-button" title="Close">×</span>
+            <h2>Credits</h2>
+            <p><strong>Game Design & Development:</strong></p>
+            <ul><li>Tizp</li><li>AI Assistant (Gemini)</li></ul>
+            <p><strong>Music:</strong></p>
+            <p>"Batty McFaddin - Slower"<br> "Pixelland"<br> "Disco con Tutti"<br> "Fox Tale Waltz Part 1 Instrumental"<br> "Mining by Moonlight"<br> "Space Jazz"<br> "Surf Shimmy"<br> <br> All music by Kevin MacLeod (incompetech.com)<br> Licensed under Creative Commons: By Attribution 4.0 License<br> <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">http://creativecommons.org/licenses/by/4.0/</a></p>
+            <p><strong>Sound Effects:</strong></p> <p>"Cash Register Kaching" by Modestas123123 from Pixabay</p>
+            <p>"Collect Point" (collect-5930.mp3) by freesound_community from Pixabay</p>
+            <p><strong>Images:</strong></p>
+            <p>Lead/Opportunity Button Images Generated by Gemini</p>
+            <p>Favicon & Power-up Images: Various memes found online</p>
+            <p><i>Game concept inspired by Cookie Clicker and other incremental games.</i></p>
+        </div>
+    </div>
+
+    <div id="win-modal" class="modal">
+        <div class="modal-content">
+            <h2>Congratulations!</h2>
+            <p>You've built a pipeline generating over <strong>$1 Billion!</strong></p>
+            <p>You are a true Salesforce Pipeline Master!</p>
+            <p>(Game Paused)</p>
+            <button id="close-win-button" class="simple-button">Keep Playing</button>
+        </div>
+    </div>
+
+    <div id="stats-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="close-stats-button" title="Close">×</span>
+            <h2>Statistics</h2>
+            <div class="stats-list">
+                <p>Game Time: <span id="stat-game-time">0s</span></p> <hr>
+                <p>Lead Clicks: <span id="stat-lead-clicks">0</span></p>
+                <p>Opportunity Clicks: <span id="stat-opp-clicks">0</span></p>
+                <p>Manual Leads: <span id="stat-manual-leads">0</span></p>
+                <p>Manual Opportunities: <span id="stat-manual-opps">0</span></p> <hr>
+                <p>Auto Leads Generated: <span id="stat-auto-leads">0</span></p>
+                <p>Auto Opportunities Generated: <span id="stat-auto-opps">0</span></p> <hr>
+                <p>Acquisition Attempts: <span id="stat-acq-attempts">0</span></p>
+                <p>Successful Acquisitions: <span id="stat-acq-success">0</span></p>
+                <p>Failed Acquisitions: <span id="stat-acq-failed">0</span></p> <hr>
+                <p>Power-ups Clicked: <span id="stat-powerups-clicked">0</span></p> <hr>
+                <p>Total Money Earned: $<span id="stat-total-money">0.00</span></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="tutorial-modal" class="modal">
+        <div class="modal-content">
+             <span class="close-button" id="close-tutorial-button" title="Close">×</span>
+             <h2>Tutorial: How to Play</h2>
+             <p>Welcome to the <strong>Salesforce Pipeline Simulator!</strong> Your goal is to build a massive sales pipeline and reach <strong>$1 Billion</strong> in revenue.</p>
+             <h4>Core Resources:</h4>
+             <ul>
+                <li><strong>Leads (L):</strong> Raw potential. Generated via clicks or Teams/Features. Spent on upgrades, Teams/Features, & Acquisition.</li>
+                <li><strong>Opportunities (Opps/O):</strong> Qualified potential. Generated via clicks or Teams/Features. Spent on upgrades, Teams/Features, & Acquisition.</li>
+                <li><strong>Customers (Cust):</strong> Source of revenue! Acquired by spending L & O. Spent on powerful late-game upgrades.</li>
+                <li><strong>Money ($):</strong> Your score! Generated by Customers. Spent on efficiency upgrades.</li>
+             </ul>
+             <h4>Generating Resources:</h4>
+             <ul>
+                <li><strong>Manual Clicks:</strong> Click Lead/Opp buttons in center. Upgrades boost amount/click.</li>
+                <li><strong>Teams & Features (Right Panel):</strong> Buy items to generate L/S or O/S automatically. Costs increase per purchase.</li>
+             </ul>
+             <h4>Getting Customers (Acquisition):</h4>
+             <ul>
+                <li>Game automatically attempts to convert L & O into Customers.</li>
+                <li><strong>Acquisition Cost:</strong> L & O cost per attempt (shown in center stats). Increases with Customers, reducible by upgrades and new buildings.</li>
+                <li><strong>Acquisition Rate (CAR):</strong> Attempts/second. Increase via upgrades.</li>
+                <li><strong>Acquisition Success:</strong> % chance an attempt succeeds. Increase via upgrades. Failure still costs L & O!</li>
+                <li><strong>Pause Acquisition:</strong> Top bar button pauses L/O consumption for attempts.</li>
+             </ul>
+             <h4>Generating Money:</h4>
+             <ul>
+                <li>Each Customer generates $/sec based on <strong>Customer Value Rate (CVR)</strong>.</li>
+                <li>Increase CVR via upgrades and new buildings.</li>
+             </ul>
+             <h4>Upgrades & Training (Left Panel):</h4>
+             <ul>
+                 <li>Spend L, O, $, or Cust on upgrades to:
+                     <ul>
+                         <li>Boost manual clicks.</li>
+                         <li>Boost Team/Feature output (multipliers, percentages).</li>
+                         <li>Improve overall efficiency.</li>
+                         <li>Improve Acquisition Rate (CAR), Success %, or reduce Cost.</li>
+                         <li>Increase Customer Value Rate (CVR).</li>
+                         <li>Purchase special upgrades (e.g., Flexible Workflow, Veteran Pipeline Operator).</li>
+                         <li>Gain bonuses by spending Customers.</li>
+                     </ul>
+                 </li>
+                 <li><strong>Tiered Upgrades:</strong> Purchase all Tier 1 upgrades in a category to unlock powerful Tier 2 upgrades.</li>
+            </ul>
+             <h4>Teams & Features (Right Panel):</h4>
+             <ul>
+                <li>Purchase buildings for passive L/S, O/S, or other effects.</li>
+                <li><strong>Customer Success Buildings:</strong> Provide unique bonuses like reducing Acquisition Cost, boosting CVR based on other buildings, or reducing the cost of other buildings.</li>
+            </ul>
+             <h4>Special Upgrades:</h4>
+             <ul>
+                <li><strong>Flexible Workflow:</strong> Purchase to unlock a toggle button. When active, reduces the generation rate of the resource you currently have *more* of (L or O) by 50%, and adds that generation rate to the resource you have *less* of. Aims to balance the *total amounts* of Leads and Opportunities. Deactivates automatically when amounts become roughly equal.</li>
+                <li><strong>Veteran Pipeline Operator:</strong> Increases your Money per Second based on total playtime. The bonus starts at 0% and increases by +100% MPS per hour played, capping at a maximum of +200% bonus after 2 hours of playtime.</li>
+            </ul>
+             <h4>Power-ups (Falling Tokens):</h4>
+             <ul>
+                 <li>Occasionally (approx. every 5 minutes), circular tokens will fall from the top of the screen.</li>
+                <li>Click a token before it disappears off the bottom to activate a temporary boost!</li>
+                <li>Possible boosts include increased L/S & O/S, more powerful clicks, increased M/S, or higher CVR.</li>
+            </ul>
+             <h4>Goal & Saving:</h4>
+             <ul>
+                 <li>Reach <strong>$1 Billion</strong>!</li>
+                 <li>Auto-saves every 30 seconds. Use top bar buttons for manual save/delete.</li>
+             </ul>
+             <p>Good luck!</p>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="close-settings-button" title="Close">×</span>
+            <h2>Settings</h2>
+            <div class="settings-content">
+                 <p>Game controls and options.</p>
+                 <hr style="margin: 15px 0;">
+                 <button id="soft-refresh-button" class="simple-button" title="Reloads the game state from the last save and restarts intervals. Useful if UI seems stuck. Does NOT clear progress.">
+                     Soft Refresh Game
+                 </button>
+                 <p style="font-size: 0.8em; color: #666; margin-top: 5px;">
+                     (Reloads from last save - any unsaved progress might be lost)
+                 </p>
+            </div>
+        </div>
+    </div>
 
     <!-- Load main script as module -->
     <script type="module" src="js/main.js" defer></script>
