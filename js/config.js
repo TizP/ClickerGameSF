@@ -1,7 +1,7 @@
 // js/config.js
 "use strict";
 
-export const GAME_VERSION = "v1.36-cvr-boost"; // Version bump for CVR boost
+export const GAME_VERSION = "v1.37-cust-growth-rebal"; // Version bump for customer growth rebalance
 export const SAVE_KEY = `salesforcePipelineSaveData_v${GAME_VERSION}`; // Updated key
 export const TICK_INTERVAL_MS = 100;
 export const DISPLAY_UPDATE_INTERVAL_MS = 250;
@@ -83,7 +83,6 @@ export const buildingsConfig = {
 
 // Tiered Upgrade Structure
 export const upgradesConfig = {
-    // --- Other Categories Unchanged ---
     manualGen: {
         name: "Manual Generation",
         tier1: {
@@ -151,158 +150,59 @@ export const upgradesConfig = {
             efficiencyMastery: { name: "Efficiency Mastery", cost: 25000000, costCurrency: 'money', effect: (state) => { state.buildingEfficiencyMultiplier += 0.50; }, description: "+50% Team/Feature Output" }
         }
     },
-    acquisitionEnhancement: { // Merged category
+    acquisitionEnhancement: {
         name: "Acquisition Enhancement",
         tier1: {
-            acqEnhance1: {
-                name: "Basic Closing Tactics",
-                costLeads: 10000, costOpps: 10000, costCurrency: 'both',
-                effect: (state) => { state.baseCAR += 0.20; },
-                description: "+0.20 Acq. Rate/s"
-            },
-            acqEnhance2: {
-                name: "Advanced Sales Cadence",
-                costLeads: 50000, costOpps: 50000, costCurrency: 'both',
-                effect: (state) => {
-                    state.baseCAR += 0.50;
-                    state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.05);
-                },
-                description: "+0.50 Acq. Rate/s, +5% Success"
-            },
-            acqEnhance3: {
-                name: "Optimized Sales Playbook",
-                costLeads: 250000, costOpps: 250000, costCurrency: 'both',
-                effect: (state) => {
-                    state.baseCAR += 1.00;
-                    state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.07);
-                 },
-                 description: "+1.00 Acq. Rate/s, +7% Success"
-            },
+            acqEnhance1: { name: "Basic Closing Tactics", costLeads: 10000, costOpps: 10000, costCurrency: 'both', effect: (state) => { state.baseCAR += 0.20; }, description: "+0.20 Acq. Rate/s" },
+            acqEnhance2: { name: "Advanced Sales Cadence", costLeads: 50000, costOpps: 50000, costCurrency: 'both', effect: (state) => { state.baseCAR += 0.50; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.05); }, description: "+0.50 Acq. Rate/s, +5% Success" },
+            acqEnhance3: { name: "Optimized Sales Playbook", costLeads: 250000, costOpps: 250000, costCurrency: 'both', effect: (state) => { state.baseCAR += 1.00; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.07); }, description: "+1.00 Acq. Rate/s, +7% Success" },
         },
         tier2: {
-            acqEnhanceMastery1: {
-                name: "Master Closer Program",
-                cost: 5000000, costCurrency: 'opportunities',
-                effect: (state) => {
-                    state.baseCAR += 2.00;
-                    state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.15);
-                },
-                description: "+2.00 Acq. Rate/s, +15% Acq. Success"
-            },
-            acqEnhanceMastery2: {
-                name: "Deal Velocity Engine",
-                cost: 25000000, costCurrency: 'leads',
-                effect: (state) => {
-                    state.baseCAR += 5.00;
-                    state.customerCostReductionMultiplier *= 0.67;
-                },
-                description: "+5.00 Acq. Rate/s, -33% Customer Cost"
-             }
+            acqEnhanceMastery1: { name: "Master Closer Program", cost: 5000000, costCurrency: 'opportunities', effect: (state) => { state.baseCAR += 2.00; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.15); }, description: "+2.00 Acq. Rate/s, +15% Acq. Success" },
+            acqEnhanceMastery2: { name: "Deal Velocity Engine", cost: 25000000, costCurrency: 'leads', effect: (state) => { state.baseCAR += 5.00; state.customerCostReductionMultiplier *= 0.67; }, description: "+5.00 Acq. Rate/s, -33% Customer Cost" }
         }
     },
-    acquisitionCost: { // Standalone Cost Reduction Category
+    acquisitionCost: {
         name: "Acquisition Cost Reduction",
         tier1: {
-            costReduct1: {
-                name: "Lead Qual. Refinement", cost: 5000, costCurrency: 'leads',
-                effect: (state) => { state.customerCostReductionMultiplier *= 0.90; },
-                description: "-10% Customer Cost"
-            },
-            costReduct2: {
-                name: "ICP Tuning", cost: 50000, costCurrency: 'leads',
-                effect: (state) => { state.customerCostReductionMultiplier *= 0.80; },
-                description: "-20% Customer Cost"
-            },
-            costReduct3: {
-                name: "Targeted Marketing Segments", cost: 300000, costCurrency: 'leads',
-                effect: (state) => { state.customerCostReductionMultiplier *= 0.70; },
-                description: "-30% Customer Cost"
-            },
+            costReduct1: { name: "Lead Qual. Refinement", cost: 5000, costCurrency: 'leads', effect: (state) => { state.customerCostReductionMultiplier *= 0.90; }, description: "-10% Customer Cost" },
+            costReduct2: { name: "ICP Tuning", cost: 50000, costCurrency: 'leads', effect: (state) => { state.customerCostReductionMultiplier *= 0.80; }, description: "-20% Customer Cost" },
+            costReduct3: { name: "Targeted Marketing Segments", cost: 300000, costCurrency: 'leads', effect: (state) => { state.customerCostReductionMultiplier *= 0.70; }, description: "-30% Customer Cost" },
         },
         tier2: {
-            costReductionMastery: {
-                name: "Acquisition Cost Mastery", cost: 5000000, costCurrency: 'leads',
-                effect: (state) => { state.customerCostReductionMultiplier *= 0.50; },
-                description: "-50% Customer Cost"
-            }
+            costReductionMastery: { name: "Acquisition Cost Mastery", cost: 5000000, costCurrency: 'leads', effect: (state) => { state.customerCostReductionMultiplier *= 0.50; }, description: "-50% Customer Cost" }
         }
     },
-    customerValue: { // Customer Value Rate Category - UPDATED
+    customerValue: {
         name: "Customer Value Rate",
         tier1: {
-            cvrBoost1:  {
-                name: "Customer Onboarding", cost: 25000, costCurrency: 'leads',
-                effect: (state) => { state.baseCVR += 1.00; }, // Changed from +0.50
-                description: "+$1.00 Value Rate" // Changed from +$0.50
-            },
-            cvrBoost2:  {
-                name: "Enhanced Support Tier", cost: 300000, costCurrency: 'leads',
-                effect: (state) => { state.baseCVR += 5.00; }, // Changed from +1.00
-                description: "+$5.00 Value Rate" // Changed from +$1.00
-            },
-            cvrBoost3:  {
-                name: "Dedicated CSM Program", cost: 2000000, costCurrency: 'leads',
-                effect: (state) => { state.baseCVR += 25.00; }, // Changed from +5.00
-                description: "+$25.00 Value Rate" // Changed from +$5.00
-            },
-            cvrBoostPercent: { // Unchanged
-                name: "Premier Success Plan", cost: 15000000, costCurrency: 'leads',
-                effect: (state) => { state.cvrMultiplierBonus = (state.cvrMultiplierBonus || 1.0) * 1.25; },
-                description: "+25% Value Rate"
-            },
-            cvrBoostPercent2: { // Unchanged
-                name: "Signature Success Plan", cost: 100000000, costCurrency: 'opportunities',
-                effect: (state) => { state.cvrMultiplierBonus = (state.cvrMultiplierBonus || 1.0) * 1.50; },
-                description: "+50% Value Rate"
-            },
+            cvrBoost1:  { name: "Customer Onboarding", cost: 25000, costCurrency: 'leads', effect: (state) => { state.baseCVR += 1.00; }, description: "+$1.00 Value Rate" },
+            cvrBoost2:  { name: "Enhanced Support Tier", cost: 300000, costCurrency: 'leads', effect: (state) => { state.baseCVR += 5.00; }, description: "+$5.00 Value Rate" },
+            cvrBoost3:  { name: "Dedicated CSM Program", cost: 2000000, costCurrency: 'leads', effect: (state) => { state.baseCVR += 25.00; }, description: "+$25.00 Value Rate" },
+            cvrBoostPercent: { name: "Premier Success Plan", cost: 15000000, costCurrency: 'leads', effect: (state) => { state.cvrMultiplierBonus = (state.cvrMultiplierBonus || 1.0) * 1.25; }, description: "+25% Value Rate" },
+            cvrBoostPercent2: { name: "Signature Success Plan", cost: 100000000, costCurrency: 'opportunities', effect: (state) => { state.cvrMultiplierBonus = (state.cvrMultiplierBonus || 1.0) * 1.50; }, description: "+50% Value Rate"},
         },
         tier2: {
-            cvrMastery: { // Unchanged
-                name: "Customer Value Mastery", cost: 500000000, costCurrency: 'leads',
-                effect: (state) => { state.cvrMultiplierBonus = (state.cvrMultiplierBonus || 1.0) * 2.00; },
-                description: "x2 Value Rate"
-            }
+            cvrMastery: { name: "Customer Value Mastery", cost: 500000000, costCurrency: 'leads', effect: (state) => { state.cvrMultiplierBonus = (state.cvrMultiplierBonus || 1.0) * 2.00; }, description: "x2 Value Rate" }
         }
     },
      customerGrowth: {
         name: "Customer Driven Growth",
         tier1: {
             custGrowth1: { name: "Loyal Customer Referrals", cost: 10, costCurrency: 'customers', effect: (state) => { state.custUpgradeBonusCAR += 0.10; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.03); }, description: "+0.1 Acq Rate/s, +3% Success" },
-            custGrowth2: { name: "Customer Advisory Board", cost: 50, costCurrency: 'customers', effect: (state) => { state.custUpgradeBonusCAR += 0.30; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.05); }, description: "+0.3 Acq Rate/s, +5% Success" },
-            custGrowth3: { name: "Voice of Customer Program", cost: 250, costCurrency: 'customers', effect: (state) => { state.custUpgradeBonusCAR += 0.50; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.10); state.custUpgradeBonusCVR += 1.00; }, description: "+0.5 Acq Rate/s, +10% Success, +$1 CVR" },
-            custGrowth4: { name: "Strategic Account Management", cost: 1000, costCurrency: 'customers', effect: (state) => { state.customerCostReductionMultiplier *= 0.90; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.10); state.custUpgradeBonusCVR += 1.00; }, description: "-10% Acq Cost, +10% Success, +$1 CVR" },
-            custGrowth5: { name: "Community Champion Program", cost: 5000, costCurrency: 'customers', effect: (state) => { state.custUpgradeBonusCAR += 1.00; state.custGlobalMultiplier = (state.custGlobalMultiplier || 1.0) * 1.25; state.cvrCustomerMultiplier = (state.cvrCustomerMultiplier || 1.0) * 1.15; }, description: "+1.0 Acq Rate/s, +25% Output, +15% CVR" },
+            custGrowth2: { name: "Customer Advisory Board", cost: 50, costCurrency: 'customers', effect: (state) => { state.custUpgradeBonusCAR += 0.50; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.05); }, description: "+0.5 Acq Rate/s, +5% Success" },
+            custGrowth3: { name: "Voice of Customer Program", cost: 250, costCurrency: 'customers', effect: (state) => { state.custUpgradeBonusCAR += 1.50; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.10); state.custUpgradeBonusCVR += 3.00; }, description: "+1.5 Acq Rate/s, +10% Success, +$3 CVR" },
+            custGrowth4: { name: "Strategic Account Management", cost: 1000, costCurrency: 'customers', effect: (state) => { state.customerCostReductionMultiplier *= 0.85; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.10); state.custUpgradeBonusCVR += 7.00; }, description: "-15% Acq Cost, +10% Success, +$7 CVR" },
+            custGrowth5: { name: "Community Champion Program", cost: 5000, costCurrency: 'customers', effect: (state) => { state.customerCostReductionMultiplier *= 0.75; state.custGlobalMultiplier = (state.custGlobalMultiplier || 1.0) * 1.25; state.cvrCustomerMultiplier = (state.cvrCustomerMultiplier || 1.0) * 1.25; }, description: "-25% Acq Cost, +25% Output, +25% CVR" },
         },
         tier2: {
-             custGrowthMastery: { name: "Customer Growth Mastery", cost: 15000, costCurrency: 'customers', effect: (state) => {
-                 state.custUpgradeBonusCAR += 1.50;
-                 state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.10);
-                 state.customerCostReductionMultiplier *= 0.85;
-                 state.custUpgradeBonusCVR += 3.00;
-                 state.custGlobalMultiplier = (state.custGlobalMultiplier || 1.0) * 1.20;
-             }, description: "+1.5 CAR, +10% Success, -15% Cost, +$3 CVR, +20% Output" }
+             custGrowthMastery: { name: "Customer Growth Mastery", cost: 15000, costCurrency: 'customers', effect: (state) => { state.custUpgradeBonusCAR += 2.50; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.10); state.customerCostReductionMultiplier *= 0.67; state.cvrCustomerMultiplier = (state.cvrCustomerMultiplier || 1.0) * 1.33; state.custGlobalMultiplier = (state.custGlobalMultiplier || 1.0) * 1.33; }, description: "+2.5 CAR, +10% Success, -33% Cost, +33% CVR, +33% Output" }
         }
     },
-    // Special Category
     special: {
         name: "Special Upgrades",
-        costReductStrategic: {
-            name: "Strategic Cost Optimization",
-            cost: 5000000, costCurrency: 'money',
-            effect: (state) => { state.customerCostReductionMultiplier *= 0.67; },
-            description: "-33% Acq. Cost"
-        },
-        playtimeMPSBoost: {
-            name: "Veteran Pipeline Operator",
-            costMoney: 10000000, // $10 Million
-            costCustomers: 1000, // 1k Customers
-            description: "Increases MPS by +100% per hour played (capped at +200% after 2 hours)."
-        },
-        flexibleWorkflow: {
-            name: "Flexible Workflow",
-            costMoney: 10000,
-            costCustomers: 100,
-            description: "Enables Workflow Toggle"
-        },
+        costReductStrategic: { name: "Strategic Cost Optimization", cost: 5000000, costCurrency: 'money', effect: (state) => { state.customerCostReductionMultiplier *= 0.67; }, description: "-33% Acq. Cost" },
+        playtimeMPSBoost: { name: "Veteran Pipeline Operator", costMoney: 10000000, costCustomers: 1000, description: "Increases MPS by +100% per hour played (capped at +200% after 2 hours)." },
+        flexibleWorkflow: { name: "Flexible Workflow", costMoney: 10000, costCustomers: 100, description: "Enables Workflow Toggle" },
     }
  };

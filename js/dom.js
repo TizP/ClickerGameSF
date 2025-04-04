@@ -4,52 +4,55 @@ import { buildingsConfig, upgradesConfig } from './config.js';
 
 export const domElements = {};
 
-const essentialIds = [ // IDs considered critical for basic function
+// IDs considered essential for basic function, error thrown if missing
+const essentialIds = [
     'leads', 'opportunities', 'customers', 'money', 'lps', 'ops', 'mps',
     'leads-per-click', 'opps-per-click', 'car', 'success-chance', 'cvr', 'cust-cost',
     'click-lead-button', 'click-opp-button', 'background-music', 'volume-slider',
     'mute-button', 'powerup-spawn-area', 'active-powerup-display', 'save-status',
-    'toggle-acquisition-button', 'toggle-flexible-workflow'
+    'toggle-acquisition-button', 'toggle-flexible-workflow' // Core interactive elements
 ];
 
 export function cacheDOMElements() {
     console.log("Starting DOM Caching...");
-    const ids = [
-        // Core Display
+    // Combine static IDs with dynamically generated ones needed for core updates
+    const idsToCache = [
+        // Core Display Spans
         'leads', 'opportunities', 'customers', 'money', 'lps', 'ops', 'mps',
-        'leads-per-click', 'opps-per-click', 'lead-click-base-p', 'opp-click-base-p',
-        'car', 'success-chance', 'cvr', 'cust-cost',
-        // Clickers
+        'leads-per-click', 'opps-per-click', 'car', 'success-chance', 'cvr', 'cust-cost',
+        'lead-click-base-p', 'opp-click-base-p', // Paragraphs for tooltips
+        // Clicker Buttons
         'click-lead-button', 'click-opp-button',
-        // Top Bar Misc
-        'save-status', 'active-powerup-display', 'game-version',
-        // Audio
-        'background-music', 'current-track-name', 'play-pause-button', 'play-pause-icon',
-        'next-track-button', 'volume-slider', 'mute-button',
-        'sfx-purchase', 'sfx-powerup-click',
+        // Top Bar Elements
+        'save-status', 'active-powerup-display', 'game-version', 'current-track-name',
+        'play-pause-button', 'play-pause-icon', 'next-track-button', 'volume-slider', 'mute-button',
+        'toggle-acquisition-button', 'save-button', 'delete-save-button',
+        'settings-button', 'stats-button', 'tutorial-button', 'credits-button',
+        // Special Upgrade Buttons (Hardcoded IDs)
+        'upgrade-costReductStrategic', 'upgrade-playtimeMPSBoost', 'upgrade-flexibleWorkflow',
+        'toggle-flexible-workflow',
+        // Audio Elements
+        'background-music', 'sfx-purchase', 'sfx-powerup-click',
         // Modals & Controls
-        'credits-modal', 'close-credits-button', 'credits-button',
+        'credits-modal', 'close-credits-button',
         'win-modal', 'close-win-button',
-        'stats-modal', 'close-stats-button', 'stats-button',
-        'tutorial-modal', 'close-tutorial-button', 'tutorial-button',
-        'settings-modal', 'close-settings-button', 'settings-button', 'soft-refresh-button',
-        // Stats Modal Content
+        'stats-modal', 'close-stats-button',
+        'tutorial-modal', 'close-tutorial-button',
+        'settings-modal', 'close-settings-button', 'soft-refresh-button',
+        // Stats Modal Content Spans
         'stat-game-time', 'stat-lead-clicks', 'stat-opp-clicks', 'stat-manual-leads', 'stat-manual-opps',
         'stat-auto-leads', 'stat-auto-opps', 'stat-acq-attempts', 'stat-acq-success', 'stat-acq-failed',
         'stat-total-money', 'stat-powerups-clicked',
-        // Top Bar Buttons
-        'save-button', 'delete-save-button', 'toggle-acquisition-button',
-        'toggle-flexible-workflow',
         // Misc
         'powerup-spawn-area'
-        // Note: Dynamic elements like upgrade buttons or category containers are NOT cached here.
+        // Note: Dynamic upgrade category containers and building/upgrade buttons inside them are NOT cached here.
     ];
 
     let foundCount = 0;
     let missingEssential = [];
 
     // Cache standard elements by ID
-    ids.forEach(id => {
+    idsToCache.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             domElements[id] = el;
@@ -58,55 +61,39 @@ export function cacheDOMElements() {
             // Log critical errors for essential elements
             console.error(`CRITICAL: Essential DOM Element not found: ${id}`);
             missingEssential.push(id);
-        } else {
-            // Log warnings for non-essential elements (can help debugging)
-            // Optional: Comment this out if console gets too noisy during development
-            // console.warn(`DOM Element not found (non-essential): ${id}`);
         }
+        // Optional: Log warnings for non-essential elements
+        // else { console.warn(`DOM Element not found (non-essential): ${id}`); }
     });
 
-    // Cache Building Buttons and their info spans
+    // Cache Building Button related elements (button, count, cost, effect spans)
     for (const id in buildingsConfig) {
-        // Use a consistent naming scheme: buy-ID, ID-count, ID-cost, ID-effect
-        const suffixes = ['count', 'cost', 'effect'];
-        const buyElId = `buy-${id}`;
-        const buyEl = document.getElementById(buyElId);
-        if (buyEl) {
-             domElements[buyElId] = buyEl;
-             foundCount++;
-        } else {
-             // Warn if the main button is missing
-             console.warn(`DOM Element not found for building button: ${buyElId}`);
-        }
+        const buyButtonId = `buy-${id}`;
+        const countSpanId = `${id}-count`;
+        const costSpanId = `${id}-cost`;
+        const effectSpanId = `${id}-effect`;
 
-        // Cache the associated spans, warning if they are missing
-        suffixes.forEach(suffix => {
-            const elId = `${id}-${suffix}`;
-            const el = document.getElementById(elId);
-            if (el) {
-                 domElements[elId] = el;
-                 foundCount++;
-            } else {
-                 // Warn if info spans are missing, as UI updates might fail
-                 console.warn(`DOM Element not found for building info span: ${elId}`);
-            }
-        });
+        const buyButton = document.getElementById(buyButtonId);
+        const countSpan = document.getElementById(countSpanId);
+        const costSpan = document.getElementById(costSpanId);
+        const effectSpan = document.getElementById(effectSpanId);
+
+        if (buyButton) { domElements[buyButtonId] = buyButton; foundCount++; }
+        else { console.warn(`DOM Element not found for building button: ${buyButtonId}`); }
+
+        if (countSpan) { domElements[countSpanId] = countSpan; foundCount++; }
+        else { console.warn(`DOM Element not found for building info span: ${countSpanId}`); }
+
+        if (costSpan) { domElements[costSpanId] = costSpan; foundCount++; }
+        else { console.warn(`DOM Element not found for building info span: ${costSpanId}`); }
+
+        if (effectSpan) { domElements[effectSpanId] = effectSpan; foundCount++; }
+        else { console.warn(`DOM Element not found for building info span: ${effectSpanId}`); }
     }
 
-    // Cache Special (Hardcoded) Upgrade Buttons
-    for (const id in upgradesConfig.special) {
-        if (id === 'name') continue; // Skip the 'name' property used for grouping
-        const elId = `upgrade-${id}`;
-        const el = document.getElementById(elId);
-        if (el) {
-             domElements[elId] = el;
-             foundCount++;
-        } else {
-             console.warn(`DOM Element not found for special upgrade: ${elId}`);
-        }
-    }
+    // Note: Special upgrade buttons were already included in idsToCache by their specific IDs
 
-    console.log(`Finished DOM Caching. Found: ${foundCount}`);
+    console.log(`Finished DOM Caching. Found: ${foundCount} elements.`);
     if (missingEssential.length > 0) {
          // Alert and throw error only if ESSENTIAL elements are missing
          console.error("Missing essential elements:", missingEssential.join(', '));

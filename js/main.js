@@ -1,17 +1,15 @@
 // js/main.js - Main entry point
 "use strict";
 
-import { GAME_VERSION, TICK_INTERVAL_MS, DISPLAY_UPDATE_INTERVAL_MS, BUTTON_UPDATE_INTERVAL_MS, AUTO_SAVE_INTERVAL_MS, POWERUP_SPAWN_INTERVAL_MS, WIN_AMOUNT, playlist } from './config.js'; // Added playlist
+import { GAME_VERSION, TICK_INTERVAL_MS, DISPLAY_UPDATE_INTERVAL_MS, BUTTON_UPDATE_INTERVAL_MS, AUTO_SAVE_INTERVAL_MS, POWERUP_SPAWN_INTERVAL_MS, WIN_AMOUNT, playlist } from './config.js';
 import { cacheDOMElements, domElements } from './dom.js';
-import { gameState, isGameWon, isGamePaused, setGamePaused, setGameWon, getDefaultGameState, initializeStructureState } from './state.js'; // Added getDefaultGameState, initializeStructureState for potential reset use
+import { gameState, isGameWon, isGamePaused, setGamePaused, setGameWon, getDefaultGameState, initializeStructureState } from './state.js';
 import { loadGame, saveGame } from './saveLoad.js';
-// Import audio functions needed for refresh
-import { setVolume, loadTrack, updateMuteButtonVisuals, playCurrentTrack, pauseCurrentTrack, updatePlayPauseIcon } from './audio.js'; // Added pause/update icons
-// Import UI functions needed for refresh
-import { updateDisplay, updateButtonStates, triggerWin, hideSettings, displaySaveStatus, updateAcquisitionButtonVisuals, updateFlexibleWorkflowToggleButtonVisuals } from './ui.js'; // Added toggle button updates
+import { setVolume, loadTrack, updateMuteButtonVisuals, playCurrentTrack, pauseCurrentTrack, updatePlayPauseIcon } from './audio.js';
+import { updateDisplay, updateButtonStates, triggerWin, hideSettings, displaySaveStatus, updateAcquisitionButtonVisuals, updateFlexibleWorkflowToggleButtonVisuals } from './ui.js';
 import { setupEventListeners } from './events.js';
 import { gameLoop, calculateDerivedStats } from './engine.js';
-import { trySpawnPowerup, startPowerupSpawning, stopPowerupSpawning, removeActivePowerupToken, restartBoostTimersOnLoad } from './powerups.js'; // Added removeActivePowerupToken, restartBoostTimersOnLoad
+import { trySpawnPowerup, startPowerupSpawning, stopPowerupSpawning, removeActivePowerupToken, restartBoostTimersOnLoad } from './powerups.js';
 
 // --- Interval Management ---
 let gameLoopIntervalId = null;
@@ -49,7 +47,7 @@ export function startGameIntervals() {
     console.log(`Button update loop started (${BUTTON_UPDATE_INTERVAL_MS}ms).`);
 
     // Start autosave
-    autoSaveIntervalId = setInterval(() => { saveGame(); }, AUTO_SAVE_INTERVAL_MS); // Wrap saveGame to ensure no arguments passed unintentionally
+    autoSaveIntervalId = setInterval(() => { saveGame(); }, AUTO_SAVE_INTERVAL_MS);
     console.log(`Autosave started (${AUTO_SAVE_INTERVAL_MS}ms).`);
 
     // Start powerup spawning (will self-check if paused/won)
@@ -62,42 +60,43 @@ export function softRefreshGame() {
         console.log("Performing soft refresh...");
         displaySaveStatus("Refreshing from save...", 2000);
 
-        // 1. Stop everything (including audio playback potentially)
-        const wasMusicPlaying = gameState.musicShouldBePlaying; // Check state before stopping
+        // 1. Stop everything
         stopAllIntervals();
         pauseCurrentTrack(); // Ensure music stops during reload
 
         // 2. Reload game state from localStorage
-        const loadSuccess = loadGame(); // Updates global gameState and calls calculateDerivedStats + restartBoostTimersOnLoad
+        const loadSuccess = loadGame(); // Updates global gameState, calls calculateDerivedStats & restartBoostTimersOnLoad
 
         // 3. Re-apply audio state based on loaded gameState
         if (domElements['volume-slider']) {
              let savedVol = Number(gameState.lastVolume);
-             if (isNaN(savedVol) || savedVol < 0 || savedVol > 1) savedVol = 0.1; // Validate saved volume
+             if (isNaN(savedVol) || savedVol < 0 || savedVol > 1) savedVol = 0.1;
+             // Set slider value based on mute state FIRST
              domElements['volume-slider'].value = gameState.isMuted ? 0 : savedVol;
-             setVolume(); // Apply the volume (handles mute state internally)
+             // Then call setVolume to apply volume/mute state correctly to elements
+             setVolume(domElements['volume-slider'].value);
         } else {
             console.warn("Volume slider not found, cannot restore volume state.");
         }
+        updateMuteButtonVisuals(); // Ensure mute button reflects potentially loaded mute state
 
-        if (domElements['background-music'] && playlist.length > 0) {
+        if (domElements['background-music'] && playlist && playlist.length > 0) {
              const trackIndexToLoad = gameState.currentTrackIndex || 0;
-             const shouldResumePlay = (loadSuccess && gameState.musicShouldBePlaying === true);
+             // Determine if music should play based on loaded state and NOT being muted
+             const shouldResumePlay = (loadSuccess && gameState.musicShouldBePlaying === true && !gameState.isMuted);
 
-             loadTrack(trackIndexToLoad, shouldResumePlay); // Load track, set intent based on loaded state
-             // handleCanPlay will attempt playback if shouldResumePlay is true and not muted
-             if (!shouldResumePlay) {
-                updatePlayPauseIcon(); // Ensure icon is correct if not meant to play
-             }
+             loadTrack(trackIndexToLoad, gameState.musicShouldBePlaying ?? false); // Load track, set intent based on loaded state
+             // handleCanPlay (triggered by loadTrack) will attempt playback if intent is true and NOT muted
+             updatePlayPauseIcon(); // Update icon based on loaded intent/state
         } else {
              console.warn("Music player or playlist missing, cannot restore music state.");
         }
-        updateMuteButtonVisuals(); // Ensure mute button reflects loaded state
+
 
         // 4. Update UI completely based on reloaded state
-        updateDisplay();        // Update resource displays etc.
-        updateButtonStates();   // Redraw buttons, check tiers, enable/disable
-        updateAcquisitionButtonVisuals(); // Ensure toggle buttons are correct
+        updateDisplay();
+        updateButtonStates();
+        updateAcquisitionButtonVisuals();
         updateFlexibleWorkflowToggleButtonVisuals();
 
         // 5. Restart intervals (only if game not won after load)
@@ -110,7 +109,9 @@ export function softRefreshGame() {
          } else {
              console.log("Game is won, intervals not restarted after refresh.");
              setGamePaused(true); // Ensure game stays paused if won
-             // UI updates already handled above
+             // UI updates already handled above, ensure toggles reflect paused state
+             updateAcquisitionButtonVisuals();
+             updateFlexibleWorkflowToggleButtonVisuals();
          }
 
         // 6. Close settings modal if open
@@ -123,79 +124,92 @@ export function softRefreshGame() {
 
 // --- Initialization ---
 function initializeGame() {
-    console.log(`--- Initializing Game v${GAME_VERSION} ---`);
+    console.log(`--- Initializing Game ${GAME_VERSION} ---`);
     try {
         cacheDOMElements();
         if (domElements['game-version']) {
-            domElements['game-version'].textContent = `v${GAME_VERSION}`;
+            domElements['game-version'].textContent = `${GAME_VERSION}`; // Use template literal
         }
     } catch (e) {
         console.error("DOM Caching Error:", e);
+        alert("Fatal Error during initialization (DOM Caching). Check console.");
         return; // Stop initialization
     }
 
-    // Load game data (handles defaults/resetting if necessary)
-    // This calls initializeStructureState, calculateDerivedStats, restartBoostTimersOnLoad
-    loadGame();
+    try {
+        // Load game data (handles defaults/resetting if necessary)
+        // This calls initializeStructureState, calculateDerivedStats, restartBoostTimersOnLoad
+        loadGame();
 
-    // Initialize Audio Player State based on loaded gameState
-    if (domElements['background-music'] && domElements['volume-slider']) {
-         let initialVol = Number(gameState.lastVolume);
-         if(isNaN(initialVol) || initialVol < 0 || initialVol > 1) initialVol = 0.1; // Validate
-         domElements['volume-slider'].value = gameState.isMuted ? 0 : initialVol;
-         setVolume(); // Applies volume and handles mute state visuals
+        // Initialize Audio Player State based on loaded gameState
+        if (domElements['background-music'] && domElements['volume-slider']) {
+             let initialVol = Number(gameState.lastVolume);
+             if(isNaN(initialVol) || initialVol < 0 || initialVol > 1) initialVol = 0.1;
+             domElements['volume-slider'].value = gameState.isMuted ? 0 : initialVol;
+             setVolume(); // Applies volume and handles mute state visuals/audio elements
 
-        // Load initial track, set play intent from loaded state
-        loadTrack(gameState.currentTrackIndex || 0, gameState.musicShouldBePlaying ?? false);
-        // Don't automatically call playCurrentTrack here, rely on handleCanPlay or user interaction
-        updatePlayPauseIcon(); // Set initial icon state
-        updateMuteButtonVisuals(); // Set initial mute button state
+             // Load initial track, set play intent from loaded state
+             loadTrack(gameState.currentTrackIndex || 0, gameState.musicShouldBePlaying ?? false);
+             updatePlayPauseIcon(); // Set initial icon state
+             updateMuteButtonVisuals(); // Set initial mute button state
 
-    } else {
-        console.warn("Audio elements missing, cannot initialize music player state.");
-    }
+        } else {
+            console.warn("Audio elements missing, cannot initialize music player state.");
+        }
 
-
-    // Perform initial UI draw based on loaded/default state
-    updateDisplay();
-    updateButtonStates(); // Draws dynamic buttons
-    updateAcquisitionButtonVisuals();
-    updateFlexibleWorkflowToggleButtonVisuals();
-
-    // Attach event listeners
-    setupEventListeners();
-
-    // Check win condition immediately after load
-    if (gameState.money >= WIN_AMOUNT && !isGameWon) { // Ensure triggerWin only called if not already won
-        triggerWin(); // Handles setting flags, pausing etc.
-    }
-
-    // Start game loops only if not won
-    if (!isGameWon) {
-        setGamePaused(false); // Ensure game is not paused on initial load unless won
-        startGameIntervals();
-    } else {
-        setGamePaused(true); // Ensure game stays paused if loaded in a won state
-        console.log("Game loaded in a 'Won' state. Intervals not started.");
-        // Ensure UI reflects paused state even if loops aren't running
+        // Perform initial UI draw based on loaded/default state
+        updateDisplay();
+        updateButtonStates(); // Draws dynamic buttons
         updateAcquisitionButtonVisuals();
         updateFlexibleWorkflowToggleButtonVisuals();
-    }
 
-    console.log("--- Game Initialized ---");
+        // Attach event listeners
+        setupEventListeners();
+
+        // Check win condition immediately after load
+        if (gameState.money >= WIN_AMOUNT && !isGameWon) {
+            triggerWin();
+        }
+
+        // Start game loops only if not won
+        if (!isGameWon) {
+            setGamePaused(false); // Ensure game is not paused on initial load unless won
+            startGameIntervals();
+        } else {
+            setGamePaused(true); // Ensure game stays paused if loaded in a won state
+            console.log("Game loaded in a 'Won' state. Intervals not started.");
+            // Ensure UI reflects paused state even if loops aren't running
+            updateAcquisitionButtonVisuals();
+            updateFlexibleWorkflowToggleButtonVisuals();
+        }
+
+        console.log("--- Game Initialized ---");
+
+    } catch(error) {
+         console.error("Error during Game Initialization:", error);
+         alert("A critical error occurred during game initialization. Please check the console (F12) for details. The game may not function correctly.");
+         // Optionally try to stop intervals if they somehow started
+         stopAllIntervals();
+    }
 }
 
 // --- Global Error Handling ---
 window.addEventListener('error', (event) => {
     console.error('Unhandled global error:', event.message, event.filename, event.lineno, event.colno, event.error);
+    // Display a user-friendly message? Stop intervals?
+    // alert('An unexpected error occurred. Please check the console (F12) and consider refreshing.');
+    // stopAllIntervals(); // Maybe stop the game to prevent further errors
 });
 window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', event.reason);
+     // alert('An unexpected promise error occurred. Please check the console (F12).');
 });
 
 // --- Start the game ---
+// Use DOMContentLoaded to ensure HTML is fully parsed before running JS
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeGame);
 } else {
+    // DOMContentLoaded has already fired
     initializeGame();
 }

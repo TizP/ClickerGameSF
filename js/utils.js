@@ -14,20 +14,19 @@ export function formatNumber(num) {
     if (num === Infinity) return 'Infinity';
     // Ensure num is treated as a number, default to 0 if invalid
     num = Number(num);
-    if (num === null || num === undefined || isNaN(num)) return '0';
+    if (num === null || num === undefined || isNaN(num) || !isFinite(num)) return '0'; // Added isFinite check
 
     const absNum = Math.abs(num);
     const sign = num < 0 ? '-' : '';
 
     // Use fixed-point for small numbers (no suffix needed)
+    // Using Math.round for small numbers to avoid potential floating point artifacts showing as decimals
     if (absNum < 1e3) {
-        // Show decimals only if the number actually has them
-        // Using toFixed(0) for small numbers that might have negligible floating point artifacts
-        return sign + (absNum % 1 !== 0 ? absNum.toFixed(0) : absNum.toString());
+        return sign + Math.round(absNum).toString();
     }
 
     // Metric suffixes
-    const tiers = ['', 'k', 'M', 'B', 'T', 'q', 'Q', 's', 'S', 'o', 'N', 'd']; // Add more if needed
+    const tiers = ['', 'k', 'M', 'B', 'T', 'q', 'Q', 's', 'S', 'o', 'N', 'd', 'U', 'D', '!', '@', '#', '$', '%', '^', '&', '*', 'A', 'a']; // Extended tiers
     // Determine the correct tier index based on magnitude
     const tierIndex = Math.max(0, Math.min(tiers.length - 1, Math.floor(Math.log10(absNum) / 3)));
 
@@ -43,16 +42,17 @@ export function formatNumber(num) {
     }
 
     // Format the scaled number with determined precision
-    const formattedNum = scaledNum.toFixed(precision);
+    let formattedNum = scaledNum.toFixed(precision);
 
-    // Avoid showing trailing .0 or .00 (e.g., display 1k instead of 1.0k)
-    // Check if formattedNum ends with .0 or .00 after toFixed
-    const finalNumString = (precision > 0 && formattedNum.endsWith('0'.repeat(precision)) && formattedNum.includes('.'))
-        ? formattedNum.substring(0, formattedNum.indexOf('.')) // Get integer part if trailing zeros exist
-        : formattedNum;
+    // Remove trailing zeros and potentially the decimal point
+    if (precision > 0 && formattedNum.includes('.')) {
+        formattedNum = formattedNum.replace(/0+$/, ''); // Remove trailing zeros
+        if (formattedNum.endsWith('.')) {
+             formattedNum = formattedNum.slice(0, -1); // Remove trailing decimal point
+        }
+    }
 
-
-    return sign + finalNumString + tiers[tierIndex];
+    return sign + formattedNum + tiers[tierIndex];
 }
 
 /**
@@ -64,15 +64,17 @@ export function formatNumber(num) {
  */
 export function formatPerSecond(num, unit = "Units") {
      num = Number(num);
-     if (isNaN(num)) return `0 ${unit}/s`;
+     if (isNaN(num) || !isFinite(num)) return `0 ${unit}/s`; // Added isFinite check
 
-     if (num !== 0 && Math.abs(num) < 0.01) { // Use exponential for very small non-zero numbers
+     if (num === 0) return `0 ${unit}/s`; // Handle exact zero
+
+     if (Math.abs(num) < 0.01) { // Use exponential for very small non-zero numbers
          return num.toExponential(2) + ` ${unit}/s`;
      }
       // Use formatNumber for the numeric part and append unit/s
-      // Ensure formatNumber doesn't return just '0' for small numbers that aren't *exactly* zero
      const formattedValue = formatNumber(num);
-     return (formattedValue === '0' && num !== 0 ? num.toFixed(2) : formattedValue) + ` ${unit}/s`; // Show decimals if formatNumber rounds to 0
+     // If formatNumber rounds to '0' but the number isn't truly zero, show decimals
+     return (formattedValue === '0' ? num.toFixed(2) : formattedValue) + ` ${unit}/s`;
  }
 
 
@@ -84,7 +86,7 @@ export function formatPerSecond(num, unit = "Units") {
  */
 export function formatMoney(num) {
     num = Number(num);
-    if (num === null || num === undefined || isNaN(num)) return '0.00';
+    if (num === null || num === undefined || isNaN(num) || !isFinite(num)) return '0.00'; // Added isFinite check
 
     const absNum = Math.abs(num);
     const sign = num < 0 ? '-' : '';
@@ -105,12 +107,14 @@ export function formatMoney(num) {
  */
 export function formatRateMoney(num) {
     num = Number(num);
-    if (num === 0 || num === null || num === undefined || isNaN(num)) return '0.000';
+    if (num === null || num === undefined || isNaN(num) || !isFinite(num)) return '0.000'; // Added isFinite check
+
+    if (num === 0) return '0.000';
 
     const absNum = Math.abs(num);
 
     // Exponential for very small non-zero values
-    if (absNum < 1e-3 && num !== 0) return num.toExponential(2);
+    if (absNum < 1e-3) return num.toExponential(2);
     // Higher precision for values between 0.001 and 1
     if (absNum < 1) return num.toFixed(3);
     // Standard 2 decimals for values between 1 and 1000
@@ -121,7 +125,7 @@ export function formatRateMoney(num) {
 
 /** Alias for formatRateMoney, specifically for CAR display if needed */
 export function formatCAR(num) {
-    return formatRateMoney(num);
+    return formatRateMoney(num); // Use the same logic as CVR formatting
 }
 
 
@@ -133,7 +137,7 @@ export function formatCAR(num) {
  */
 export function formatPercent(num, decimals = 1) {
     num = Number(num);
-    if (num === null || num === undefined || isNaN(num)) return '0.0%';
+    if (num === null || num === undefined || isNaN(num) || !isFinite(num)) return '0.0%'; // Added isFinite check
     return (num * 100).toFixed(decimals) + '%';
 }
 
@@ -143,10 +147,11 @@ export function formatPercent(num, decimals = 1) {
  * @returns {string} Formatted time string.
  */
 export function formatTime(milliseconds) {
-    if (milliseconds < 0 || isNaN(milliseconds)) return "0s";
+    if (milliseconds === null || milliseconds === undefined || isNaN(milliseconds) || milliseconds < 0 || !isFinite(milliseconds)) return "0s"; // Added isFinite check
 
     const totalSeconds = Math.floor(milliseconds / 1000);
-    if (totalSeconds === 0) return "0s"; // Handle zero duration explicitly
+    if (totalSeconds === 0 && milliseconds < 1000) return "<1s"; // Show something for very short durations
+    if (totalSeconds === 0) return "0s"; // Handle zero seconds explicitly
 
     const days = Math.floor(totalSeconds / 86400);
     const hours = Math.floor((totalSeconds % 86400) / 3600);

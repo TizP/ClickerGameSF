@@ -6,18 +6,17 @@ import { getCurrentRates, getBuildingCost, getUpgradeCost, getCurrentCustomerCos
 import { formatNumber, formatMoney, formatPerSecond, formatRateMoney, formatCAR, formatPercent, formatTime } from './utils.js';
 import { buildingsConfig, upgradesConfig, STATS_UPDATE_INTERVAL_MS } from './config.js';
 import { stopPowerupSpawning, startPowerupSpawning, removeActivePowerupToken } from './powerups.js';
-import { saveGame } from './saveLoad.js'; // Used for win screen auto-save
+import { saveGame } from './saveLoad.js';
 
 let statsUpdateIntervalId = null;
 let saveStatusTimeoutId = null;
 
 // --- Helper to create an Upgrade Button Element ---
-// (Keep existing createUpgradeButtonElement function - unchanged)
 function createUpgradeButtonElement(upgradeId, config, categoryId = null) {
     const button = document.createElement('button');
     button.id = `upgrade-${upgradeId}`;
     button.classList.add('upgrade-button');
-    button.disabled = true; // Start disabled, enable later based on cost/state
+    button.disabled = true;
     const nameSpan = document.createElement('span');
     nameSpan.textContent = config.name || upgradeId;
     const costSpan = document.createElement('span');
@@ -30,7 +29,6 @@ function createUpgradeButtonElement(upgradeId, config, categoryId = null) {
     } else {
         effectSpan.textContent = config.description || ''; // Use full desc for effect span now
     }
-    // Use description for tooltip
     button.title = config.description || config.name || '';
     button.appendChild(nameSpan);
     button.appendChild(costSpan);
@@ -42,7 +40,6 @@ function createUpgradeButtonElement(upgradeId, config, categoryId = null) {
 
 
 // --- Display Update Functions ---
-// (Keep existing updateDisplay function - unchanged)
 export function updateDisplay() {
     try {
         const rates = getCurrentRates();
@@ -65,7 +62,7 @@ export function updateDisplay() {
         domElements.ops.textContent = formatNumber(rates.opportunitiesPerSecond);
         domElements.mps.textContent = '$' + formatMoney(rates.moneyPerSecond);
         domElements.car.textContent = formatCAR(rates.customerAcquisitionRate);
-        domElements['success-chance'].textContent = (gameState.acquisitionSuccessChance * 100).toFixed(1); // Get directly from state
+        domElements['success-chance'].textContent = (gameState.acquisitionSuccessChance * 100).toFixed(1);
         domElements.cvr.textContent = formatRateMoney(rates.customerValueRate);
         domElements['cust-cost'].textContent = formatNumber(getCurrentCustomerCost());
 
@@ -104,14 +101,12 @@ export function updateDisplay() {
     } catch (e) { console.error("Error in updateDisplay:", e); }
 }
 
-
 export function updateButtonStates() {
     const isDisabledGlobal = isGamePaused || isGameWon;
     const rates = getCurrentRates();
 
     try {
-        // --- Update Building Buttons ---
-        // (Keep existing Building Button update logic - unchanged)
+        // Update Building Buttons
         for (const id in buildingsConfig) {
             const btn = domElements[`buy-${id}`]; const cnt = domElements[`${id}-count`];
             const cst = domElements[`${id}-cost`]; const eff = domElements[`${id}-effect`];
@@ -164,32 +159,21 @@ export function updateButtonStates() {
             eff.textContent = effectText; btn.title = tooltipText;
         }
 
-        // --- Update Tiered Upgrade Buttons ---
-        // Iterate through categories defined in upgradesConfig
+        // Update Tiered Upgrade Buttons
         for (const categoryId in upgradesConfig) {
-            if (categoryId === 'special') continue; // Skip special upgrades section
-
+            if (categoryId === 'special') continue;
             const categoryConfig = upgradesConfig[categoryId];
-            const containerId = `upgrade-category-${categoryId}`; // Construct container ID
-            const containerEl = document.getElementById(containerId); // Get container element
-
-            // --- IMPORTANT: Check if the container exists in the HTML ---
-            // This handles the removal of old categories ('acquisitionRate', 'acquisitionSuccess')
+            const containerId = `upgrade-category-${categoryId}`;
+            const containerEl = document.getElementById(containerId);
             if (!containerEl) {
-                // If the container for a category in the config doesn't exist in the HTML,
-                // it means the HTML has been updated to remove it. Log a warning if unexpected.
-                // console.warn(`Upgrade container element not found for category ID: ${containerId}. Skipping update for this category.`);
-                continue; // Skip processing this category
+                continue;
             }
-            // --- End Check ---
-
-            containerEl.innerHTML = ''; // Clear existing buttons
-            const currentTierNum = gameState.categoryTiers[categoryId] || 1; // Get current tier
+            containerEl.innerHTML = '';
+            const currentTierNum = gameState.categoryTiers[categoryId] || 1;
             const tierKey = `tier${currentTierNum}`;
             const upgradesInTier = categoryConfig[tierKey];
-            if (!upgradesInTier) continue; // Skip if no upgrades for this tier
+            if (!upgradesInTier) continue;
 
-            // Generate buttons for the current tier
             for (const upgradeId in upgradesInTier) {
                 const upgradeConfig = upgradesInTier[upgradeId];
                 const upgradeState = gameState.upgrades[upgradeId] || { purchased: false };
@@ -197,14 +181,12 @@ export function updateButtonStates() {
                 const cost = getUpgradeCost(upgradeId);
                 let afford = false; let cTxt = '?';
 
-                // Check affordability
                 if (upgradeConfig.costMoney && upgradeConfig.costCustomers) { afford = gameState.money >= cost.money && gameState.customers >= cost.customers; cTxt = `${formatNumber(cost.customers)} Cust & $${formatMoney(cost.money)}`; }
                 else if (upgradeConfig.costCurrency === 'both') { afford = gameState.leads >= cost.leads && gameState.opportunities >= cost.opps; cTxt = `${formatNumber(cost.leads)} L & ${formatNumber(cost.opps)} O`; }
                 else if (upgradeConfig.costCurrency === 'leads') { afford = gameState.leads >= cost.leads; cTxt = `${formatNumber(cost.leads)} L`; }
                 else if (upgradeConfig.costCurrency === 'opportunities') { afford = gameState.opportunities >= cost.opps; cTxt = `${formatNumber(cost.opps)} O`; }
                 else if (upgradeConfig.costCurrency === 'money') { afford = gameState.money >= cost.money; cTxt = `$${formatMoney(cost.money)}`; }
                 else if (upgradeConfig.costCurrency === 'customers') { afford = gameState.customers >= cost.customers; cTxt = `${formatNumber(cost.customers)} Cust`; }
-
 
                 const costSpan = buttonEl.querySelector('.cost'); if (costSpan) costSpan.textContent = `Cost: ${cTxt}`;
                 const purchased = upgradeState.purchased === true; buttonEl.disabled = !afford || purchased || isDisabledGlobal;
@@ -214,12 +196,11 @@ export function updateButtonStates() {
             }
         }
 
-        // --- Update Special Upgrade Buttons ---
-        // (Keep existing Special Upgrade Button update logic - unchanged)
+        // Update Special Upgrade Buttons
         for (const upgradeId in upgradesConfig.special) {
              if (upgradeId === 'name') continue;
              const el = domElements[`upgrade-${upgradeId}`];
-             if (!el) continue; // Skip if the element wasn't found/cached (e.g., removed from HTML)
+             if (!el) continue;
 
              const cfg = upgradesConfig.special[upgradeId];
              const state = gameState.upgrades[upgradeId] || { purchased: false };
@@ -237,7 +218,6 @@ export function updateButtonStates() {
 
              const purchased = state.purchased === true;
              el.disabled = !afford || purchased || isDisabledGlobal;
-
              const cstSpn = el.querySelector('.cost');
              const effSpn = el.querySelector('.effect');
 
@@ -253,7 +233,6 @@ export function updateButtonStates() {
              el.title = cfg.description || cfg.name;
         }
 
-        // (Keep toggle button updates unchanged)
         updateAcquisitionButtonVisuals();
         updateFlexibleWorkflowToggleButtonVisuals();
 
@@ -261,7 +240,6 @@ export function updateButtonStates() {
 }
 
 // --- Modal Logic ---
-// (Keep existing modal functions unchanged)
 function showModal(modalElement) { if (modalElement) modalElement.classList.add('show'); }
 function hideModal(modalElement) {
     if (modalElement) {
@@ -309,10 +287,22 @@ export function closeWinScreen() {
 }
 
 // --- Other UI Updates ---
-// (Keep existing updateStatsDisplay, displaySaveStatus, updateActivePowerupDisplay,
-// updateAcquisitionButtonVisuals, updateFlexibleWorkflowToggleButtonVisuals functions unchanged)
 export function updateStatsDisplay() { const modal = domElements['stats-modal']; if (!modal || !modal.classList.contains('show')) { if (statsUpdateIntervalId) { clearInterval(statsUpdateIntervalId); statsUpdateIntervalId = null; } return; } try { if(domElements['stat-game-time']) domElements['stat-game-time'].textContent = formatTime(Date.now() - (gameState.gameStartTime || Date.now())); if(domElements['stat-lead-clicks']) domElements['stat-lead-clicks'].textContent = formatNumber(gameState.totalLeadClicks); if(domElements['stat-opp-clicks']) domElements['stat-opp-clicks'].textContent = formatNumber(gameState.totalOppClicks); if(domElements['stat-manual-leads']) domElements['stat-manual-leads'].textContent = formatNumber(gameState.totalManualLeads); if(domElements['stat-manual-opps']) domElements['stat-manual-opps'].textContent = formatNumber(gameState.totalManualOpps); if(domElements['stat-auto-leads']) domElements['stat-auto-leads'].textContent = formatNumber(gameState.totalAutoLeads); if(domElements['stat-auto-opps']) domElements['stat-auto-opps'].textContent = formatNumber(gameState.totalAutoOpps); if(domElements['stat-acq-attempts']) domElements['stat-acq-attempts'].textContent = formatNumber(gameState.totalAcquisitionAttempts); if(domElements['stat-acq-success']) domElements['stat-acq-success'].textContent = formatNumber(gameState.totalSuccessfulAcquisitions); const failedAcq = Math.max(0, gameState.totalAcquisitionAttempts - gameState.totalSuccessfulAcquisitions); if(domElements['stat-acq-failed']) domElements['stat-acq-failed'].textContent = formatNumber(failedAcq); if(domElements['stat-powerups-clicked']) domElements['stat-powerups-clicked'].textContent = formatNumber(gameState.totalPowerupsClicked); if(domElements['stat-total-money']) domElements['stat-total-money'].textContent = '$' + formatMoney(gameState.totalMoneyEarned); } catch (e) { console.error("Error updating stats display:", e); hideStats(); } }
 export function displaySaveStatus(msg, dur = 3000) { const el = domElements['save-status']; if (!el) return; if (saveStatusTimeoutId) clearTimeout(saveStatusTimeoutId); el.textContent = msg; el.classList.add('visible'); saveStatusTimeoutId = setTimeout(() => { el.classList.remove('visible'); saveStatusTimeoutId = null; }, dur); }
 export function updateActivePowerupDisplay() { const displayEl = domElements['active-powerup-display']; if (!displayEl) return; const activeIds = Object.keys(gameState.activeBoosts); if (activeIds.length === 0) { displayEl.innerHTML = ''; displayEl.title = "No active power-ups"; return; } const firstBoostId = activeIds[0]; const boost = gameState.activeBoosts[firstBoostId]; if (!boost || !boost.endTime) { displayEl.innerHTML = ''; displayEl.title = "No active power-ups"; return; } const remainingTimeMs = boost.endTime - Date.now(); if (remainingTimeMs <= 0) { displayEl.innerHTML = ''; displayEl.title = "No active power-ups"; } else { const remainingSeconds = (remainingTimeMs / 1000).toFixed(1); displayEl.innerHTML = `${boost.name}: ${remainingSeconds}s<br><span style="font-size: 0.9em; font-weight: normal;">(${boost.description || 'Effect active'})</span>`; displayEl.title = `Active: ${boost.name} (${boost.description || 'Effect active'}). ${remainingSeconds}s remaining.`; } }
 export function updateAcquisitionButtonVisuals() { const btn = domElements['toggle-acquisition-button']; if (!btn) return; const isPaused = gameState.isAcquisitionPaused; btn.textContent = isPaused ? 'Resume Acq' : 'Pause Acq'; btn.title = isPaused ? 'Resume automatic spending of Leads/Opps on customer acquisition attempts' : 'Pause automatic spending of Leads/Opps on customer acquisition attempts'; btn.classList.toggle('paused', isPaused); btn.disabled = isGameWon || isGamePaused; }
-export function updateFlexibleWorkflowToggleButtonVisuals() { const btn = domElements['toggle-flexible-workflow']; if (!btn) return; const isPurchased = gameState.upgrades['flexibleWorkflow']?.purchased === true; const isActive = gameState.flexibleWorkflowActive; btn.disabled = !isPurchased || isGamePaused || isGameWon; btn.classList.toggle('active', isActive && isPurchased); if (isActive && isPurchased) { btn.textContent = 'Deactivate Flex'; btn.title = 'Stop balancing L/O generation focus.'; } else { btn.textContent = 'Activate Flex'; btn.title = isPurchased ? 'Balance L/O generation focus based on current amounts.' : 'Purchase the Flexible Workflow upgrade first to enable toggling.'; } }
+export function updateFlexibleWorkflowToggleButtonVisuals() {
+    const btn = domElements['toggle-flexible-workflow'];
+    if (!btn) return;
+    const isPurchased = gameState.upgrades['flexibleWorkflow']?.purchased === true;
+    const isActive = gameState.flexibleWorkflowActive;
+    btn.disabled = !isPurchased || isGamePaused || isGameWon;
+    btn.classList.toggle('active', isActive && isPurchased);
+    if (isActive && isPurchased) {
+        btn.textContent = 'Deactivate Flex';
+        btn.title = 'Stop balancing L/O generation focus.';
+    } else {
+        btn.textContent = 'Activate Flex';
+        btn.title = isPurchased ? 'Balance L/O generation focus based on current amounts.' : 'Purchase the Flexible Workflow upgrade first to enable toggling.';
+    }
+}

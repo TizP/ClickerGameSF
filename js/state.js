@@ -19,51 +19,42 @@ export function getDefaultGameState() {
         integratedMultiplier: 1.0,
         buildingEfficiencyMultiplier: 1.0,
         customerCostReductionMultiplier: 1.0,
-        otherBuildingCostMultiplier: 1.0, // For Procurement Optimizer effect
+        otherBuildingCostMultiplier: 1.0,
         acquisitionSuccessChance: 0.25,
-        baseCAR: 0.1, // Base Customer Acquisition Rate
-        baseCVR: 1.0, // Base Customer Value Rate
+        baseCAR: 0.1,
+        baseCVR: 1.0,
         cvrMultiplierBonus: 1.0, cvrCustomerMultiplier: 1.0, custGlobalMultiplier: 1.0,
         customerCountForCostIncrease: 0,
         isAcquisitionPaused: false, flexibleWorkflowActive: false,
-        // Audio State
         isMuted: false,
-        lastVolume: 0.1, // Store last non-zero volume before mute
+        lastVolume: 0.1,
         currentTrackIndex: 0,
-        musicShouldBePlaying: false, // User's intent to play music
-        // Game Time & Stats
-        gameStartTime: Date.now(), // Set on first load/new game
+        musicShouldBePlaying: false,
+        gameStartTime: Date.now(),
         totalLeadClicks: 0, totalOppClicks: 0, totalManualLeads: 0, totalManualOpps: 0,
         totalAutoLeads: 0, totalAutoOpps: 0, totalAcquisitionAttempts: 0, totalSuccessfulAcquisitions: 0,
         totalMoneyEarned: 0, totalPowerupsClicked: 0,
-        // Upgrade Bonuses (specifically from Customer Growth)
         custUpgradeBonusCAR: 0, custUpgradeBonusCVR: 0,
-        // Structures
         buildings: {},
-        upgrades: {}, // Will be populated by initializeStructureState
-        categoryTiers: {}, // Tracks unlocked tier per category
-        activeBoosts: {}, // For powerups
-        powerupTimeouts: {} // Transient: Not saved/loaded directly
+        upgrades: {},
+        categoryTiers: {},
+        activeBoosts: {},
+        powerupTimeouts: {}
     };
-    // Initialize structures based on config and set defaults
-    initializeStructureState(state, true); // Pass isInitial=true
+    initializeStructureState(state, true);
     return state;
 }
 
-// Initializes or sanitizes building, upgrade, and tier states
 export function initializeStructureState(state, isInitial) {
-    // --- Buildings ---
+    // Buildings
     if (!state.buildings) state.buildings = {};
-    // Ensure all buildings from config exist in state, initialize count if needed
     for (const id in buildingsConfig) {
         if (!state.buildings[id]) {
             state.buildings[id] = { count: 0 };
         } else {
-            // Sanitize existing count (ensure it's a non-negative integer)
             state.buildings[id].count = Math.max(0, Math.floor(Number(state.buildings[id].count) || 0));
         }
     }
-    // Remove building state for buildings no longer in config (only if not initial setup)
     if (!isInitial) {
         for (const id in state.buildings) {
             if (!buildingsConfig[id]) {
@@ -73,54 +64,44 @@ export function initializeStructureState(state, isInitial) {
         }
     }
 
-    // --- Upgrades ---
+    // Upgrades
     if (!state.upgrades) state.upgrades = {};
-    const allValidUpgradeIds = new Set(); // Keep track of valid IDs from current config
-
-    // Initialize/Sanitize upgrades based on current config
+    const allValidUpgradeIds = new Set();
     for (const catId in upgradesConfig) {
         const category = upgradesConfig[catId];
         const processTier = (tierObj) => {
             if (!tierObj) return;
             for (const upId in tierObj) {
-                allValidUpgradeIds.add(upId); // Add to valid set
-                if (state.upgrades[upId]) { // Sanitize existing state
+                allValidUpgradeIds.add(upId);
+                if (state.upgrades[upId]) {
                     state.upgrades[upId] = { purchased: state.upgrades[upId].purchased === true };
-                } else if (isInitial) { // Initialize if new game
+                } else if (isInitial) {
                     state.upgrades[upId] = { purchased: false };
-                }
-                // If !isInitial and !state.upgrades[upId], it means it's a newly added upgrade,
-                // it will be added correctly when the save is loaded next time or handled by cleanup.
-                // For safety on load, ensure new upgrades default to false if missing:
-                else if (!isInitial && !state.upgrades[upId]) {
+                } else if (!isInitial && !state.upgrades[upId]) {
                      state.upgrades[upId] = { purchased: false };
                      console.log(`Initializing newly added upgrade state: ${upId}`);
                 }
             }
         };
 
-        if (catId === 'special') { // Handle special upgrades (flat structure)
+        if (catId === 'special') {
             for (const upId in category) {
-                if (upId === 'name') continue; // Skip the name property
+                if (upId === 'name') continue;
                 allValidUpgradeIds.add(upId);
                 if (state.upgrades[upId]) {
                     state.upgrades[upId] = { purchased: state.upgrades[upId].purchased === true };
                 } else if (isInitial) {
                     state.upgrades[upId] = { purchased: false };
-                }
-                 else if (!isInitial && !state.upgrades[upId]) {
+                } else if (!isInitial && !state.upgrades[upId]) {
                      state.upgrades[upId] = { purchased: false };
                      console.log(`Initializing newly added special upgrade state: ${upId}`);
                 }
             }
-        } else { // Handle tiered categories
+        } else {
             processTier(category.tier1);
             processTier(category.tier2);
-            // processTier(category.tier3); // Add if T3 exists later
         }
     }
-
-    // Remove upgrade state for upgrades no longer in config (only if not initial setup)
     if (!isInitial) {
         for (const id in state.upgrades) {
             if (!allValidUpgradeIds.has(id)) {
@@ -130,21 +111,18 @@ export function initializeStructureState(state, isInitial) {
         }
     }
 
-    // --- Category Tiers ---
+    // Category Tiers
     if (!state.categoryTiers) state.categoryTiers = {};
-    // Initialize/Sanitize category tiers
     for (const catId in upgradesConfig) {
-        if (catId === 'special') continue; // Skip special category
-        if (!state.categoryTiers[catId]) { // Initialize if missing
+        if (catId === 'special') continue;
+        if (!state.categoryTiers[catId]) {
             state.categoryTiers[catId] = 1;
-        } else { // Sanitize existing tier
+        } else {
             state.categoryTiers[catId] = Math.max(1, Math.floor(Number(state.categoryTiers[catId]) || 1));
         }
     }
-    // Remove tier state for categories no longer in config (only if not initial setup)
     if (!isInitial) {
         for (const catId in state.categoryTiers) {
-            // Check if category exists (and is not 'special') in the current config
             if (catId !== 'special' && !upgradesConfig[catId]) {
                 console.warn(`Removing deprecated category tier state: ${catId}`);
                 delete state.categoryTiers[catId];
@@ -152,8 +130,7 @@ export function initializeStructureState(state, isInitial) {
         }
     }
 
-    // --- Sanitize Other State Properties ---
-    // (Ensure types and reasonable ranges for numerical values)
+    // Sanitize Other State Properties
     state.leads = Number(state.leads) || 0;
     state.opportunities = Number(state.opportunities) || 0;
     state.customers = Math.max(0, Math.floor(Number(state.customers) || 0));
@@ -170,21 +147,19 @@ export function initializeStructureState(state, isInitial) {
     state.customerCostReductionMultiplier = Number(state.customerCostReductionMultiplier) || 1.0;
     state.otherBuildingCostMultiplier = Number(state.otherBuildingCostMultiplier) || 1.0;
     state.acquisitionSuccessChance = Math.max(0, Math.min(1.0, Number(state.acquisitionSuccessChance) || 0.25));
-    state.baseCAR = Number(state.baseCAR) || 0.1; // Ensure baseCAR is number
-    state.baseCVR = Number(state.baseCVR) || 1.0; // Ensure baseCVR is number
+    state.baseCAR = Number(state.baseCAR) || 0.1;
+    state.baseCVR = Number(state.baseCVR) || 1.0;
     state.cvrMultiplierBonus = Number(state.cvrMultiplierBonus) || 1.0;
     state.cvrCustomerMultiplier = Number(state.cvrCustomerMultiplier) || 1.0;
     state.custGlobalMultiplier = Number(state.custGlobalMultiplier) || 1.0;
     state.customerCountForCostIncrease = Math.max(0, Math.floor(Number(state.customerCountForCostIncrease) || 0));
-    state.isAcquisitionPaused = state.isAcquisitionPaused === true; // Ensure boolean
-    state.flexibleWorkflowActive = state.flexibleWorkflowActive === true; // Ensure boolean
-    // Audio State Sanitization
+    state.isAcquisitionPaused = state.isAcquisitionPaused === true;
+    state.flexibleWorkflowActive = state.flexibleWorkflowActive === true;
     state.isMuted = state.isMuted === true;
     state.lastVolume = Math.max(0, Math.min(1, Number(state.lastVolume) || 0.1));
     state.currentTrackIndex = Math.max(0, Math.floor(Number(state.currentTrackIndex) || 0));
     state.musicShouldBePlaying = state.musicShouldBePlaying === true;
-    // Stats Sanitization
-    state.gameStartTime = Number(state.gameStartTime) || Date.now(); // Ensure valid timestamp
+    state.gameStartTime = Number(state.gameStartTime) || Date.now();
     state.totalLeadClicks = Math.max(0, Math.floor(Number(state.totalLeadClicks) || 0));
     state.totalOppClicks = Math.max(0, Math.floor(Number(state.totalOppClicks) || 0));
     state.totalManualLeads = Math.max(0, Number(state.totalManualLeads) || 0);
@@ -195,16 +170,12 @@ export function initializeStructureState(state, isInitial) {
     state.totalSuccessfulAcquisitions = Math.max(0, Math.floor(Number(state.totalSuccessfulAcquisitions) || 0));
     state.totalMoneyEarned = Math.max(0, Number(state.totalMoneyEarned) || 0);
     state.totalPowerupsClicked = Math.max(0, Math.floor(Number(state.totalPowerupsClicked) || 0));
-    // Upgrade Bonus Sanitization
     state.custUpgradeBonusCAR = Number(state.custUpgradeBonusCAR) || 0;
     state.custUpgradeBonusCVR = Number(state.custUpgradeBonusCVR) || 0;
-    // Active Boosts
     state.activeBoosts = (typeof state.activeBoosts === 'object' && state.activeBoosts !== null) ? state.activeBoosts : {};
-    // Ensure powerupTimeouts is always an empty object after initialization/load
     state.powerupTimeouts = {};
 }
 
-// Functions to modify global control flags
 export function setGameWon(value) {
     isGameWon = value;
 }

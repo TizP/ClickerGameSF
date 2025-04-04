@@ -31,24 +31,26 @@ function checkTierCompletion(categoryId) {
 
 // --- Purchase Functions ---
 function buyBuilding(id) {
-    // (Keep existing buyBuilding function - unchanged)
+    // Prevent actions if game inactive
     if (isGamePaused || isGameWon) return;
     const cfg = buildingsConfig[id];
     const state = gameState.buildings[id];
     if (!cfg || !state) { console.error(`Building config or state not found for ID: ${id}`); return; }
 
-    const cost = getBuildingCost(id);
+    const cost = getBuildingCost(id); // Calculates current cost based on count & multipliers
     const curr = cfg.costCurrency;
     let afford = false;
 
+    // Check affordability based on currency type
     if (curr === 'both') { if (gameState.leads >= cost.leads && gameState.opportunities >= cost.opps) { gameState.leads -= cost.leads; gameState.opportunities -= cost.opps; afford = true; } }
     else if (curr === 'leads') { if (gameState.leads >= cost.leads) { gameState.leads -= cost.leads; afford = true; } }
     else if (curr === 'opportunities') { if (gameState.opportunities >= cost.opps) { gameState.opportunities -= cost.opps; afford = true; } }
     else if (curr === 'money') { if (gameState.money >= cost.money) { gameState.money -= cost.money; afford = true; } }
 
+    // If affordable, process the purchase
     if (afford) {
-        state.count++;
-        playSoundEffect('sfx-purchase');
+        state.count++; // Increment building count
+        playSoundEffect('sfx-purchase'); // Play sound
         calculateDerivedStats(); // Recalculate rates immediately
         updateDisplay(); // Update resource numbers
         updateButtonStates(); // Update button costs and availability
@@ -56,22 +58,24 @@ function buyBuilding(id) {
 }
 
 function buyUpgrade(upgradeId) {
-    // (Keep existing checks for paused/won/config/purchased - unchanged)
+    // Prevent actions if game inactive
     if (isGamePaused || isGameWon) return;
     const found = findUpgradeConfigById(upgradeId);
     if (!found) { console.error(`Upgrade config not found for ID: ${upgradeId}`); return; }
 
     const cfg = found.config;
-    const effectiveCategoryId = found.categoryId;
-    const effectiveTier = found.tier;
+    const effectiveCategoryId = found.categoryId; // e.g., 'manualGen'
+    const effectiveTier = found.tier; // e.g., 1 or null for special
     const state = gameState.upgrades[upgradeId];
+
+    // Prevent purchase if already bought or state is missing
     if (!state || state.purchased) return;
 
-    const cost = getUpgradeCost(upgradeId);
+    const cost = getUpgradeCost(upgradeId); // Calculates cost based on config
     let afford = false;
 
-    // (Keep affordability check logic - unchanged, covers new upgrade costs too)
-    if (cfg.costMoney && cfg.costCustomers) {
+    // Check affordability based on various cost types
+    if (cfg.costMoney && cfg.costCustomers) { // Handles Flexible Workflow & Playtime Boost
         if (gameState.money >= cost.money && gameState.customers >= cost.customers) {
             gameState.money -= cost.money;
             gameState.customers -= cost.customers;
@@ -84,46 +88,48 @@ function buyUpgrade(upgradeId) {
     else if (cfg.costCurrency === 'money') { if (gameState.money >= cost.money) { gameState.money -= cost.money; afford = true; } }
     else if (cfg.costCurrency === 'customers') { if (gameState.customers >= cost.customers) { gameState.customers -= cost.customers; afford = true; } }
 
+    // If affordable, process the purchase
     if (afford) {
-        state.purchased = true;
-        playSoundEffect('sfx-purchase');
+        state.purchased = true; // Mark as purchased
+        playSoundEffect('sfx-purchase'); // Play sound
 
         // Apply immediate effects if defined in config
-        // This directly modifies gameState properties like baseCAR, acquisitionSuccessChance, etc.
+        // This directly modifies gameState properties like baseCAR, acquisitionSuccessChance, multipliers etc.
         if (typeof cfg.effect === 'function') {
             cfg.effect(gameState);
         }
-        // Note: The old `targetRate` mechanism is removed as effects are now direct modifications.
-        // The `effectValue` property is no longer used by engine.js for CAR/CVR calculations.
 
-        // Check for Tier 1 completion to unlock Tier 2
+        // Check for Tier 1 completion to unlock Tier 2 for that category
         if (effectiveTier === 1 && effectiveCategoryId && effectiveCategoryId !== 'special') {
             if (checkTierCompletion(effectiveCategoryId)) {
                 console.log(`Tier 1 completed for category: ${effectiveCategoryId}. Advancing to Tier 2.`);
-                gameState.categoryTiers[effectiveCategoryId] = 2;
+                gameState.categoryTiers[effectiveCategoryId] = 2; // Update category tier
             }
         }
 
-        calculateDerivedStats(); // Recalculate rates after applying effects
+        calculateDerivedStats(); // Recalculate rates immediately
         updateDisplay(); // Update resource numbers
         updateButtonStates(); // Update button states/redraw category if tier changed
     }
 }
 
 // --- Action Toggles ---
-// (Keep existing toggle functions - unchanged)
 function toggleAcquisitionPause() { if (isGameWon || isGamePaused) return; gameState.isAcquisitionPaused = !gameState.isAcquisitionPaused; updateAcquisitionButtonVisuals(); }
 function toggleFlexibleWorkflow() { if (isGamePaused || isGameWon || !gameState.upgrades['flexibleWorkflow']?.purchased) return; gameState.flexibleWorkflowActive = !gameState.flexibleWorkflowActive; console.log(`Flexible Workflow manually ${gameState.flexibleWorkflowActive ? 'activated' : 'deactivated'}.`); calculateDerivedStats(); updateDisplay(); updateFlexibleWorkflowToggleButtonVisuals(); }
 
 // --- Category Collapse/Expand ---
-// (Keep existing toggleCategoryCollapse function - unchanged)
 function toggleCategoryCollapse(event) {
+    // Find the H4 title element that was clicked or contains the clicked icon
     const titleElement = event.target.closest('h4.group-title');
-    if (!titleElement) return;
+    if (!titleElement) return; // Click wasn't on a title or its child icon
+
+    // Find the next sibling element, which should be the content container
     const contentElement = titleElement.nextElementSibling;
+
+    // Check if the next sibling is indeed one of the collapsible containers
     if (contentElement && (contentElement.classList.contains('upgrade-category-container') || contentElement.classList.contains('build-category-container'))) {
-        titleElement.classList.toggle('collapsed');
-        contentElement.classList.toggle('content-collapsed');
+        titleElement.classList.toggle('collapsed'); // Toggle state class on the title
+        contentElement.classList.toggle('content-collapsed'); // Toggle visibility class on the content
     } else {
         console.warn("Could not find collapsible content for title:", titleElement.textContent);
     }
@@ -131,7 +137,6 @@ function toggleCategoryCollapse(event) {
 
 
 // --- Event Listener Setup ---
-// (Keep existing setupEventListeners function structure, including clickers, delegation, modals, etc. - unchanged)
 export function setupEventListeners() {
     console.log("--- Attaching Listeners ---");
 

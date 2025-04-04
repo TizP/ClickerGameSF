@@ -29,60 +29,66 @@ export function trySpawnPowerup() {
 // Creates and animates a powerup token element
 export function createPowerupToken(data) {
     const area = domElements['powerup-spawn-area'];
-    if (!area || currentPowerupToken) return; // Double check to prevent race condition
+    if (!area || currentPowerupToken) return; // Double check
 
     console.log(`Spawning powerup: ${data.name}`);
 
+    // Create the outer rotating token div
     const token = document.createElement('div');
-    currentPowerupToken = token; // Store reference to the currently falling token
+    currentPowerupToken = token;
     token.classList.add('powerup-token');
-    token.style.backgroundImage = `url('resources/img/${data.image}')`;
     token.title = `${data.name} (${data.description}) - Click Me!`;
-    token.powerupData = data; // Store config data directly on the element
+    token.powerupData = data; // Store config data
 
-    // Calculate random horizontal position
+    // Create the inner image element
+    const img = document.createElement('img');
+    img.src = `resources/img/${data.image}`;
+    img.alt = data.name; // Alt text for accessibility
+    img.classList.add('powerup-token-image'); // Add class for styling
+    img.draggable = false; // Prevent dragging the image
+    token.appendChild(img); // Add image inside the token div
+
+    // Calculate random horizontal position for the outer div
     const areaW = area.offsetWidth;
     token.style.left = `${Math.random() * (areaW - POWERUP_TOKEN_SIZE)}px`;
     token.style.top = '-100px'; // Start above screen
 
-    // --- Event Handlers ---
-    // Click handler: Applies boost and removes token
+    // Event Handlers (attached to outer div)
     const clickHandler = (e) => {
-        e.stopPropagation(); // Prevent potential event bubbling issues
-        if (!token.parentNode) return; // Check if already removed (e.g., by animation end)
-
+        e.stopPropagation();
+        if (!token.parentNode) return;
         console.log(`Powerup clicked: ${token.powerupData.name}`);
         gameState.totalPowerupsClicked++;
         applyBoost(token.powerupData);
         playSoundEffect(POWERUP_SFX_CLICK_ID);
-        removeActivePowerupToken(token); // Pass the specific token that was clicked
+        removeActivePowerupToken(token); // Remove this specific token
     };
 
-    // Animation end handler: Removes token if it reached the bottom without being clicked
-    const animEndHandler = () => {
-        console.log(`Powerup animation ended for: ${data.name}`);
-        // Only remove if it's still the 'current' token (wasn't clicked and replaced)
-        if (token === currentPowerupToken) {
-            removeActivePowerupToken(token);
+    const animEndHandler = (e) => {
+        // Only remove if the FALL animation ended
+        if (e.animationName === 'fallAnimation') {
+             console.log(`Powerup fall animation ended for: ${data.name}`);
+            // Only remove if it's still the 'current' token (wasn't clicked)
+             if (token === currentPowerupToken) {
+                 removeActivePowerupToken(token);
+             }
         }
     };
 
     token.addEventListener('click', clickHandler);
-    // Use { once: true } for the animation end listener so it only fires once
-    token.addEventListener('animationend', animEndHandler, { once: true });
+    token.addEventListener('animationend', animEndHandler);
 
-    // Apply the falling animation
-    token.style.animation = `fallAnimation ${POWERUP_FALL_DURATION_MS}ms linear`;
+    // Animations are handled by CSS using the .powerup-token class
 
     area.appendChild(token);
 }
 
 // Removes the specified token (or the current one if null) from the DOM and clears the reference
 export function removeActivePowerupToken(tokenElement = null) {
-    const tokenToRemove = tokenElement || currentPowerupToken; // Use provided or fallback to current
+    const tokenToRemove = tokenElement || currentPowerupToken;
     if (tokenToRemove) {
          if (tokenToRemove.parentNode) {
-            tokenToRemove.remove(); // Remove from DOM
+            tokenToRemove.remove();
              console.log("Removed powerup token from DOM.");
          }
          // Clear the global reference *only* if the token being removed *is* the current one
@@ -132,7 +138,6 @@ export function applyBoost(data) {
     calculateDerivedStats();
     updateDisplay();
     updateButtonStates();
-    // updateActivePowerupDisplay() is implicitly called by updateDisplay/updateButtonStates
 }
 
 // Removes an expired or cleared boost
@@ -195,7 +200,7 @@ export function restartBoostTimersOnLoad() {
     });
 
     // Recalculate stats once after processing all loaded boosts
-    calculateDerivedStats();
+    calculateDerivedStats(); // Calculate stats reflecting any immediately removed boosts
     console.log("Boost timer restart process complete.");
 }
 
@@ -206,7 +211,7 @@ export function stopPowerupSpawning() {
         powerupSpawnIntervalId = null;
         console.log("Powerup spawning stopped.");
     }
-    // Also remove any token currently falling when stopping spawning (e.g., on game pause/win)
+    // Also remove any token currently falling when stopping spawning
     removeActivePowerupToken();
 }
 

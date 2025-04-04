@@ -22,6 +22,7 @@ export function saveGame() {
              stateToSave.currentTrackIndex = stateToSave.currentTrackIndex ?? 0;
              stateToSave.musicShouldBePlaying = stateToSave.musicShouldBePlaying ?? false;
              stateToSave.lastVolume = stateToSave.lastVolume ?? 0.1;
+             stateToSave.isMuted = stateToSave.isMuted ?? false; // Save mute state too
         }
         // -----------------------------------------------------------
 
@@ -30,8 +31,9 @@ export function saveGame() {
     } catch (e) {
         console.error("Save error:", e);
         // Provide more specific feedback if possible (e.g., storage full)
-        if (e.name === 'QuotaExceededError') {
+        if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
             displaySaveStatus("Save Error: Storage Full!", 5000);
+            alert("Save Error: Browser storage is full. Cannot save progress. You may need to clear some website data or delete old saves if applicable.");
         } else {
             displaySaveStatus("Save Error!", 5000);
         }
@@ -71,7 +73,12 @@ export function loadGame() {
     // Assign the loaded (or default/reset) state to the global gameState
     // Overwrite existing properties instead of reassigning the reference
     Object.keys(loadedState).forEach(key => {
-        gameState[key] = loadedState[key];
+        // Don't load transient properties like powerupTimeouts
+        if (key !== 'powerupTimeouts') {
+            gameState[key] = loadedState[key];
+        } else {
+            gameState[key] = {}; // Ensure transient state is initialized as empty
+        }
     });
      // Remove keys from gameState that are no longer in the loaded/default state (e.g., after a reset or config change)
      Object.keys(gameState).forEach(key => {
@@ -88,6 +95,8 @@ export function loadGame() {
         displaySaveStatus("Save loaded.");
     } else if (!loadSuccessful && !json) {
         displaySaveStatus("New game started.");
+    } else if (!loadSuccessful && json) { // Failed load case already displayed message
+         // displaySaveStatus("Load Error! Resetting.", 5000); // Already shown
     }
 
     // Initial calculation after load/default setup is applied to gameState
