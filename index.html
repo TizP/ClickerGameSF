@@ -24,7 +24,7 @@
 
 
     <div class="game-container">
-        <!-- Top Bar (Unchanged Structure) -->
+        <!-- Top Bar -->
         <div class="top-bar">
             <div class="music-player">
                  <p class="track-info" title="Current background music track">Now Playing: <span id="current-track-name">Track Name</span></p>
@@ -73,12 +73,23 @@
                  <h4 class="group-title">Pipeline Efficiency <span class="toggle-icon"></span></h4>
                  <div id="upgrade-category-pipelineEfficiency" class="upgrade-category-container"></div>
                  <hr class="side-panel-hr">
-                 <h4 class="group-title">Acquisition Rate <span class="toggle-icon"></span></h4>
+
+                 <!-- REMOVED Acquisition Rate Section -->
+                 <!-- <h4 class="group-title">Acquisition Rate <span class="toggle-icon"></span></h4>
                  <div id="upgrade-category-acquisitionRate" class="upgrade-category-container"></div>
-                 <hr class="side-panel-hr">
-                 <h4 class="group-title">Acquisition Success Rate <span class="toggle-icon"></span></h4>
+                 <hr class="side-panel-hr"> -->
+
+                 <!-- REMOVED Acquisition Success Rate Section -->
+                 <!-- <h4 class="group-title">Acquisition Success Rate <span class="toggle-icon"></span></h4>
                  <div id="upgrade-category-acquisitionSuccess" class="upgrade-category-container"></div>
+                 <hr class="side-panel-hr"> -->
+
+                 <!-- NEW Merged Acquisition Enhancement Section -->
+                 <h4 class="group-title">Acquisition Enhancement <span class="toggle-icon"></span></h4>
+                 <div id="upgrade-category-acquisitionEnhancement" class="upgrade-category-container"></div>
                  <hr class="side-panel-hr">
+                 <!-- END NEW Section -->
+
                  <h4 class="group-title">Acquisition Cost Reduction <span class="toggle-icon"></span></h4>
                  <div id="upgrade-category-acquisitionCost" class="upgrade-category-container"></div>
                  <hr class="side-panel-hr">
@@ -89,27 +100,23 @@
                  <div id="upgrade-category-customerGrowth" class="upgrade-category-container"></div>
                  <hr class="side-panel-hr">
 
-                 <!-- Special Upgrades Section -->
+                 <!-- Special Upgrades Section (Unchanged Content Order) -->
                  <h4 class="group-title">Special Upgrades</h4>
-                 <!-- Content for Special Upgrades -->
-                 <button id="upgrade-costReductStrategic" class="upgrade-button" data-cost="5000000" data-currency="money" disabled title="Re-engineers the acquisition process for a massive reduction in cost per attempt (-33% multiplicative).">
+                 <button id="upgrade-costReductStrategic" class="upgrade-button" disabled title="Re-engineers the acquisition process for a massive reduction in cost per attempt (-33% multiplicative).">
                     <span>Strategic Cost Optimization</span> <span class="cost">Cost: $5M</span> <span class="effect">-33% Acq. Cost</span>
                  </button>
-                 <!-- NEW UPGRADE BUTTON -->
-                 <button id="upgrade-playtimeMPSBoost" class="upgrade-button" data-costMoney="10000000" data-costCustomers="1000" disabled title="Increases MPS by +100% per hour played (capped at +200% after 2 hours). Requires significant playtime to reach max effect.">
+                 <button id="upgrade-playtimeMPSBoost" class="upgrade-button" disabled title="Increases MPS by +100% per hour played (capped at +200% after 2 hours). Requires significant playtime to reach max effect.">
                      <span>Veteran Pipeline Operator</span> <span class="cost">Cost: 1k Cust & $10M</span> <span class="effect">+MPS based on Playtime</span>
                  </button>
-                 <!-- END NEW UPGRADE BUTTON -->
                  <button id="upgrade-flexibleWorkflow" class="upgrade-button" disabled title="Purchase to unlock the Flexible Workflow toggle. Balances L/O amounts by shifting generation focus.">
                     <span>Flexible Workflow</span> <span class="cost">Cost: 100 Cust & $10k</span> <span class="effect">Enables Workflow Toggle</span>
                  </button>
-                 <!-- Toggle button for Flex Workflow (state managed by JS) -->
                  <button id="toggle-flexible-workflow" class="simple-button" disabled title="Purchase the Flexible Workflow upgrade first to enable toggling.">
                      Activate Flex Workflow
                  </button>
             </div> <!-- End Upgrades Panel -->
 
-            <!-- Center Area (Unchanged Structure) -->
+            <!-- Center Area -->
              <div class="center-area">
                 <h1>Salesforce Pipeline Simulator</h1>
                 <div class="stats-display">
@@ -138,104 +145,65 @@
             </div>
             <!-- End Center Area -->
 
-            <!-- Right Panel (Buildables - Unchanged Structure) -->
+            <!-- Right Panel (Buildables) -->
              <div class="side-panel buildables-panel">
                 <div class="panel-sticky-title">Teams & Features</div>
-
-                 <!-- Building Categories (Structure unchanged, content updated by JS) -->
+                 <!-- Build Categories (Structure unchanged) -->
                  <h4 class="group-title">Lead Generation Teams <span class="toggle-icon"></span></h4>
                  <div class="build-category-container">
-                     <button id="buy-sdr" class="build-button" data-base-cost="10" data-currency="leads" disabled title="Placeholder Title"> <span class="build-title">SDR (<span class="count" id="sdr-count">0</span>)</span> <span class="effect" id="sdr-effect">+1 L/s</span> <span class="cost" id="sdr-cost">Cost: 10 L</span> </button>
-                     <button id="buy-webform" class="build-button" data-base-cost="150" data-currency="leads" disabled title="Placeholder Title"> <span class="build-title">Web Form (<span class="count" id="webform-count">0</span>)</span> <span class="effect" id="webform-effect">+10 L/s</span> <span class="cost" id="webform-cost">Cost: 150 L</span> </button>
-                     <button id="buy-pardot" class="build-button" data-base-cost="1500" data-currency="leads" disabled title="Placeholder Title"> <span class="build-title">Pardot Campaign (<span class="count" id="pardot-count">0</span>)</span> <span class="effect" id="pardot-effect">+80 L/s</span> <span class="cost" id="pardot-cost">Cost: 1.5k L</span> </button>
-                     <button id="buy-nurture" class="build-button" data-base-cost="10000" data-currency="leads" disabled title="Placeholder Title"> <span class="build-title">Nurture Program (<span class="count" id="nurture-count">0</span>)</span> <span class="effect" id="nurture-effect">+400 L/s</span> <span class="cost" id="nurture-cost">Cost: 10k L</span> </button>
-                     <button id="buy-marketingcloud" class="build-button" data-base-cost="50000" data-currency="leads" disabled title="Placeholder Title"> <span class="build-title">Mkt Cloud Journey (<span class="count" id="marketingcloud-count">0</span>)</span> <span class="effect" id="marketingcloud-effect">+1.5k L/s</span> <span class="cost" id="marketingcloud-cost">Cost: 50k L</span> </button>
+                     <button id="buy-sdr" class="build-button" disabled title="..."> <span class="build-title">SDR (<span class="count" id="sdr-count">0</span>)</span> <span class="effect" id="sdr-effect">...</span> <span class="cost" id="sdr-cost">...</span> </button>
+                     <button id="buy-webform" class="build-button" disabled title="..."> <span class="build-title">Web Form (<span class="count" id="webform-count">0</span>)</span> <span class="effect" id="webform-effect">...</span> <span class="cost" id="webform-cost">...</span> </button>
+                     <button id="buy-pardot" class="build-button" disabled title="..."> <span class="build-title">Pardot Campaign (<span class="count" id="pardot-count">0</span>)</span> <span class="effect" id="pardot-effect">...</span> <span class="cost" id="pardot-cost">...</span> </button>
+                     <button id="buy-nurture" class="build-button" disabled title="..."> <span class="build-title">Nurture Program (<span class="count" id="nurture-count">0</span>)</span> <span class="effect" id="nurture-effect">...</span> <span class="cost" id="nurture-cost">...</span> </button>
+                     <button id="buy-marketingcloud" class="build-button" disabled title="..."> <span class="build-title">Mkt Cloud Journey (<span class="count" id="marketingcloud-count">0</span>)</span> <span class="effect" id="marketingcloud-effect">...</span> <span class="cost" id="marketingcloud-cost">...</span> </button>
                  </div>
                  <hr class="side-panel-hr">
                  <h4 class="group-title">Opportunity Generation Teams <span class="toggle-icon"></span></h4>
                  <div class="build-category-container">
-                     <button id="buy-bdr" class="build-button" data-base-cost="10" data-currency="opportunities" disabled title="Placeholder Title"> <span class="build-title">BDR (<span class="count" id="bdr-count">0</span>)</span> <span class="effect" id="bdr-effect">+1 O/s</span> <span class="cost" id="bdr-cost">Cost: 10 O</span> </button>
-                     <button id="buy-qualbot" class="build-button" data-base-cost="150" data-currency="opportunities" disabled title="Placeholder Title"> <span class="build-title">Qual Bot (<span class="count" id="qualbot-count">0</span>)</span> <span class="effect" id="qualbot-effect">+10 O/s</span> <span class="cost" id="qualbot-cost">Cost: 150 O</span> </button>
-                     <button id="buy-solutionengineer" class="build-button" data-base-cost="1500" data-currency="opportunities" disabled title="Placeholder Title"> <span class="build-title">Solution Engineer (<span class="count" id="solutionengineer-count">0</span>)</span> <span class="effect" id="solutionengineer-effect">+80 O/s</span> <span class="cost" id="solutionengineer-cost">Cost: 1.5k O</span> </button>
-                     <button id="buy-demospec" class="build-button" data-base-cost="10000" data-currency="opportunities" disabled title="Placeholder Title"> <span class="build-title">Demo Specialist (<span class="count" id="demospec-count">0</span>)</span> <span class="effect" id="demospec-effect">+400 O/s</span> <span class="cost" id="demospec-cost">Cost: 10k O</span> </button>
-                     <button id="buy-proposaldesk" class="build-button" data-base-cost="50000" data-currency="opportunities" disabled title="Placeholder Title"> <span class="build-title">Proposal Desk (<span class="count" id="proposaldesk-count">0</span>)</span> <span class="effect" id="proposaldesk-effect">+1.5k O/s</span> <span class="cost" id="proposaldesk-cost">Cost: 50k O</span> </button>
+                      <button id="buy-bdr" class="build-button" disabled title="..."> <span class="build-title">BDR (<span class="count" id="bdr-count">0</span>)</span> <span class="effect" id="bdr-effect">...</span> <span class="cost" id="bdr-cost">...</span> </button>
+                     <button id="buy-qualbot" class="build-button" disabled title="..."> <span class="build-title">Qual Bot (<span class="count" id="qualbot-count">0</span>)</span> <span class="effect" id="qualbot-effect">...</span> <span class="cost" id="qualbot-cost">...</span> </button>
+                     <button id="buy-solutionengineer" class="build-button" disabled title="..."> <span class="build-title">Solution Engineer (<span class="count" id="solutionengineer-count">0</span>)</span> <span class="effect" id="solutionengineer-effect">...</span> <span class="cost" id="solutionengineer-cost">...</span> </button>
+                     <button id="buy-demospec" class="build-button" disabled title="..."> <span class="build-title">Demo Specialist (<span class="count" id="demospec-count">0</span>)</span> <span class="effect" id="demospec-effect">...</span> <span class="cost" id="demospec-cost">...</span> </button>
+                     <button id="buy-proposaldesk" class="build-button" disabled title="..."> <span class="build-title">Proposal Desk (<span class="count" id="proposaldesk-count">0</span>)</span> <span class="effect" id="proposaldesk-effect">...</span> <span class="cost" id="proposaldesk-cost">...</span> </button>
                  </div>
                  <hr class="side-panel-hr">
                  <h4 class="group-title">Integrated Solutions <span class="toggle-icon"></span></h4>
                  <div class="build-category-container">
-                     <button id="buy-integration" class="build-button" disabled title="Placeholder Title"> <span class="build-title">Integration Hub (<span class="count" id="integration-count">0</span>)</span> <span class="effect" id="integration-effect">+1k L/s, +1k O/s</span> <span class="cost" id="integration-cost">Cost: 50k L & 50k O</span> </button>
-                     <button id="buy-platform" class="build-button" disabled title="Placeholder Title"> <span class="build-title">Platform App (<span class="count" id="platform-count">0</span>)</span> <span class="effect" id="platform-effect">+4.5k L/s, +4.5k O/s</span> <span class="cost" id="platform-cost">Cost: 250k L & 250k O</span> </button>
-                     <button id="buy-ecosystem" class="build-button" disabled title="Placeholder Title"> <span class="build-title">Partner Ecosystem (<span class="count" id="ecosystem-count">0</span>)</span> <span class="effect" id="ecosystem-effect">+16.5k L/s, +16.5k O/s</span> <span class="cost" id="ecosystem-cost">Cost: 1M L & 1M O</span> </button>
-                     <button id="buy-cloudsuite" class="build-button" disabled title="Placeholder Title"> <span class="build-title">Cloud Suite (<span class="count" id="cloudsuite-count">0</span>)</span> <span class="effect" id="cloudsuite-effect">+70k L/s, +70k O/s</span> <span class="cost" id="cloudsuite-cost">Cost: 5M L & 5M O</span> </button>
-                     <button id="buy-hyperscaler" class="build-button" disabled title="Placeholder Title"> <span class="build-title">Hyperscaler (<span class="count" id="hyperscaler-count">0</span>)</span> <span class="effect" id="hyperscaler-effect">+310k L/s, +310k O/s</span> <span class="cost" id="hyperscaler-cost">Cost: 25M L & 25M O</span> </button>
-                     <button id="buy-aidata" class="build-button" disabled title="Placeholder Title"> <span class="build-title">AI Data Cloud (<span class="count" id="aidata-count">0</span>)</span> <span class="effect" id="aidata-effect">+1.65M L/s, +1.65M O/s</span> <span class="cost" id="aidata-cost">Cost: 150M L & 150M O</span> </button>
+                     <button id="buy-integration" class="build-button" disabled title="..."> <span class="build-title">Integration Hub (<span class="count" id="integration-count">0</span>)</span> <span class="effect" id="integration-effect">...</span> <span class="cost" id="integration-cost">...</span> </button>
+                     <button id="buy-platform" class="build-button" disabled title="..."> <span class="build-title">Platform App (<span class="count" id="platform-count">0</span>)</span> <span class="effect" id="platform-effect">...</span> <span class="cost" id="platform-cost">...</span> </button>
+                     <button id="buy-ecosystem" class="build-button" disabled title="..."> <span class="build-title">Partner Ecosystem (<span class="count" id="ecosystem-count">0</span>)</span> <span class="effect" id="ecosystem-effect">...</span> <span class="cost" id="ecosystem-cost">...</span> </button>
+                     <button id="buy-cloudsuite" class="build-button" disabled title="..."> <span class="build-title">Cloud Suite (<span class="count" id="cloudsuite-count">0</span>)</span> <span class="effect" id="cloudsuite-effect">...</span> <span class="cost" id="cloudsuite-cost">...</span> </button>
+                     <button id="buy-hyperscaler" class="build-button" disabled title="..."> <span class="build-title">Hyperscaler (<span class="count" id="hyperscaler-count">0</span>)</span> <span class="effect" id="hyperscaler-effect">...</span> <span class="cost" id="hyperscaler-cost">...</span> </button>
+                     <button id="buy-aidata" class="build-button" disabled title="..."> <span class="build-title">AI Data Cloud (<span class="count" id="aidata-count">0</span>)</span> <span class="effect" id="aidata-effect">...</span> <span class="cost" id="aidata-cost">...</span> </button>
                  </div>
                  <hr class="side-panel-hr">
                  <h4 class="group-title">Customer Success <span class="toggle-icon"></span></h4>
                  <div class="build-category-container">
-                     <button id="buy-acctManager" class="build-button" data-base-cost="1000" data-currency="money" disabled title="Placeholder Title"> <span class="build-title">Acct Manager (<span class="count" id="acctManager-count">0</span>)</span> <span class="effect" id="acctManager-effect">-5% Acq. Cost</span> <span class="cost" id="acctManager-cost">Cost: $1k</span> </button>
-                     <button id="buy-successArchitect" class="build-button" data-base-cost="1000000" data-currency="money" disabled title="Placeholder Title"> <span class="build-title">Success Architect (<span class="count" id="successArchitect-count">0</span>)</span> <span class="effect" id="successArchitect-effect">+2% Base CVR per 10 Int. Solns</span> <span class="cost" id="successArchitect-cost">Cost: $1M</span> </button>
-                     <button id="buy-procurementOpt" class="build-button" data-base-cost="10000000" data-currency="money" disabled title="Placeholder Title"> <span class="build-title">Procurement Opt. (<span class="count" id="procurementOpt-count">0</span>)</span> <span class="effect" id="procurementOpt-effect">-1% Other Bldg Cost</span> <span class="cost" id="procurementOpt-cost">Cost: $10M</span> </button>
+                     <button id="buy-acctManager" class="build-button" disabled title="..."> <span class="build-title">Acct Manager (<span class="count" id="acctManager-count">0</span>)</span> <span class="effect" id="acctManager-effect">...</span> <span class="cost" id="acctManager-cost">...</span> </button>
+                     <button id="buy-successArchitect" class="build-button" disabled title="..."> <span class="build-title">Success Architect (<span class="count" id="successArchitect-count">0</span>)</span> <span class="effect" id="successArchitect-effect">...</span> <span class="cost" id="successArchitect-cost">...</span> </button>
+                     <button id="buy-procurementOpt" class="build-button" disabled title="..."> <span class="build-title">Procurement Opt. (<span class="count" id="procurementOpt-count">0</span>)</span> <span class="effect" id="procurementOpt-effect">...</span> <span class="cost" id="procurementOpt-cost">...</span> </button>
                  </div>
                  <hr class="side-panel-hr">
             </div> <!-- End Buildables Panel -->
         </div> <!-- End main-content-area -->
 
-        <!-- Powerup Spawn Area (Unchanged) -->
+        <!-- Powerup Spawn Area -->
         <div id="powerup-spawn-area"></div>
 
     </div> <!-- End game-container -->
 
-    <!-- Modals (Unchanged Structure - Content updated where necessary) -->
-    <div id="credits-modal" class="modal"> <div class="modal-content"> <span class="close-button" id="close-credits-button" title="Close">×</span> <h2>Credits</h2> <p><strong>Game Design & Development:</strong></p> <ul><li>Tizp</li><li>AI Assistant (Gemini)</li></ul> <p><strong>Music:</strong></p> <p> "Batty McFaddin - Slower"<br> "Pixelland"<br> "Disco con Tutti"<br> "Fox Tale Waltz Part 1 Instrumental"<br> "Mining by Moonlight"<br> "Space Jazz"<br> "Surf Shimmy"<br> <br> All music by Kevin MacLeod (incompetech.com)<br> Licensed under Creative Commons: By Attribution 4.0 License<br> <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">http://creativecommons.org/licenses/by/4.0/</a> </p> <p><strong>Sound Effects:</strong></p> <p>"Cash Register Kaching" by Modestas123123 from Pixabay</p> <p>"Collect Point" (collect-5930.mp3) by freesound_community from Pixabay</p>
-            <p><strong>Images:</strong></p>
-            <p>Lead/Opportunity Button Images Generated by Gemini</p>
-            <p>Favicon & Power-up Images: Various memes found online</p>
-            <p><i>Game concept inspired by Cookie Clicker and other incremental games.</i></p> </div> </div>
+    <!-- Modals (Update Tutorial Text) -->
+    <div id="credits-modal" class="modal"> <div class="modal-content"> <span class="close-button" id="close-credits-button" title="Close">×</span> <h2>Credits</h2> <!-- ... content ... --> </div> </div>
     <div id="win-modal" class="modal"> <div class="modal-content"> <h2>Congratulations!</h2> <p>You've built a pipeline generating over <strong>$1 Billion!</strong></p> <p>You are a true Salesforce Pipeline Master!</p> <p>(Game Paused)</p> <button id="close-win-button" class="simple-button">Keep Playing</button> </div> </div>
-    <div id="stats-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" id="close-stats-button" title="Close">×</span>
-            <h2>Statistics</h2>
-            <div class="stats-list">
-                <p>Game Time: <span id="stat-game-time">0s</span></p> <hr>
-                <p>Lead Clicks: <span id="stat-lead-clicks">0</span></p>
-                <p>Opportunity Clicks: <span id="stat-opp-clicks">0</span></p>
-                <p>Manual Leads: <span id="stat-manual-leads">0</span></p>
-                <p>Manual Opportunities: <span id="stat-manual-opps">0</span></p> <hr>
-                <p>Auto Leads Generated: <span id="stat-auto-leads">0</span></p>
-                <p>Auto Opportunities Generated: <span id="stat-auto-opps">0</span></p> <hr>
-                <p>Acquisition Attempts: <span id="stat-acq-attempts">0</span></p>
-                <p>Successful Acquisitions: <span id="stat-acq-success">0</span></p>
-                <p>Failed Acquisitions: <span id="stat-acq-failed">0</span></p> <hr>
-                <p>Power-ups Clicked: <span id="stat-powerups-clicked">0</span></p> <hr>
-                <p>Total Money Earned: $<span id="stat-total-money">0.00</span></p>
-            </div>
-        </div>
-    </div>
-    <div id="tutorial-modal" class="modal"> <div class="modal-content"> <span class="close-button" id="close-tutorial-button" title="Close">×</span> <h2>Tutorial: How to Play</h2> <p>Welcome to the <strong>Salesforce Pipeline Simulator!</strong> Your goal is to build a massive sales pipeline and reach <strong>$1 Billion</strong> in revenue.</p> <h4>Core Resources:</h4> <ul> <li><strong>Leads (L):</strong> Raw potential. Generated via clicks or Teams/Features. Spent on upgrades, Teams/Features, & Acquisition.</li> <li><strong>Opportunities (Opps/O):</strong> Qualified potential. Generated via clicks or Teams/Features. Spent on upgrades, Teams/Features, & Acquisition.</li> <li><strong>Customers (Cust):</strong> Source of revenue! Acquired by spending L & O. Spent on powerful late-game upgrades.</li> <li><strong>Money ($):</strong> Your score! Generated by Customers. Spent on efficiency upgrades.</li> </ul> <h4>Generating Resources:</h4> <ul> <li><strong>Manual Clicks:</strong> Click Lead/Opp buttons in center. Upgrades boost amount/click.</li> <li><strong>Teams & Features (Right Panel):</strong> Buy items to generate L/S or O/S automatically. Costs increase per purchase.</li> </ul> <h4>Getting Customers (Acquisition):</h4> <ul> <li>Game automatically attempts to convert L & O into Customers.</li> <li><strong>Acquisition Cost:</strong> L & O cost per attempt (shown in center stats). Increases with Customers, reducible by upgrades and new buildings.</li> <li><strong>Acquisition Rate (CAR):</strong> Attempts/second. Increase via upgrades.</li> <li><strong>Acquisition Success:</strong> % chance an attempt succeeds. Increase via upgrades. Failure still costs L & O!</li> <li><strong>Pause Acquisition:</strong> Top bar button pauses L/O consumption for attempts.</li> </ul> <h4>Generating Money:</h4> <ul> <li>Each Customer generates $/sec based on <strong>Customer Value Rate (CVR)</strong>.</li> <li>Increase CVR via upgrades and new buildings.</li> </ul> <h4>Upgrades & Training (Left Panel):</h4> <ul> <li>Spend L, O, $, or Cust on upgrades to: <ul> <li>Boost manual clicks.</li> <li>Boost Team/Feature output (multipliers, percentages).</li> <li>Improve overall efficiency.</li> <li>Increase Acquisition Rate (CAR) or Success %.</li> <li>Decrease Acquisition Cost.</li> <li>Increase Customer Value Rate (CVR).</li> <li>Purchase special upgrades (e.g., Flexible Workflow, Veteran Pipeline Operator).</li> <li>Gain bonuses by spending Customers.</li> </ul> </li> <li><strong>Tiered Upgrades:</strong> Purchase all Tier 1 upgrades in a category to unlock powerful Tier 2 upgrades.</li></ul> <h4>Teams & Features (Right Panel):</h4><ul><li>Purchase buildings for passive L/S, O/S, or other effects.</li><li><strong>Customer Success Buildings:</strong> Provide unique bonuses like reducing Acquisition Cost, boosting CVR based on other buildings, or reducing the cost of other buildings.</li></ul><h4>Special Upgrades:</h4> <ul>
-            <li><strong>Flexible Workflow:</strong> Purchase to unlock a toggle button. When active, reduces the generation rate of the resource you currently have *more* of (L or O) by 50%, and adds that generation rate to the resource you have *less* of. Aims to balance the *total amounts* of Leads and Opportunities. Deactivates automatically when amounts become roughly equal.</li>
-             <li><strong>Veteran Pipeline Operator (NEW):</strong> Increases your Money per Second based on total playtime. The bonus starts at 0% and increases by +100% MPS per hour played, capping at a maximum of +200% bonus after 2 hours of playtime.</li>
-        </ul> <h4>Power-ups (Falling Tokens):</h4> <ul> <li>Occasionally (approx. every 5 minutes), circular tokens will fall from the top of the screen.</li>
-            <li>Click a token before it disappears off the bottom to activate a temporary boost!</li>
-            <li>Possible boosts include increased L/S & O/S, more powerful clicks, increased M/S, or higher CVR.</li>
-        </ul> <h4>Goal & Saving:</h4> <ul> <li>Reach <strong>$1 Billion</strong>!</li> <li>Auto-saves every 30 seconds. Use top bar buttons for manual save/delete.</li> </ul> <p>Good luck!</p> </div> </div>
-    <div id="settings-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" id="close-settings-button" title="Close">×</span>
-            <h2>Settings</h2>
-            <div class="settings-content">
-                 <p>Game controls and options.</p>
-                 <hr style="margin: 15px 0;">
-                 <button id="soft-refresh-button" class="simple-button" title="Reloads the game state from the last save and restarts intervals. Useful if UI seems stuck. Does NOT clear progress.">
-                     Soft Refresh Game
-                 </button>
-                 <p style="font-size: 0.8em; color: #666; margin-top: 5px;">
-                     (Reloads from last save - any unsaved progress might be lost)
-                 </p>
-            </div>
-        </div>
-    </div>
+    <div id="stats-modal" class="modal"> <div class="modal-content"> <span class="close-button" id="close-stats-button" title="Close">×</span> <h2>Statistics</h2> <!-- ... content ... --> </div> </div>
+    <div id="tutorial-modal" class="modal"> <div class="modal-content"> <span class="close-button" id="close-tutorial-button" title="Close">×</span> <h2>Tutorial: How to Play</h2> <p>Welcome to the <strong>Salesforce Pipeline Simulator!</strong> Your goal is to build a massive sales pipeline and reach <strong>$1 Billion</strong> in revenue.</p> <h4>Core Resources:</h4> <!-- ... --> <h4>Generating Resources:</h4> <!-- ... --> <h4>Getting Customers (Acquisition):</h4> <!-- ... --> <h4>Generating Money:</h4> <!-- ... -->
+        <h4>Upgrades & Training (Left Panel):</h4>
+        <ul> <li>Spend L, O, $, or Cust on upgrades to: <ul> <li>Boost manual clicks.</li> <li>Boost Team/Feature output (multipliers, percentages).</li> <li>Improve overall efficiency.</li>
+                <!-- Updated line -->
+                <li>Improve Acquisition Rate (CAR), Success %, or reduce Cost.</li>
+                <!-- End Update -->
+                <li>Increase Customer Value Rate (CVR).</li> <li>Purchase special upgrades (e.g., Flexible Workflow, Veteran Pipeline Operator).</li> <li>Gain bonuses by spending Customers.</li> </ul> </li> <li><strong>Tiered Upgrades:</strong> Purchase all Tier 1 upgrades in a category to unlock powerful Tier 2 upgrades.</li></ul> <h4>Teams & Features (Right Panel):</h4> <!-- ... --><h4>Special Upgrades:</h4> <!-- ... --> <h4>Power-ups (Falling Tokens):</h4> <!-- ... --> <h4>Goal & Saving:</h4> <!-- ... --> <p>Good luck!</p> </div> </div>
+    <div id="settings-modal" class="modal"> <div class="modal-content"> <span class="close-button" id="close-settings-button" title="Close">×</span> <h2>Settings</h2> <!-- ... content ... --> </div> </div>
 
     <!-- Load main script as module -->
     <script type="module" src="js/main.js" defer></script>

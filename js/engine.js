@@ -9,8 +9,8 @@ import { formatPercent } from './utils.js'; // Import formatPercent for effect d
 let currentRates = {
     leadsPerSecond: 0,
     opportunitiesPerSecond: 0,
-    customerAcquisitionRate: 0,
-    customerValueRate: 0,
+    customerAcquisitionRate: 0, // This will be the final calculated rate
+    customerValueRate: 0,       // This will be the final calculated rate
     moneyPerSecond: 0,
     // Add derived states for dynamic building effects to be read by UI
     currentAcctManagerCostReduction: 1.0,
@@ -20,7 +20,6 @@ let currentRates = {
 let accumulatedAcquisitionAttempts = 0.0;
 
 // --- Helper Function to Find Upgrade Config by ID ---
-// (Keep existing findUpgradeConfigById function - unchanged)
 export function findUpgradeConfigById(upgradeId) {
     for (const categoryId in upgradesConfig) {
         const category = upgradesConfig[categoryId];
@@ -29,6 +28,7 @@ export function findUpgradeConfigById(upgradeId) {
                 return { config: category[upgradeId], categoryId: categoryId, tier: null };
             }
         } else {
+            // Check all defined tiers for the category
             if (category.tier1 && category.tier1[upgradeId]) {
                 return { config: category.tier1[upgradeId], categoryId: categoryId, tier: 1 };
             }
@@ -104,15 +104,15 @@ export function getUpgradeCost(id) {
     const cfg = found.config;
 
     // Handle specific multi-currency cost structures first
-    // Check for the general pattern needed by Flexible Workflow AND the new Playtime Boost
     if (cfg.costMoney && cfg.costCustomers) {
         return { money: cfg.costMoney || 0, customers: cfg.costCustomers || 0, leads: 0, opps: 0 };
     }
-
-    // Handle standard single cost currencies
+    // Cost defined as both L & O
     if (cfg.costCurrency === 'both') {
         return { leads: cfg.costLeads || 0, opps: cfg.costOpps || 0, money: 0, customers: 0 };
-    } else if (cfg.costCurrency === 'leads') {
+    }
+    // Handle standard single cost currencies
+    if (cfg.costCurrency === 'leads') {
         return { leads: cfg.cost || 0, opps: 0, money: 0, customers: 0 };
     } else if (cfg.costCurrency === 'opportunities') {
         return { leads: 0, opps: cfg.cost || 0, money: 0, customers: 0 };
@@ -121,6 +121,7 @@ export function getUpgradeCost(id) {
     } else if (cfg.costCurrency === 'customers') {
         return { customers: cfg.cost || 0, leads: 0, opps: 0, money: 0 };
     }
+
 
     // Default fallback if cost structure is unexpected
     console.warn(`Could not determine cost structure for upgrade: ${id}`);
@@ -131,7 +132,7 @@ export function getUpgradeCost(id) {
 export function getCurrentCustomerCost() {
     const base = LEADS_PER_CUSTOMER_BASE;
     const count = gameState.customerCountForCostIncrease || 0;
-    const costMult = CUSTOMER_COST_MULTIPLIER;
+    const costMult = CUSTOMER_COST_MULTIPLIER; // Now using 1.005
 
     // Combine reduction multipliers: base reduction + acctManager reduction
     const upgradeReductMult = gameState.customerCostReductionMultiplier || 1.0;
@@ -164,12 +165,12 @@ export function calculateDerivedStats() {
 
     // --- Proceed with standard calculations ---
     let rawLPS = 0, rawOPS = 0;
-    let currentCAR = gameState.baseCAR || 0.1;
-    // Initialize currentCVR with base value
-    let currentCVR = gameState.baseCVR || 1.0; // <<< Use let here
+    // Initialize working variables for CAR and CVR with base values from gameState
+    let workingCAR = gameState.baseCAR || 0.1;
+    let workingCVR = gameState.baseCVR || 1.0;
 
     // Apply Success Architect bonus to BASE CVR
-    currentCVR *= (1 + successArchitectCVRBonusPercent);
+    workingCVR *= (1 + successArchitectCVRBonusPercent);
 
     // (Keep Multiplier definitions unchanged)
     const globalEff = gameState.buildingEfficiencyMultiplier || 1.0;
@@ -186,7 +187,7 @@ export function calculateDerivedStats() {
 
     // (Keep Building production loop unchanged)
     for (const id in buildingsConfig) {
-        if (['acctManager', 'successArchitect', 'procurementOpt'].includes(id)) continue; // Skip non-producing buildings
+        if (['acctManager', 'successArchitect', 'procurementOpt'].includes(id)) continue;
         const cfg = buildingsConfig[id];
         const count = gameState.buildings[id]?.count || 0;
         if (count > 0) {
@@ -230,28 +231,28 @@ export function calculateDerivedStats() {
     const prodBoost = gameState.activeBoosts?.['prodBoost'];
     if (prodBoost) { const mult = 1.0 + prodBoost.magnitude; finalLPS *= mult; finalOPS *= mult; }
 
-    // Calculate CAR and CVR based on upgrades
-    for (const upId in gameState.upgrades) {
-        if (!gameState.upgrades[upId]?.purchased) continue;
-        const found = findUpgradeConfigById(upId);
-        if (found) {
-            const uCfg = found.config;
-            if (uCfg.targetRate === 'car' && uCfg.effectValue) { currentCAR += uCfg.effectValue; }
-            if (uCfg.targetRate === 'cvr' && uCfg.effectValue) { currentCVR += uCfg.effectValue; }
-        }
-    }
-    currentCAR += gameState.custUpgradeBonusCAR || 0;
-    currentCVR += gameState.custUpgradeBonusCVR || 0;
-    currentCVR *= (gameState.cvrMultiplierBonus || 1.0);
-    currentCVR *= (gameState.cvrCustomerMultiplier || 1.0);
+    // --- Calculate CAR and CVR based on Upgrades ---
+    // Note: We modify workingCAR and workingCVR here.
+    // The effects from upgradesConfig are now applied directly to gameState (e.g., baseCAR, acquisitionSuccessChance)
+    // by the buyUpgrade function in events.js when they are purchased.
+    // We only need to apply the Customer Growth bonuses here.
+
+    // Apply flat bonuses from Customer Growth upgrades
+    workingCAR += gameState.custUpgradeBonusCAR || 0;
+    workingCVR += gameState.custUpgradeBonusCVR || 0;
+
+    // Apply CVR Multipliers (from CVR upgrades & Customer Growth upgrades)
+    workingCVR *= (gameState.cvrMultiplierBonus || 1.0);
+    workingCVR *= (gameState.cvrCustomerMultiplier || 1.0);
+
+    // Apply CVR Boost (Powerup)
     const cvrBoost = gameState.activeBoosts?.['cvrBoost'];
-    if (cvrBoost) { const mult = 1.0 + cvrBoost.magnitude; currentCVR *= mult; }
+    if (cvrBoost) { const mult = 1.0 + cvrBoost.magnitude; workingCVR *= mult; }
+
 
     // --- Calculate Money Per Second ---
-    // ********** FIX HERE **********
-    // Calculate base MPS using the *currentCVR* variable, which holds the value calculated so far.
-    let baseMPS = (gameState.customers || 0) * currentCVR;
-    // *******************************
+    // Calculate base MPS using the fully calculated workingCVR
+    let baseMPS = (gameState.customers || 0) * workingCVR;
 
     // (Keep Playtime MPS Boost logic unchanged)
     if (gameState.upgrades['playtimeMPSBoost']?.purchased) {
@@ -270,14 +271,14 @@ export function calculateDerivedStats() {
     if (moneyBoost) { finalMPS *= (1.0 + moneyBoost.magnitude); }
 
 
-    // Final Rate Assignment (Ensure non-negative and finite)
+    // --- Final Rate Assignment ---
+    // Assign the calculated values (after all bonuses/multipliers) to the currentRates object
+    // Ensure all rates are non-negative and finite numbers.
     const leadsPerSecond = (!isNaN(finalLPS) && isFinite(finalLPS)) ? Math.max(0, finalLPS) : 0;
     const opportunitiesPerSecond = (!isNaN(finalOPS) && isFinite(finalOPS)) ? Math.max(0, finalOPS) : 0;
-    const customerAcquisitionRate = (!isNaN(currentCAR) && isFinite(currentCAR)) ? Math.max(0, currentCAR) : 0;
-    // Now declare the final customerValueRate constant using the calculated currentCVR
-    const customerValueRate = (!isNaN(currentCVR) && isFinite(currentCVR)) ? Math.max(0, currentCVR) : 0;
+    const customerAcquisitionRate = (!isNaN(workingCAR) && isFinite(workingCAR)) ? Math.max(0, workingCAR) : 0;
+    const customerValueRate = (!isNaN(workingCVR) && isFinite(workingCVR)) ? Math.max(0, workingCVR) : 0;
     const moneyPerSecond = (!isNaN(finalMPS) && isFinite(finalMPS)) ? Math.max(0, finalMPS) : 0;
-
 
     // Update the module-scoped rates object
     currentRates = {
@@ -286,27 +287,26 @@ export function calculateDerivedStats() {
         customerAcquisitionRate, customerValueRate, moneyPerSecond // Assign final calculated values
     };
 
-    return currentRates; // Return a copy
+    // No need to return here as currentRates is updated directly
 }
 
 // --- Game Loop ---
-// (Keep gameLoop function unchanged)
 export function gameLoop() {
     if (isGamePaused || isGameWon) return;
 
     const secs = TICK_INTERVAL_MS / 1000.0;
-    calculateDerivedStats(); // Recalculate rates at start of loop
-    const rates = currentRates; // Use the just-calculated rates
+    calculateDerivedStats(); // Recalculate rates based on current state
 
-    // Generate resources
-    const lTick = rates.leadsPerSecond * secs; const oTick = rates.opportunitiesPerSecond * secs;
+    // Generate resources based on the *just calculated* rates in `currentRates`
+    const lTick = currentRates.leadsPerSecond * secs;
+    const oTick = currentRates.opportunitiesPerSecond * secs;
     if (!isNaN(lTick) && isFinite(lTick) && lTick > 0) { gameState.leads += lTick; gameState.totalAutoLeads += lTick; }
     if (!isNaN(oTick) && isFinite(oTick) && oTick > 0) { gameState.opportunities += oTick; gameState.totalAutoOpps += oTick; }
 
     // Acquisition attempts
     if (!gameState.isAcquisitionPaused) {
         const cost = getCurrentCustomerCost();
-        const currentCAR = rates.customerAcquisitionRate; // Use calculated CAR
+        const currentCAR = currentRates.customerAcquisitionRate; // Use calculated CAR
         let attemptsThisTick = (currentCAR * secs) + accumulatedAcquisitionAttempts;
         let attemptsToMake = Math.floor(attemptsThisTick);
         accumulatedAcquisitionAttempts = attemptsThisTick - attemptsToMake;
@@ -316,49 +316,43 @@ export function gameLoop() {
                 if (gameState.leads >= cost && gameState.opportunities >= cost) {
                     gameState.totalAcquisitionAttempts++;
                     gameState.leads -= cost; gameState.opportunities -= cost;
+                    // Use the success chance directly from gameState (modified by upgrades)
                     if (Math.random() < gameState.acquisitionSuccessChance) {
                         gameState.totalSuccessfulAcquisitions++; gameState.customerCountForCostIncrease++; gameState.customers++;
-                    } // Failed attempt still costs L&O
+                    }
                 } else {
-                    // Not enough resources for this attempt, carry over remaining attempts
                     accumulatedAcquisitionAttempts += (attemptsToMake - i);
-                    break; // Stop trying this tick
+                    break;
                 }
             }
-            // Clamp resources just in case of floating point issues
             if (gameState.leads < 0) gameState.leads = 0;
             if (gameState.opportunities < 0) gameState.opportunities = 0;
         }
     }
 
-    // Money generation
-    const mTick = rates.moneyPerSecond * secs; // Use calculated MPS (includes playtime boost if active)
+    // Money generation based on the *just calculated* rates in `currentRates`
+    const mTick = currentRates.moneyPerSecond * secs;
     if (!isNaN(mTick) && isFinite(mTick) && mTick > 0) {
         gameState.money += mTick;
-        gameState.totalMoneyEarned += mTick; // Track total lifetime earnings
+        gameState.totalMoneyEarned += mTick;
     }
 
-    // Check Flexible Workflow auto-deactivation
+    // (Keep Flexible Workflow check unchanged)
     if (gameState.flexibleWorkflowActive) {
         const currentLeads = Math.floor(gameState.leads); const currentOpps = Math.floor(gameState.opportunities);
         if (Math.abs(currentLeads - currentOpps) <= FLEX_WORKFLOW_AMOUNT_EQUALITY_THRESHOLD) {
             gameState.flexibleWorkflowActive = false;
-            // Could add a notification here if desired
         }
     }
 
-    // Check win condition
+    // (Keep Win condition check unchanged)
     if (!isGameWon && gameState.money >= WIN_AMOUNT) {
-        triggerWin(); // Handles setting flags, pausing, etc.
+        triggerWin();
     }
 }
 
 // --- Getter for current rates ---
-// (Keep getCurrentRates function unchanged)
+// Returns a *copy* of the current rates object
 export function getCurrentRates() {
-    // Return a shallow copy to prevent external modification
     return { ...currentRates };
 }
-
-// Export findUpgradeConfigById if needed by other modules (e.g., events.js)
-// export { findUpgradeConfigById }; // Already exported at the top

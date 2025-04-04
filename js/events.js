@@ -15,39 +15,40 @@ import { softRefreshGame } from './main.js';
 function checkTierCompletion(categoryId) {
     if (!categoryId || categoryId === 'special') return false;
     const categoryConfig = upgradesConfig[categoryId];
-    if (!categoryConfig || !categoryConfig.tier1) return false; // Only check tier 1 completion for now
+    if (!categoryConfig || !categoryConfig.tier1) return false; // Check only based on Tier 1
+
+    // Iterate through all upgrades defined in Tier 1 of the category config
     for (const upgradeId in categoryConfig.tier1) {
-        // Check if the upgrade exists in the config's tier 1
+        // Check if the upgrade exists in the game state and if it's marked as purchased
         if (!gameState.upgrades[upgradeId]?.purchased) {
-            // If any T1 upgrade is not purchased, the tier isn't complete
+            // If any T1 upgrade is not found or not purchased, the tier isn't complete
             return false;
         }
     }
-    // If loop completes, all T1 upgrades are purchased
+    // If the loop completes without returning false, all T1 upgrades are purchased
     return true;
 }
 
 // --- Purchase Functions ---
 function buyBuilding(id) {
-    if (isGamePaused || isGameWon) return; // Prevent actions if game inactive
+    // (Keep existing buyBuilding function - unchanged)
+    if (isGamePaused || isGameWon) return;
     const cfg = buildingsConfig[id];
     const state = gameState.buildings[id];
     if (!cfg || !state) { console.error(`Building config or state not found for ID: ${id}`); return; }
 
-    const cost = getBuildingCost(id); // Calculates current cost based on count & multipliers
+    const cost = getBuildingCost(id);
     const curr = cfg.costCurrency;
     let afford = false;
 
-    // Check affordability based on currency type
     if (curr === 'both') { if (gameState.leads >= cost.leads && gameState.opportunities >= cost.opps) { gameState.leads -= cost.leads; gameState.opportunities -= cost.opps; afford = true; } }
     else if (curr === 'leads') { if (gameState.leads >= cost.leads) { gameState.leads -= cost.leads; afford = true; } }
     else if (curr === 'opportunities') { if (gameState.opportunities >= cost.opps) { gameState.opportunities -= cost.opps; afford = true; } }
     else if (curr === 'money') { if (gameState.money >= cost.money) { gameState.money -= cost.money; afford = true; } }
 
-    // If affordable, process the purchase
     if (afford) {
-        state.count++; // Increment building count
-        playSoundEffect('sfx-purchase'); // Play sound
+        state.count++;
+        playSoundEffect('sfx-purchase');
         calculateDerivedStats(); // Recalculate rates immediately
         updateDisplay(); // Update resource numbers
         updateButtonStates(); // Update button costs and availability
@@ -55,23 +56,22 @@ function buyBuilding(id) {
 }
 
 function buyUpgrade(upgradeId) {
-    if (isGamePaused || isGameWon) return; // Prevent actions if game inactive
+    // (Keep existing checks for paused/won/config/purchased - unchanged)
+    if (isGamePaused || isGameWon) return;
     const found = findUpgradeConfigById(upgradeId);
     if (!found) { console.error(`Upgrade config not found for ID: ${upgradeId}`); return; }
 
     const cfg = found.config;
-    const effectiveCategoryId = found.categoryId; // e.g., 'manualGen'
-    const effectiveTier = found.tier; // e.g., 1 or null for special
+    const effectiveCategoryId = found.categoryId;
+    const effectiveTier = found.tier;
     const state = gameState.upgrades[upgradeId];
-
-    // Prevent purchase if already bought or state is missing
     if (!state || state.purchased) return;
 
-    const cost = getUpgradeCost(upgradeId); // Calculates cost based on config
+    const cost = getUpgradeCost(upgradeId);
     let afford = false;
 
-    // Check affordability based on various cost types
-    if (cfg.costMoney && cfg.costCustomers) { // Handles Flexible Workflow & Playtime Boost
+    // (Keep affordability check logic - unchanged, covers new upgrade costs too)
+    if (cfg.costMoney && cfg.costCustomers) {
         if (gameState.money >= cost.money && gameState.customers >= cost.customers) {
             gameState.money -= cost.money;
             gameState.customers -= cost.customers;
@@ -84,48 +84,46 @@ function buyUpgrade(upgradeId) {
     else if (cfg.costCurrency === 'money') { if (gameState.money >= cost.money) { gameState.money -= cost.money; afford = true; } }
     else if (cfg.costCurrency === 'customers') { if (gameState.customers >= cost.customers) { gameState.customers -= cost.customers; afford = true; } }
 
-    // If affordable, process the purchase
     if (afford) {
-        state.purchased = true; // Mark as purchased
-        playSoundEffect('sfx-purchase'); // Play sound
+        state.purchased = true;
+        playSoundEffect('sfx-purchase');
 
         // Apply immediate effects if defined in config
+        // This directly modifies gameState properties like baseCAR, acquisitionSuccessChance, etc.
         if (typeof cfg.effect === 'function') {
             cfg.effect(gameState);
         }
-        // Note: Playtime boost effect is applied dynamically in engine.js, not here.
+        // Note: The old `targetRate` mechanism is removed as effects are now direct modifications.
+        // The `effectValue` property is no longer used by engine.js for CAR/CVR calculations.
 
-        // Check for Tier 1 completion to unlock Tier 2 for that category
+        // Check for Tier 1 completion to unlock Tier 2
         if (effectiveTier === 1 && effectiveCategoryId && effectiveCategoryId !== 'special') {
             if (checkTierCompletion(effectiveCategoryId)) {
                 console.log(`Tier 1 completed for category: ${effectiveCategoryId}. Advancing to Tier 2.`);
-                gameState.categoryTiers[effectiveCategoryId] = 2; // Update category tier
+                gameState.categoryTiers[effectiveCategoryId] = 2;
             }
         }
 
-        calculateDerivedStats(); // Recalculate rates immediately
+        calculateDerivedStats(); // Recalculate rates after applying effects
         updateDisplay(); // Update resource numbers
-        updateButtonStates(); // Update button states (will redraw category if tier changed)
+        updateButtonStates(); // Update button states/redraw category if tier changed
     }
 }
 
 // --- Action Toggles ---
+// (Keep existing toggle functions - unchanged)
 function toggleAcquisitionPause() { if (isGameWon || isGamePaused) return; gameState.isAcquisitionPaused = !gameState.isAcquisitionPaused; updateAcquisitionButtonVisuals(); }
 function toggleFlexibleWorkflow() { if (isGamePaused || isGameWon || !gameState.upgrades['flexibleWorkflow']?.purchased) return; gameState.flexibleWorkflowActive = !gameState.flexibleWorkflowActive; console.log(`Flexible Workflow manually ${gameState.flexibleWorkflowActive ? 'activated' : 'deactivated'}.`); calculateDerivedStats(); updateDisplay(); updateFlexibleWorkflowToggleButtonVisuals(); }
 
 // --- Category Collapse/Expand ---
+// (Keep existing toggleCategoryCollapse function - unchanged)
 function toggleCategoryCollapse(event) {
-    // Find the H4 title element that was clicked or contains the clicked icon
     const titleElement = event.target.closest('h4.group-title');
-    if (!titleElement) return; // Click wasn't on a title or its child icon
-
-    // Find the next sibling element, which should be the content container
+    if (!titleElement) return;
     const contentElement = titleElement.nextElementSibling;
-
-    // Check if the next sibling is indeed one of the collapsible containers
     if (contentElement && (contentElement.classList.contains('upgrade-category-container') || contentElement.classList.contains('build-category-container'))) {
-        titleElement.classList.toggle('collapsed'); // Toggle state class on the title
-        contentElement.classList.toggle('content-collapsed'); // Toggle visibility class on the content
+        titleElement.classList.toggle('collapsed');
+        contentElement.classList.toggle('content-collapsed');
     } else {
         console.warn("Could not find collapsible content for title:", titleElement.textContent);
     }
@@ -133,6 +131,7 @@ function toggleCategoryCollapse(event) {
 
 
 // --- Event Listener Setup ---
+// (Keep existing setupEventListeners function structure, including clickers, delegation, modals, etc. - unchanged)
 export function setupEventListeners() {
     console.log("--- Attaching Listeners ---");
 
@@ -144,13 +143,11 @@ export function setupEventListeners() {
     const buildPanel = document.querySelector('.buildables-panel');
     if (buildPanel) {
         buildPanel.addEventListener('click', (event) => {
-            // Find the closest ancestor button with the correct class
             const targetButton = event.target.closest('.build-button');
-            // Check if a valid button was clicked and it has an ID starting with 'buy-'
             if (targetButton && targetButton.id && targetButton.id.startsWith('buy-')) {
-                const buildingId = targetButton.id.substring(4); // Extract building ID
-                if (buildingsConfig[buildingId]) { // Verify ID exists in config
-                    buyBuilding(buildingId); // Attempt purchase
+                const buildingId = targetButton.id.substring(4);
+                if (buildingsConfig[buildingId]) {
+                    buyBuilding(buildingId);
                 } else {
                     console.warn(`Clicked build button with unrecognized ID: ${buildingId}`);
                 }
@@ -162,15 +159,11 @@ export function setupEventListeners() {
     const upgradePanel = document.querySelector('.upgrades-panel');
     if (upgradePanel) {
         upgradePanel.addEventListener('click', (event) => {
-             // Find the closest ancestor button with the correct class
             const targetButton = event.target.closest('.upgrade-button');
-            // Check if a valid button was clicked
             if (targetButton && targetButton.id) {
-                 // Prioritize data attribute for ID if available (useful if IDs change)
-                 // Otherwise, extract from the element ID itself
-                const upgradeId = targetButton.dataset.upgradeId || targetButton.id.substring(8); // "upgrade-".length is 8
-                if (findUpgradeConfigById(upgradeId)) { // Verify ID exists in config
-                    buyUpgrade(upgradeId); // Attempt purchase
+                const upgradeId = targetButton.dataset.upgradeId || targetButton.id.substring(8);
+                if (findUpgradeConfigById(upgradeId)) {
+                    buyUpgrade(upgradeId);
                 } else {
                     console.warn(`Clicked upgrade button with unrecognized ID: ${upgradeId}`);
                 }
@@ -179,38 +172,30 @@ export function setupEventListeners() {
     } else { console.error("Upgrades panel not found for event delegation."); }
 
     // --- Category Collapse/Expand (Event Delegation on both side panels) ---
-    // Attach to the parent panels to catch clicks on any H4 title within them
     upgradePanel?.addEventListener('click', toggleCategoryCollapse);
     buildPanel?.addEventListener('click', toggleCategoryCollapse);
-    // ----------------------------------------------------------------------
 
     // --- Music Controls ---
     domElements['play-pause-button']?.addEventListener('click', togglePlayPause);
-    domElements['volume-slider']?.addEventListener('input', () => setVolume()); // Use input for real-time update
+    domElements['volume-slider']?.addEventListener('input', () => setVolume());
     domElements['next-track-button']?.addEventListener('click', playNextTrack);
-    domElements['background-music']?.addEventListener('ended', playNextTrack); // Auto-play next on track end
-    domElements['mute-button']?.addEventListener('click', () => toggleMute()); // Toggle mute state
+    domElements['background-music']?.addEventListener('ended', playNextTrack);
+    domElements['mute-button']?.addEventListener('click', () => toggleMute());
 
     // --- Modal Open/Close ---
-    // Helper for modal open/close logic
     const setupModal = (buttonId, modalId, showFn, hideFn) => {
         const openBtn = domElements[buttonId];
         const modal = domElements[modalId];
-        const closeBtn = domElements[`close-${buttonId.replace('-button', '')}-button`]; // Assumes close button follows pattern
-
+        const closeBtn = domElements[`close-${buttonId.replace('-button', '')}-button`];
         openBtn?.addEventListener('click', showFn);
         closeBtn?.addEventListener('click', hideFn);
-        // Close modal if clicking outside the content area
         modal?.addEventListener('click', (e) => { if (e.target === modal) hideFn(); });
     };
-
     setupModal('credits-button', 'credits-modal', showCredits, hideCredits);
     setupModal('stats-button', 'stats-modal', showStats, hideStats);
     setupModal('tutorial-button', 'tutorial-modal', showTutorial, hideTutorial);
     setupModal('settings-button', 'settings-modal', showSettings, hideSettings);
-    // Win modal is opened programmatically, only need close listener
     domElements['close-win-button']?.addEventListener('click', closeWinScreen);
-
 
     // --- Settings Modal Content Buttons ---
     domElements['soft-refresh-button']?.addEventListener('click', softRefreshGame);

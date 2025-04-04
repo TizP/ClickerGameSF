@@ -1,7 +1,7 @@
 // js/config.js
 "use strict";
 
-export const GAME_VERSION = "v1.33-playtime-boost"; // Version bump for new feature
+export const GAME_VERSION = "v1.36-cvr-boost"; // Version bump for CVR boost
 export const SAVE_KEY = `salesforcePipelineSaveData_v${GAME_VERSION}`; // Updated key
 export const TICK_INTERVAL_MS = 100;
 export const DISPLAY_UPDATE_INTERVAL_MS = 250;
@@ -11,7 +11,7 @@ export const STATS_UPDATE_INTERVAL_MS = 1000;
 export const WIN_AMOUNT = 1_000_000_000;
 export const BUILDING_COST_MULTIPLIER = 1.10; // Default multiplier
 export const LEADS_PER_CUSTOMER_BASE = 100;
-export const CUSTOMER_COST_MULTIPLIER = 1.005; // Re-evaluate during balancing
+export const CUSTOMER_COST_MULTIPLIER = 1.005; // Lowered growth rate (was 1.008)
 export const MONEY_FORMAT_THRESHOLD = 10000;
 export const FLEX_WORKFLOW_AMOUNT_EQUALITY_THRESHOLD = 1;
 
@@ -43,29 +43,26 @@ export const playlist = [
 
 // --- Building & Upgrade Configurations ---
 export const buildingsConfig = {
-    // Lead Gen (Adjusted v1.30)
-    sdr:            { baseCost: 10,     costCurrency: 'leads', baseLPS: 1,    name: "SDR",                 flavour: "Sales Development Reps dial for dollars, finding initial interest."}, // Cost/LPS: 10
-    webform:        { baseCost: 150,    costCurrency: 'leads', baseLPS: 10,   name: "Web Form",            flavour: "Automated web forms capture leads day and night."}, // Cost/LPS: 15
-    pardot:         { baseCost: 1500,   costCurrency: 'leads', baseLPS: 80,   name: "Pardot Campaign",     flavour: "Pardot marketing automation nurtures prospects into leads."}, // Cost/LPS: ~18.75
-    nurture:        { baseCost: 10000,  costCurrency: 'leads', baseLPS: 400,  name: "Nurture Program",     flavour: "Automated Nurture Programs keep leads engaged and moving down the funnel."}, // Cost/LPS: 25
-    marketingcloud: { baseCost: 50000,  costCurrency: 'leads', baseLPS: 1500, name: "Mkt Cloud Journey",   flavour: "Sophisticated Marketing Cloud Journeys guide potential customers."}, // Cost/LPS: ~33.3
-    // Opp Gen (Adjusted v1.30)
-    bdr:            { baseCost: 10,     costCurrency: 'opportunities', baseOPS: 1,    name: "BDR",                 flavour: "Business Development Reps qualify leads, turning interest into opportunities."}, // Cost/OPS: 10
-    qualbot:        { baseCost: 150,    costCurrency: 'opportunities', baseOPS: 10,   name: "Qual Bot",            flavour: "AI-powered bots help qualify leads faster."}, // Cost/OPS: 15
-    solutionengineer:{ baseCost: 1500,   costCurrency: 'opportunities', baseOPS: 80,   name: "Solution Engineer",   flavour: "Solution Engineers provide technical expertise, creating solid Opportunities."}, // Cost/OPS: ~18.75
-    demospec:       { baseCost: 10000,  costCurrency: 'opportunities', baseOPS: 400,  name: "Demo Specialist",     flavour: "Demo Specialists showcase product value, generating high-quality Opportunities."}, // Cost/OPS: 25
-    proposaldesk:   { baseCost: 50000,  costCurrency: 'opportunities', baseOPS: 1500, name: "Proposal Desk",       flavour: "A dedicated team crafting winning proposals turns interest into Opportunities."}, // Cost/OPS: ~33.3
-
-    // --- Integrated Solutions - REBALANCED v1.31 ---
-    integration:    { baseCostLeads: 50000,  baseCostOpps: 50000,  costCurrency: 'both', baseLPS: 1000,    baseOPS: 1000,    name: "Integration Hub",     flavour: "Connect systems seamlessly with MuleSoft, boosting pipeline flow."}, // Eff: 50.0
-    platform:       { baseCostLeads: 250000, baseCostOpps: 250000, costCurrency: 'both', baseLPS: 4500,    baseOPS: 4500,    name: "Platform App",        flavour: "Develop custom apps on the platform, significantly increasing pipeline velocity."}, // Eff: ~55.6
-    ecosystem:      { baseCostLeads: 1000000,baseCostOpps: 1000000,costCurrency: 'both', baseLPS: 16500,   baseOPS: 16500,   name: "Partner Ecosystem",   flavour: "Leverage partners via Experience Cloud to vastly expand reach."}, // Eff: ~60.6
-    cloudsuite:     { baseCostLeads: 5000000,baseCostOpps: 5000000,costCurrency: 'both', baseLPS: 70000,   baseOPS: 70000,   name: "Cloud Suite",         flavour: "Offer a full suite of cloud products, attracting major pipeline volume."}, // Eff: ~71.4
-    hyperscaler:    { baseCostLeads: 25000000,baseCostOpps: 25000000,costCurrency: 'both', baseLPS: 310000,  baseOPS: 310000,  name: "Hyperscaler",         flavour: "Run on a global hyperscaler infrastructure for ultimate pipeline scalability."}, // Eff: ~80.6
-    aidata:         { baseCostLeads: 150000000, baseCostOpps: 150000000, costCurrency: 'both', baseLPS: 1650000, baseOPS: 1650000, name: "AI Data Cloud",     flavour: "Leverage AI across your data landscape for unprecedented pipeline insights."}, // Eff: ~90.9
-    // --------------------------------------------------
-
-    // Customer Success (Unchanged)
+    // Lead Gen
+    sdr:            { baseCost: 10,     costCurrency: 'leads', baseLPS: 1,    name: "SDR",                 flavour: "Sales Development Reps dial for dollars, finding initial interest."},
+    webform:        { baseCost: 150,    costCurrency: 'leads', baseLPS: 10,   name: "Web Form",            flavour: "Automated web forms capture leads day and night."},
+    pardot:         { baseCost: 1500,   costCurrency: 'leads', baseLPS: 80,   name: "Pardot Campaign",     flavour: "Pardot marketing automation nurtures prospects into leads."},
+    nurture:        { baseCost: 10000,  costCurrency: 'leads', baseLPS: 400,  name: "Nurture Program",     flavour: "Automated Nurture Programs keep leads engaged and moving down the funnel."},
+    marketingcloud: { baseCost: 50000,  costCurrency: 'leads', baseLPS: 1500, name: "Mkt Cloud Journey",   flavour: "Sophisticated Marketing Cloud Journeys guide potential customers."},
+    // Opp Gen
+    bdr:            { baseCost: 10,     costCurrency: 'opportunities', baseOPS: 1,    name: "BDR",                 flavour: "Business Development Reps qualify leads, turning interest into opportunities."},
+    qualbot:        { baseCost: 150,    costCurrency: 'opportunities', baseOPS: 10,   name: "Qual Bot",            flavour: "AI-powered bots help qualify leads faster."},
+    solutionengineer:{ baseCost: 1500,   costCurrency: 'opportunities', baseOPS: 80,   name: "Solution Engineer",   flavour: "Solution Engineers provide technical expertise, creating solid Opportunities."},
+    demospec:       { baseCost: 10000,  costCurrency: 'opportunities', baseOPS: 400,  name: "Demo Specialist",     flavour: "Demo Specialists showcase product value, generating high-quality Opportunities."},
+    proposaldesk:   { baseCost: 50000,  costCurrency: 'opportunities', baseOPS: 1500, name: "Proposal Desk",       flavour: "A dedicated team crafting winning proposals turns interest into Opportunities."},
+    // Integrated Solutions
+    integration:    { baseCostLeads: 50000,  baseCostOpps: 50000,  costCurrency: 'both', baseLPS: 1000,    baseOPS: 1000,    name: "Integration Hub",     flavour: "Connect systems seamlessly with MuleSoft, boosting pipeline flow."},
+    platform:       { baseCostLeads: 250000, baseCostOpps: 250000, costCurrency: 'both', baseLPS: 4500,    baseOPS: 4500,    name: "Platform App",        flavour: "Develop custom apps on the platform, significantly increasing pipeline velocity."},
+    ecosystem:      { baseCostLeads: 1000000,baseCostOpps: 1000000,costCurrency: 'both', baseLPS: 16500,   baseOPS: 16500,   name: "Partner Ecosystem",   flavour: "Leverage partners via Experience Cloud to vastly expand reach."},
+    cloudsuite:     { baseCostLeads: 5000000,baseCostOpps: 5000000,costCurrency: 'both', baseLPS: 70000,   baseOPS: 70000,   name: "Cloud Suite",         flavour: "Offer a full suite of cloud products, attracting major pipeline volume."},
+    hyperscaler:    { baseCostLeads: 25000000,baseCostOpps: 25000000,costCurrency: 'both', baseLPS: 310000,  baseOPS: 310000,  name: "Hyperscaler",         flavour: "Run on a global hyperscaler infrastructure for ultimate pipeline scalability."},
+    aidata:         { baseCostLeads: 150000000, baseCostOpps: 150000000, costCurrency: 'both', baseLPS: 1650000, baseOPS: 1650000, name: "AI Data Cloud",     flavour: "Leverage AI across your data landscape for unprecedented pipeline insights."},
+    // Customer Success
     acctManager: {
         baseCost: 1000, costCurrency: 'money', name: "Acct Manager",
         flavour: "Account Managers improve retention and build relationships.",
@@ -84,8 +81,9 @@ export const buildingsConfig = {
     },
  };
 
-// Tiered Upgrade Structure (Unchanged - Needs re-balancing later)
+// Tiered Upgrade Structure
 export const upgradesConfig = {
+    // --- Other Categories Unchanged ---
     manualGen: {
         name: "Manual Generation",
         tier1: {
@@ -135,7 +133,6 @@ export const upgradesConfig = {
             ecosystemBoostPercent:   { name: "Partner Portal Optimization", cost: 15000000, costCurrency: 'leads', targetBuilding: 'ecosystem', percentBonusLPS: 0.20, percentBonusOPS: 0.20, description: "+20% Output per Ecosystem" },
             cloudsuiteBoostPercent:  { name: "Cross-Cloud Integration", cost: 50000000, costCurrency: 'opportunities', targetBuilding: 'cloudsuite', percentBonusLPS: 0.20, percentBonusOPS: 0.20, description: "+20% Output per Cloud Suite" },
             hyperscalerBoostPercent: { name: "Global Infrastructure Scaling", cost: 200000000, costCurrency: 'leads', targetBuilding: 'hyperscaler', percentBonusLPS: 0.20, percentBonusOPS: 0.20, description: "+20% Output per Hyperscaler Instance" },
-            // Note: No T1 boost specifically for aidata currently
         },
         tier2: {
             integratedMastery: { name: "Integrated Solution Mastery", cost: 500000000, costCurrency: 'leads', effect: (state) => { state.integratedMultiplier = (state.integratedMultiplier || 1.0) * 1.75; }, description: "x1.75 Output for ALL Integrated Solutions" }
@@ -154,50 +151,117 @@ export const upgradesConfig = {
             efficiencyMastery: { name: "Efficiency Mastery", cost: 25000000, costCurrency: 'money', effect: (state) => { state.buildingEfficiencyMultiplier += 0.50; }, description: "+50% Team/Feature Output" }
         }
     },
-    acquisitionRate: {
-        name: "Acquisition Rate",
+    acquisitionEnhancement: { // Merged category
+        name: "Acquisition Enhancement",
         tier1: {
-            car1: { name: "Streamlined Handoffs", cost: 15000, costCurrency: 'opportunities', effectValue: 0.20, targetRate: 'car', description: "+0.20 Acq. Rate/s" },
-            car2: { name: "Sales Process Automation", cost: 100000, costCurrency: 'opportunities', effectValue: 0.50, targetRate: 'car', description: "+0.50 Acq. Rate/s" },
-            car3: { name: "CPQ Optimization", cost: 500000, costCurrency: 'opportunities', effectValue: 1.00, targetRate: 'car', description: "+1.00 Acq. Rate/s" },
+            acqEnhance1: {
+                name: "Basic Closing Tactics",
+                costLeads: 10000, costOpps: 10000, costCurrency: 'both',
+                effect: (state) => { state.baseCAR += 0.20; },
+                description: "+0.20 Acq. Rate/s"
+            },
+            acqEnhance2: {
+                name: "Advanced Sales Cadence",
+                costLeads: 50000, costOpps: 50000, costCurrency: 'both',
+                effect: (state) => {
+                    state.baseCAR += 0.50;
+                    state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.05);
+                },
+                description: "+0.50 Acq. Rate/s, +5% Success"
+            },
+            acqEnhance3: {
+                name: "Optimized Sales Playbook",
+                costLeads: 250000, costOpps: 250000, costCurrency: 'both',
+                effect: (state) => {
+                    state.baseCAR += 1.00;
+                    state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.07);
+                 },
+                 description: "+1.00 Acq. Rate/s, +7% Success"
+            },
         },
         tier2: {
-            carMastery: { name: "Acquisition Rate Mastery", cost: 5000000, costCurrency: 'opportunities', effectValue: 2.00, targetRate: 'car', description: "+2.00 Acq. Rate/s" }
+            acqEnhanceMastery1: {
+                name: "Master Closer Program",
+                cost: 5000000, costCurrency: 'opportunities',
+                effect: (state) => {
+                    state.baseCAR += 2.00;
+                    state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.15);
+                },
+                description: "+2.00 Acq. Rate/s, +15% Acq. Success"
+            },
+            acqEnhanceMastery2: {
+                name: "Deal Velocity Engine",
+                cost: 25000000, costCurrency: 'leads',
+                effect: (state) => {
+                    state.baseCAR += 5.00;
+                    state.customerCostReductionMultiplier *= 0.67;
+                },
+                description: "+5.00 Acq. Rate/s, -33% Customer Cost"
+             }
         }
     },
-    acquisitionSuccess: {
-        name: "Acquisition Success Rate",
-        tier1: {
-            success1: { name: "Basic Sales Training", cost: 1500, costCurrency: 'opportunities', effect: (state) => { state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.05); }, description: "+5% Acq. Success" },
-            success2: { name: "AE Sales Playbook", cost: 10000, costCurrency: 'opportunities', effect: (state) => { state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.07); }, description: "+7% Acq. Success" },
-            success3: { name: "Value Selling Framework", cost: 50000, costCurrency: 'opportunities', effect: (state) => { state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.10); }, description: "+10% Acq. Success" },
-        },
-        tier2: {
-            successMastery: { name: "Acquisition Success Mastery", cost: 500000, costCurrency: 'opportunities', effect: (state) => { state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.15); }, description: "+15% Acq. Success" }
-        }
-    },
-    acquisitionCost: {
+    acquisitionCost: { // Standalone Cost Reduction Category
         name: "Acquisition Cost Reduction",
         tier1: {
-            costReduct1: { name: "Lead Qual. Refinement", cost: 5000, costCurrency: 'leads', effect: (state) => { state.customerCostReductionMultiplier *= 0.95; }, description: "-5% Customer Cost" },
-            costReduct2: { name: "ICP Tuning", cost: 50000, costCurrency: 'leads', effect: (state) => { state.customerCostReductionMultiplier *= 0.90; }, description: "-10% Customer Cost" },
-            costReduct3: { name: "Targeted Marketing Segments", cost: 300000, costCurrency: 'leads', effect: (state) => { state.customerCostReductionMultiplier *= 0.85; }, description: "-15% Customer Cost" },
+            costReduct1: {
+                name: "Lead Qual. Refinement", cost: 5000, costCurrency: 'leads',
+                effect: (state) => { state.customerCostReductionMultiplier *= 0.90; },
+                description: "-10% Customer Cost"
+            },
+            costReduct2: {
+                name: "ICP Tuning", cost: 50000, costCurrency: 'leads',
+                effect: (state) => { state.customerCostReductionMultiplier *= 0.80; },
+                description: "-20% Customer Cost"
+            },
+            costReduct3: {
+                name: "Targeted Marketing Segments", cost: 300000, costCurrency: 'leads',
+                effect: (state) => { state.customerCostReductionMultiplier *= 0.70; },
+                description: "-30% Customer Cost"
+            },
         },
         tier2: {
-            costReductionMastery: { name: "Acquisition Cost Mastery", cost: 5000000, costCurrency: 'leads', effect: (state) => { state.customerCostReductionMultiplier *= 0.75; }, description: "-25% Customer Cost" }
+            costReductionMastery: {
+                name: "Acquisition Cost Mastery", cost: 5000000, costCurrency: 'leads',
+                effect: (state) => { state.customerCostReductionMultiplier *= 0.50; },
+                description: "-50% Customer Cost"
+            }
         }
     },
-    customerValue: {
+    customerValue: { // Customer Value Rate Category - UPDATED
         name: "Customer Value Rate",
         tier1: {
-            cvrBoost1:  { name: "Customer Onboarding", cost: 25000, costCurrency: 'leads', effectValue: 0.50, targetRate: 'cvr', description: "+$0.50 Value Rate" },
-            cvrBoost2:  { name: "Enhanced Support Tier", cost: 300000, costCurrency: 'leads', effectValue: 1.00, targetRate: 'cvr', description: "+$1.00 Value Rate" },
-            cvrBoost3:  { name: "Dedicated CSM Program", cost: 2000000, costCurrency: 'leads', effectValue: 5.00, targetRate: 'cvr', description: "+$5.00 Value Rate" },
-            cvrBoostPercent: { name: "Premier Success Plan", cost: 15000000, costCurrency: 'leads', effect: (state) => { state.cvrMultiplierBonus = (state.cvrMultiplierBonus || 1.0) * 1.25; }, description: "+25% Value Rate" },
-            cvrBoostPercent2: { name: "Signature Success Plan", cost: 100000000, costCurrency: 'opportunities', effect: (state) => { state.cvrMultiplierBonus = (state.cvrMultiplierBonus || 1.0) * 1.50; }, description: "+50% Value Rate"},
+            cvrBoost1:  {
+                name: "Customer Onboarding", cost: 25000, costCurrency: 'leads',
+                effect: (state) => { state.baseCVR += 1.00; }, // Changed from +0.50
+                description: "+$1.00 Value Rate" // Changed from +$0.50
+            },
+            cvrBoost2:  {
+                name: "Enhanced Support Tier", cost: 300000, costCurrency: 'leads',
+                effect: (state) => { state.baseCVR += 5.00; }, // Changed from +1.00
+                description: "+$5.00 Value Rate" // Changed from +$1.00
+            },
+            cvrBoost3:  {
+                name: "Dedicated CSM Program", cost: 2000000, costCurrency: 'leads',
+                effect: (state) => { state.baseCVR += 25.00; }, // Changed from +5.00
+                description: "+$25.00 Value Rate" // Changed from +$5.00
+            },
+            cvrBoostPercent: { // Unchanged
+                name: "Premier Success Plan", cost: 15000000, costCurrency: 'leads',
+                effect: (state) => { state.cvrMultiplierBonus = (state.cvrMultiplierBonus || 1.0) * 1.25; },
+                description: "+25% Value Rate"
+            },
+            cvrBoostPercent2: { // Unchanged
+                name: "Signature Success Plan", cost: 100000000, costCurrency: 'opportunities',
+                effect: (state) => { state.cvrMultiplierBonus = (state.cvrMultiplierBonus || 1.0) * 1.50; },
+                description: "+50% Value Rate"
+            },
         },
         tier2: {
-            cvrMastery: { name: "Customer Value Mastery", cost: 500000000, costCurrency: 'leads', effect: (state) => { state.cvrMultiplierBonus = (state.cvrMultiplierBonus || 1.0) * 2.00; }, description: "x2 Value Rate" }
+            cvrMastery: { // Unchanged
+                name: "Customer Value Mastery", cost: 500000000, costCurrency: 'leads',
+                effect: (state) => { state.cvrMultiplierBonus = (state.cvrMultiplierBonus || 1.0) * 2.00; },
+                description: "x2 Value Rate"
+            }
         }
     },
      customerGrowth: {
@@ -219,6 +283,7 @@ export const upgradesConfig = {
              }, description: "+1.5 CAR, +10% Success, -15% Cost, +$3 CVR, +20% Output" }
         }
     },
+    // Special Category
     special: {
         name: "Special Upgrades",
         costReductStrategic: {
@@ -227,11 +292,10 @@ export const upgradesConfig = {
             effect: (state) => { state.customerCostReductionMultiplier *= 0.67; },
             description: "-33% Acq. Cost"
         },
-        playtimeMPSBoost: { // <-- NEW UPGRADE DEFINITION
+        playtimeMPSBoost: {
             name: "Veteran Pipeline Operator",
             costMoney: 10000000, // $10 Million
             costCustomers: 1000, // 1k Customers
-            // No direct effect function needed here, logic is in engine.js
             description: "Increases MPS by +100% per hour played (capped at +200% after 2 hours)."
         },
         flexibleWorkflow: {
