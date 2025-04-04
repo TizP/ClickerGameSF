@@ -121,7 +121,6 @@ export function getCurrentCustomerCost() {
 // --- Core Calculation Function ---
 export function calculateDerivedStats() {
     // --- Calculate effects of Customer Success Buildings FIRST ---
-    // (Keep this section unchanged)
     const acctManagerCount = gameState.buildings['acctManager']?.count || 0;
     const successArchitectCount = gameState.buildings['successArchitect']?.count || 0;
     const procurementOptCount = gameState.buildings['procurementOpt']?.count || 0;
@@ -144,11 +143,14 @@ export function calculateDerivedStats() {
     let workingCVR = gameState.baseCVR || 1.0;
     workingCVR *= (1 + successArchitectCVRBonusPercent);
 
+    // Multiplier definitions
     const globalEff = gameState.buildingEfficiencyMultiplier || 1.0;
     const custGlobalMult = gameState.custGlobalMultiplier || 1.0;
     const leadTeamMult = gameState.leadTeamMultiplier || 1.0;
     const oppTeamMult = gameState.oppTeamMultiplier || 1.0;
+    // ***** FIX: Define integratedMult *****
     const integratedMult = gameState.integratedMultiplier || 1.0;
+    // *************************************
     const isSdrSynergyActive = gameState.upgrades['sdrSynergyBoost']?.purchased;
     const isBdrSynergyActive = gameState.upgrades['bdrSynergyBoost']?.purchased;
     const sdrCount = gameState.buildings['sdr']?.count || 0;
@@ -156,7 +158,7 @@ export function calculateDerivedStats() {
     const leadSynergyBonusPercent = isSdrSynergyActive ? Math.floor(sdrCount / 10) * 0.01 : 0;
     const oppSynergyBonusPercent = isBdrSynergyActive ? Math.floor(bdrCount / 10) * 0.01 : 0;
 
-    // (Keep Building production loop unchanged)
+    // Building production loop
     for (const id in buildingsConfig) {
         if (['acctManager', 'successArchitect', 'procurementOpt'].includes(id)) continue;
         const cfg = buildingsConfig[id];
@@ -182,36 +184,36 @@ export function calculateDerivedStats() {
             finOPS *= globalEff * custGlobalMult;
             if (['sdr', 'webform', 'pardot', 'nurture', 'marketingcloud'].includes(id)) finLPS *= leadTeamMult;
             if (['bdr', 'qualbot', 'solutionengineer', 'demospec', 'proposaldesk'].includes(id)) finOPS *= oppTeamMult;
-            if (['integration', 'platform', 'ecosystem', 'cloudsuite', 'hyperscaler', 'aidata'].includes(id)){ finLPS *= intM; finOPS *= intM; }
+            // ***** FIX: Use integratedMult (not intM) *****
+            if (['integration', 'platform', 'ecosystem', 'cloudsuite', 'hyperscaler', 'aidata'].includes(id)){
+                finLPS *= integratedMult;
+                finOPS *= integratedMult;
+             }
+             // ********************************************
             rawLPS += finLPS * count;
             rawOPS += finOPS * count;
         }
     }
 
-    // --- Flexible Workflow Logic --- MODIFIED ---
+    // (Keep Flexible Workflow Logic unchanged)
     let finalLPS = rawLPS; let finalOPS = rawOPS;
-    // Apply the shift ONLY if the flag is active
     if (gameState.flexibleWorkflowActive) {
         const currentLeads = Math.floor(gameState.leads);
         const currentOpps = Math.floor(gameState.opportunities);
-
-        // Determine shift direction based purely on current amounts
-        // No threshold check here - the gameLoop handles turning it off
-        if (currentLeads < currentOpps) { // Have fewer leads? Boost leads, reduce opps.
+        if (currentLeads < currentOpps) {
             const transfer = Math.max(0, rawOPS * 0.5);
             if (!isNaN(transfer) && isFinite(transfer)) {
                 finalLPS = rawLPS + transfer;
                 finalOPS = rawOPS - transfer;
             }
-        } else { // Have fewer opps (or amounts are equal)? Boost opps, reduce leads.
+        } else {
             const transfer = Math.max(0, rawLPS * 0.5);
             if (!isNaN(transfer) && isFinite(transfer)) {
                 finalLPS = rawLPS - transfer;
                 finalOPS = rawOPS + transfer;
             }
         }
-    } // End flexible workflow rate shift logic
-    // Ensure non-negative and finite values after potential flex workflow
+    }
     finalLPS = (!isNaN(finalLPS) && isFinite(finalLPS)) ? Math.max(0, finalLPS) : 0;
     finalOPS = (!isNaN(finalOPS) && isFinite(finalOPS)) ? Math.max(0, finalOPS) : 0;
 
@@ -219,7 +221,7 @@ export function calculateDerivedStats() {
     const prodBoost = gameState.activeBoosts?.['prodBoost'];
     if (prodBoost) { const mult = 1.0 + prodBoost.magnitude; finalLPS *= mult; finalOPS *= mult; }
 
-    // (Keep CAR and CVR upgrade/bonus application unchanged)
+    // (Keep CAR and CVR calculation logic unchanged)
     workingCAR += gameState.custUpgradeBonusCAR || 0;
     workingCVR += gameState.custUpgradeBonusCVR || 0;
     workingCVR *= (gameState.cvrMultiplierBonus || 1.0);
@@ -258,19 +260,15 @@ export function calculateDerivedStats() {
 }
 
 // --- Game Loop ---
+// (Keep gameLoop function unchanged)
 export function gameLoop() {
     if (isGamePaused || isGameWon) return;
-
     const secs = TICK_INTERVAL_MS / 1000.0;
-    calculateDerivedStats(); // Recalculate rates based on current state
-
-    // (Keep resource generation unchanged)
+    calculateDerivedStats();
     const lTick = currentRates.leadsPerSecond * secs;
     const oTick = currentRates.opportunitiesPerSecond * secs;
     if (!isNaN(lTick) && isFinite(lTick) && lTick > 0) { gameState.leads += lTick; gameState.totalAutoLeads += lTick; }
     if (!isNaN(oTick) && isFinite(oTick) && oTick > 0) { gameState.opportunities += oTick; gameState.totalAutoOpps += oTick; }
-
-    // (Keep Acquisition attempts unchanged)
     if (!gameState.isAcquisitionPaused) {
         const cost = getCurrentCustomerCost();
         const currentCAR = currentRates.customerAcquisitionRate;
@@ -294,28 +292,20 @@ export function gameLoop() {
             if (gameState.opportunities < 0) gameState.opportunities = 0;
         }
     }
-
-    // (Keep Money generation unchanged)
     const mTick = currentRates.moneyPerSecond * secs;
     if (!isNaN(mTick) && isFinite(mTick) && mTick > 0) {
         gameState.money += mTick;
         gameState.totalMoneyEarned += mTick;
     }
-
-    // --- Check Flexible Workflow auto-deactivation --- MODIFIED ---
-    if (gameState.flexibleWorkflowActive) { // Only check if it's currently active
+    if (gameState.flexibleWorkflowActive) {
         const currentLeads = Math.floor(gameState.leads);
         const currentOpps = Math.floor(gameState.opportunities);
-        // Check if the difference is within the threshold
         if (Math.abs(currentLeads - currentOpps) <= FLEX_WORKFLOW_AMOUNT_EQUALITY_THRESHOLD) {
-            gameState.flexibleWorkflowActive = false; // Deactivate the flag
-            console.log("Flexible Workflow automatically deactivated."); // Optional log
-            // Immediately update the button visuals when auto-deactivated
+            gameState.flexibleWorkflowActive = false;
+            console.log("Flexible Workflow automatically deactivated.");
             updateFlexibleWorkflowToggleButtonVisuals();
         }
-    } // End Flexible Workflow check
-
-    // (Keep Win condition check unchanged)
+    }
     if (!isGameWon && gameState.money >= WIN_AMOUNT) {
         triggerWin();
     }
