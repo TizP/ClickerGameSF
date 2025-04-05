@@ -3,15 +3,14 @@
 import { domElements } from './dom.js';
 import { gameState, isGamePaused, isGameWon } from './state.js';
 import { buildingsConfig, upgradesConfig, FIRST_TIME_POPUP_KEY } from './config.js'; // Import FIRST_TIME_POPUP_KEY
-// Import helpers needed for purchase logic and updates
 import { getBuildingCost, getUpgradeCost, calculateDerivedStats, getCurrentRates, findUpgradeConfigById, getCumulativeBuildingCost } from './engine.js';
-// Import hideFirstTimeModal
+// Import UI functions
 import { updateDisplay, updateButtonStates, showCredits, hideCredits, showStats, hideStats, showTutorial, hideTutorial, showSettings, hideSettings, closeWinScreen, updateAcquisitionButtonVisuals, updateFlexibleWorkflowToggleButtonVisuals, hideFirstTimeModal } from './ui.js';
 import { playSoundEffect, togglePlayPause, setVolume, playNextTrack, toggleMute } from './audio.js';
 import { saveGame, deleteSave } from './saveLoad.js';
-import { softRefreshGame } from './main.js';
-import * as config from './config.js'; // Import config for setting flag
-
+// Import main.js functions needed
+import { softRefreshGame, switchLanguage } from './main.js'; // ADDED switchLanguage
+import { getString } from './ui_strings.js'; // Import getString for confirmations
 
 // --- Tier Completion Check ---
 function checkTierCompletion(categoryId) {
@@ -54,7 +53,7 @@ function buyBuilding(id, shiftHeld = false) {
         updateDisplay();
         updateButtonStates();
     } else {
-        if (shiftHeld) { console.log(`Cannot afford to buy 10 ${cfg.name}.`); }
+        if (shiftHeld) { console.log(`Cannot afford to buy 10 ${getString(`buildings.${id}.name`, {fallback: id})}.`); } // Use getString
     }
 }
 
@@ -92,7 +91,7 @@ function buyUpgrade(upgradeId) {
     else if (upgradeId === 'flexibleWorkflow' && cfg.costMoney && cfg.costCustomers) {
          if (gameState.money >= cost.money && gameState.customers >= cost.customers) {
              gameState.money -= cost.money;
-             gameState.customers -= cost.customers; // This one *does* cost customers
+             // gameState.customers -= cost.customers; // Removed customer cost per HTML description focus on Req
              afford = true;
          }
     }
@@ -199,12 +198,14 @@ export function setupEventListeners() {
             const targetButton = event.target.closest('.build-button');
             if (targetButton && !targetButton.disabled && targetButton.id && targetButton.id.startsWith('buy-')) {
                 const buildingId = targetButton.id.substring(4);
-                if (buildingsConfig[buildingId]) {
-                    const shiftHeld = event.shiftKey;
-                    buyBuilding(buildingId, shiftHeld);
-                } else {
-                    console.warn(`Clicked build button with unrecognized ID: ${buildingId}`);
-                }
+                // Check config exists (logic moved from buyBuilding)
+                 if (!buildingsConfig[buildingId]) {
+                    console.warn(`Clicked build button with unrecognized ID in config: ${buildingId}`);
+                    return;
+                 }
+                 const shiftHeld = event.shiftKey;
+                 buyBuilding(buildingId, shiftHeld);
+
             }
         });
     } else { console.error("Buildables panel not found for event delegation."); }
@@ -215,11 +216,12 @@ export function setupEventListeners() {
         upgradePanel.addEventListener('click', (event) => {
             const targetButton = event.target.closest('.upgrade-button');
             if (targetButton && !targetButton.disabled && targetButton.id) {
+                // Use dataset if available (from createUpgradeButtonElement), fallback to ID parsing
                 const upgradeId = targetButton.dataset.upgradeId || targetButton.id.substring(8);
-                if (findUpgradeConfigById(upgradeId)) {
-                    buyUpgrade(upgradeId); // Handles requirements/costs internally
+                if (findUpgradeConfigById(upgradeId)) { // Check config exists
+                    buyUpgrade(upgradeId);
                 } else {
-                    console.warn(`Clicked upgrade button with unrecognized ID: ${upgradeId}`);
+                    console.warn(`Clicked upgrade button with unrecognized ID in config: ${upgradeId}`);
                 }
             }
         });
@@ -241,7 +243,10 @@ export function setupEventListeners() {
     const setupModal = (buttonId, modalId, showFn, hideFn) => {
         const openBtn = domElements[buttonId];
         const modal = domElements[modalId];
-        const closeBtn = domElements[`close-${buttonId.replace('-button', '')}-button`];
+        // Ensure close button ID matches convention (e.g., close-credits-button)
+        const closeBtnId = `close-${modalId.replace('-modal', '')}-button`;
+        const closeBtn = domElements[closeBtnId];
+
         openBtn?.addEventListener('click', showFn);
         closeBtn?.addEventListener('click', hideFn);
         modal?.addEventListener('click', (e) => { if (e.target === modal) hideFn(); });
@@ -250,12 +255,10 @@ export function setupEventListeners() {
     setupModal('stats-button', 'stats-modal', showStats, hideStats);
     setupModal('tutorial-button', 'tutorial-modal', showTutorial, hideTutorial);
     setupModal('settings-button', 'settings-modal', showSettings, hideSettings);
-    domElements['close-win-modal-button']?.addEventListener('click', closeWinScreen); // Listener for win modal button
-
-    // TODO: Add listeners for First Time Modal
+    domElements['close-win-modal-button']?.addEventListener('click', closeWinScreen);
+    // First time modal uses specific close/ok buttons
     domElements['close-first-time-button']?.addEventListener('click', hideFirstTimeModal);
     domElements['ok-first-time-button']?.addEventListener('click', hideFirstTimeModal);
-    // Also hide if clicking outside the content
     domElements['first-time-modal']?.addEventListener('click', (e) => {
          if (e.target === domElements['first-time-modal']) hideFirstTimeModal();
      });
@@ -265,9 +268,20 @@ export function setupEventListeners() {
 
     // --- Other Top Bar/Special Buttons ---
     domElements['save-button']?.addEventListener('click', saveGame);
-    domElements['delete-save-button']?.addEventListener('click', deleteSave);
+    // Use getString for delete confirmation
+    domElements['delete-save-button']?.addEventListener('click', () => {
+        const confirmMsg = getString('misc.confirmDelete') || "Are you sure you want to delete your save data? This cannot be undone.";
+        if (confirm(confirmMsg)) {
+            deleteSave();
+        }
+    });
     domElements['toggle-acquisition-button']?.addEventListener('click', toggleAcquisitionPause);
     domElements['toggle-flexible-workflow']?.addEventListener('click', toggleFlexibleWorkflow);
+
+    // --- Language Switcher Buttons (ADDED) ---
+    domElements['lang-en-button']?.addEventListener('click', () => switchLanguage('en'));
+    domElements['lang-it-button']?.addEventListener('click', () => switchLanguage('it'));
+
 
     console.log("--- Listeners Attached ---");
 }

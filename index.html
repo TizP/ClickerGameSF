@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"> <!-- Keep lang="en" for base, JS will handle text -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -53,6 +53,11 @@
                 <button id="stats-button" class="simple-button" data-string-key="topBar.statsButton" data-string-key-title="topBar.statsButtonTitle">Show Stats</button>
                 <button id="tutorial-button" class="simple-button" data-string-key="topBar.tutorialButton" data-string-key-title="topBar.tutorialButtonTitle">Tutorial</button>
                 <button id="credits-button" class="simple-button" data-string-key="topBar.creditsButton" data-string-key-title="topBar.creditsButtonTitle">Credits</button>
+                <!-- Language Flags -->
+                <div class="language-selector">
+                    <img id="lang-en-button" src="resources/img/flags/us.png" alt="English" data-lang="en" title="Switch to English">
+                    <img id="lang-it-button" src="resources/img/flags/it.png" alt="Italiano" data-lang="it" title="Passa a Italiano">
+                </div>
                 <!-- Version text set dynamically -->
                 <span id="game-version" data-string-key-title="topBar.gameVersionTitle">v?.??</span>
             </div>
@@ -240,6 +245,8 @@
             <p><strong data-string-key="modals.credits.images">Images:</strong></p>
             <p data-string-key="modals.credits.img1">[Image 1]</p>
             <p data-string-key="modals.credits.img2">[Image 2]</p>
+            <!-- ADDED: Placeholder for flag credits -->
+            <p data-string-key="modals.credits.img3" class="dynamic-html">[Image 3]</p>
             <p data-string-key="modals.credits.inspiration" class="dynamic-html">[Inspiration]</p>
         </div>
     </div>
@@ -273,8 +280,7 @@
                 <p><span data-string-key="modals.stats.acqSuccess">Successful Acquisitions:</span> <span id="stat-acq-success">0</span></p>
                 <p><span data-string-key="modals.stats.acqFailed">Failed Acquisitions:</span> <span id="stat-acq-failed">0</span></p> <hr>
                 <p><span data-string-key="modals.stats.powerupsClicked">Power-ups Clicked:</span> <span id="stat-powerups-clicked">0</span></p> <hr>
-                <!-- MODIFIED: Removed hardcoded $ -->
-                <p><span data-string-key="modals.stats.totalMoney">Total Money Earned:</span> <span id="stat-total-money">$0.00</span></p>
+                <p><span data-string-key="modals.stats.totalMoney">Total Money Earned:</span> <span id="stat-total-money">€0.00</span></p>
             </div>
         </div>
     </div>
@@ -320,7 +326,7 @@
              <h4 data-string-key="modals.tutorial.powerupsTitle">Power-ups (Falling Tokens):</h4>
              <ul id="tutorial-powerups">
                  <!-- Populated by JS -->
-            </ul>
+             </ul>
              <h4 data-string-key="modals.tutorial.goalSavingTitle">Goal & Saving:</h4>
              <ul id="tutorial-goal-saving">
                  <!-- Populated by JS -->

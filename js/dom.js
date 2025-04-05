@@ -11,8 +11,6 @@ const essentialIds = [
     'click-lead-button', 'click-opp-button', 'background-music', 'volume-slider',
     'mute-button', 'powerup-spawn-area', 'active-powerup-display', 'save-status',
     'toggle-acquisition-button', 'toggle-flexible-workflow'
-    // NOTE: IDs added for string population are not strictly *essential* for game logic,
-    // but are essential for the UI text to appear correctly. We handle warnings separately.
 ];
 
 export function cacheDOMElements() {
@@ -48,10 +46,9 @@ export function cacheDOMElements() {
         // Misc
         'powerup-spawn-area',
         // IDs added for String Population
-        'main-title',               // <-- ADDED
-        'upgrades-panel-title',     // <-- ADDED
-        'buildables-panel-title',   // <-- ADDED
-        'track-info-text'           // <-- ADDED
+        'main-title', 'upgrades-panel-title', 'buildables-panel-title', 'track-info-text',
+        // Language Flags (ADDED)
+        'lang-en-button', 'lang-it-button'
     ];
 
     let foundCount = 0;
@@ -70,9 +67,8 @@ export function cacheDOMElements() {
                 console.error(`CRITICAL: Essential DOM Element not found: ${id}`);
                 missingEssential.push(id);
             } else {
-                // Log non-essential missing elements as warnings
                  console.warn(`DOM Element not found: ${id}`);
-                 missingWarnings.push(id); // Keep track for summary warning if needed
+                 missingWarnings.push(id);
             }
         }
     });
@@ -92,7 +88,6 @@ export function cacheDOMElements() {
                     domElements[elId] = el;
                     foundCount++;
                 }
-                // No warning needed here, expected if buttons aren't rendered yet by JS
             }
         });
     }

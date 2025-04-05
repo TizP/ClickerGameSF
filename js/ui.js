@@ -4,26 +4,24 @@ import { domElements } from './dom.js';
 import { gameState, isGamePaused, isGameWon, setGamePaused, setGameWon } from './state.js';
 import { getCurrentRates, getBuildingCost, getUpgradeCost, getCurrentAcquisitionCost, findUpgradeConfigById, getCumulativeBuildingCost } from './engine.js';
 import { formatNumber, formatMoney, formatPerSecond, formatRateMoney, formatCAR, formatPercent, formatTime } from './utils.js';
-import { buildingsConfig, upgradesConfig, STATS_UPDATE_INTERVAL_MS, FIRST_TIME_POPUP_KEY, POWERUP_SPAWN_INTERVAL_MS, POWERUP_CHANCE_PER_INTERVAL } from './config.js'; // Import FIRST_TIME_POPUP_KEY
+import { buildingsConfig, upgradesConfig, STATS_UPDATE_INTERVAL_MS, FIRST_TIME_POPUP_KEY } from './config.js';
 import { stopPowerupSpawning, startPowerupSpawning, removeActivePowerupToken } from './powerups.js';
 import { saveGame } from './saveLoad.js';
 import { getString } from './ui_strings.js'; // Import the string helper
+import { currentLanguage } from './main.js'; // Import currentLanguage
 
 let statsUpdateIntervalId = null;
 let saveStatusTimeoutId = null;
 
 // --- Helper to create an Upgrade Button Element ---
-// Now fetches name/description from uiStrings
 function createUpgradeButtonElement(upgradeId, config, categoryId = null) {
     const button = document.createElement('button');
     button.id = `upgrade-${upgradeId}`;
     button.classList.add('upgrade-button');
     button.disabled = true;
 
-    // Fetch name from uiStrings
     const nameSpan = document.createElement('span');
-    nameSpan.textContent = getString(`upgrades.${upgradeId}.name`, {fallback: upgradeId}); // Use ID as fallback
-    // Store data attributes for easier updates if needed, though name is static
+    nameSpan.textContent = getString(`upgrades.${upgradeId}.name`, {fallback: upgradeId});
     nameSpan.dataset.upgradeId = upgradeId;
     nameSpan.dataset.type = 'name';
 
@@ -33,26 +31,22 @@ function createUpgradeButtonElement(upgradeId, config, categoryId = null) {
 
     const effectSpan = document.createElement('span');
     effectSpan.classList.add('effect');
-    // Store data attributes for easier updates if needed, though description is static
     effectSpan.dataset.upgradeId = upgradeId;
     effectSpan.dataset.type = 'description';
 
-    let baseTitle = getString(`upgrades.${upgradeId}.title`); // Fetch tooltip/title if defined
-    let baseDesc = getString(`upgrades.${upgradeId}.description`); // Fetch description
+    let baseTitle = getString(`upgrades.${upgradeId}.title`);
+    let baseDesc = getString(`upgrades.${upgradeId}.description`);
 
-    // Handle dynamic descriptions/titles separately in updateButtonStates
     if (upgradeId === 'playtimeMPSBoost') {
-        // Set initial placeholder text, updateButtonStates will handle dynamic part
         effectSpan.textContent = getString('upgrades.playtimeMPSBoost.descriptionDynamic', { PERCENT: '0' });
-        baseTitle = getString('upgrades.playtimeMPSBoost.titleBase') || baseDesc || ''; // Use specific title base if available
-        // Title will be updated dynamically too
+        baseTitle = getString('upgrades.playtimeMPSBoost.titleBase') || baseDesc || '';
     } else {
-        effectSpan.textContent = baseDesc || ''; // Use fetched description
-        if (!baseTitle || baseTitle === `upgrades.${upgradeId}.title`) { // If specific title key missing, use description
+        effectSpan.textContent = baseDesc || '';
+        if (!baseTitle || baseTitle === `upgrades.${upgradeId}.title`) {
             baseTitle = baseDesc;
         }
     }
-    button.title = baseTitle || ''; // Set initial title
+    button.title = baseTitle || '';
 
     button.appendChild(nameSpan);
     button.appendChild(costSpan);
@@ -105,7 +99,7 @@ export function updateDisplay() {
         domElements['leads-per-click'].textContent = formatNumber(effectiveLeadsPerClick);
         domElements['opps-per-click'].textContent = formatNumber(effectiveOppsPerClick);
 
-        // Update tooltips for click amounts dynamically (combining base string + dynamic parts)
+        // Update tooltips for click amounts dynamically
         const leadClickTitleBase = getString('centerArea.leadsClickTitleBase');
         if (domElements['lead-click-base-p']) {
             const base = gameState.leadsPerClick;
@@ -142,51 +136,48 @@ export function updateButtonStates() {
         for (const id in buildingsConfig) {
             const btn = domElements[`buy-${id}`];
             const cnt = domElements[`${id}-count`];
-            const cstEl = domElements[`${id}-cost`]; // Renamed to avoid conflict
-            const effEl = domElements[`${id}-effect`]; // Renamed to avoid conflict
+            const cstEl = domElements[`${id}-cost`];
+            const effEl = domElements[`${id}-effect`];
 
-            // Check if elements related to this building exist
-            if (!btn || !cnt || !cstEl || !effEl) {
-                // console.warn(`Missing elements for building button: ${id}`); // Can be noisy
-                continue;
-            }
+            if (!btn || !cnt || !cstEl || !effEl) { continue; }
 
             const cfg = buildingsConfig[id];
             const state = gameState.buildings[id] || { count: 0 };
-            const cost = getBuildingCost(id); // Cost for 1
-            const cost10 = getCumulativeBuildingCost(id, 10); // Cost for 10
+            const cost = getBuildingCost(id);
+            const cost10 = getCumulativeBuildingCost(id, 10);
             let afford1 = false; let afford10 = false;
             let cTxt1 = '?'; let cTxt10 = '?';
             const costPrefix = getString('buttons.costPrefix');
             const buyTenHint = getString('buttons.buyTenHint');
             const insufficientHint = getString('buttons.insufficient');
+            const moneySymbol = getString('misc.currency.money');
+            const leadSymbol = getString('misc.currency.lead');
+            const oppSymbol = getString('misc.currency.opp');
 
             // Check affordability for 1
-            if (cfg.costCurrency === 'both') { afford1 = gameState.leads >= cost.leads && gameState.opportunities >= cost.opps; cTxt1 = `${formatNumber(cost.leads)} L & ${formatNumber(cost.opps)} O`; }
-            else if (cfg.costCurrency === 'leads') { afford1 = gameState.leads >= cost.leads; cTxt1 = `${formatNumber(cost.leads)} L`; }
-            else if (cfg.costCurrency === 'opportunities') { afford1 = gameState.opportunities >= cost.opps; cTxt1 = `${formatNumber(cost.opps)} O`; }
-            else if (cfg.costCurrency === 'money') { afford1 = gameState.money >= cost.money; cTxt1 = `$${formatMoney(cost.money)}`; }
+            if (cfg.costCurrency === 'both') { afford1 = gameState.leads >= cost.leads && gameState.opportunities >= cost.opps; cTxt1 = `${formatNumber(cost.leads)} ${leadSymbol} & ${formatNumber(cost.opps)} ${oppSymbol}`; }
+            else if (cfg.costCurrency === 'leads') { afford1 = gameState.leads >= cost.leads; cTxt1 = `${formatNumber(cost.leads)} ${leadSymbol}`; }
+            else if (cfg.costCurrency === 'opportunities') { afford1 = gameState.opportunities >= cost.opps; cTxt1 = `${formatNumber(cost.opps)} ${oppSymbol}`; }
+            else if (cfg.costCurrency === 'money') { afford1 = gameState.money >= cost.money; cTxt1 = `${moneySymbol}${formatMoney(cost.money)}`; }
 
              // Check affordability for 10
-             if (cfg.costCurrency === 'both') { afford10 = gameState.leads >= cost10.leads && gameState.opportunities >= cost10.opps; cTxt10 = `${formatNumber(cost10.leads)} L & ${formatNumber(cost10.opps)} O`; }
-             else if (cfg.costCurrency === 'leads') { afford10 = gameState.leads >= cost10.leads; cTxt10 = `${formatNumber(cost10.leads)} L`; }
-             else if (cfg.costCurrency === 'opportunities') { afford10 = gameState.opportunities >= cost10.opps; cTxt10 = `${formatNumber(cost10.opps)} O`; }
-             else if (cfg.costCurrency === 'money') { afford10 = gameState.money >= cost10.money; cTxt10 = `$${formatMoney(cost10.money)}`; }
+             if (cfg.costCurrency === 'both') { afford10 = gameState.leads >= cost10.leads && gameState.opportunities >= cost10.opps; cTxt10 = `${formatNumber(cost10.leads)} ${leadSymbol} & ${formatNumber(cost10.opps)} ${oppSymbol}`; }
+             else if (cfg.costCurrency === 'leads') { afford10 = gameState.leads >= cost10.leads; cTxt10 = `${formatNumber(cost10.leads)} ${leadSymbol}`; }
+             else if (cfg.costCurrency === 'opportunities') { afford10 = gameState.opportunities >= cost10.opps; cTxt10 = `${formatNumber(cost10.opps)} ${oppSymbol}`; }
+             else if (cfg.costCurrency === 'money') { afford10 = gameState.money >= cost10.money; cTxt10 = `${moneySymbol}${formatMoney(cost10.money)}`; }
 
             btn.disabled = !afford1 || isDisabledGlobal;
             cstEl.textContent = `${costPrefix} ${cTxt1}`;
             cnt.textContent = state.count;
 
-            // Fetch base text from strings file
             const buildingName = getString(`buildings.${id}.name`, {fallback: id});
             const flavourText = getString(`buildings.${id}.flavour`);
-            let effectText = getString('buttons.effectPrefix') + " N/A"; // Default effect text
+            let effectText = getString('buttons.effectPrefix') + " N/A";
             let perBuildingEffectText = "N/A";
-            let tooltipText = flavourText || buildingName; // Start tooltip with flavour or name
+            let tooltipText = flavourText || buildingName;
 
-            // --- Calculate Per Building & Total Production (Logic remains similar) ---
             if (cfg.baseLPS || cfg.baseOPS) {
-                 // Calculation logic... (as before, no changes needed here)
+                 // Production calculation... (no changes needed in this logic block)
                  let bLPS = cfg.baseLPS || 0, bOPS = cfg.baseOPS || 0; let fLPS = 0, fOPS = 0, pLPS = 1.0, pOPS = 1.0, mLPS = 1.0, mOPS = 1.0;
                  const gE = gameState.buildingEfficiencyMultiplier || 1.0; const cM = gameState.custGlobalMultiplier || 1.0;
                  const leadTM = gameState.leadTeamMultiplier || 1.0; const oppTM = gameState.oppTeamMultiplier || 1.0; const intM = gameState.integratedMultiplier || 1.0;
@@ -201,22 +192,20 @@ export function updateButtonStates() {
                  if (['sdr', 'webform', 'pardot', 'nurture', 'marketingcloud'].includes(id)) finLPS *= leadTM;
                  if (['bdr', 'qualbot', 'solutionengineer', 'demospec', 'proposaldesk'].includes(id)) finOPS *= oppTM;
                  if (['integration', 'platform', 'ecosystem', 'cloudsuite', 'hyperscaler', 'aidata'].includes(id)){ finLPS *= intM; finOPS *= intM; }
+                 // End Production calculation
 
-                 // Format per-building string
                  const parts = [];
-                 if (finLPS > 0) parts.push(`+${formatNumber(finLPS)} L/s`);
-                 if (finOPS > 0) parts.push(`+${formatNumber(finOPS)} O/s`);
+                 if (finLPS > 0) parts.push(`+${formatNumber(finLPS)} ${leadSymbol}/s`); // Use symbol
+                 if (finOPS > 0) parts.push(`+${formatNumber(finOPS)} ${oppSymbol}/s`); // Use symbol
                  perBuildingEffectText = parts.length > 0 ? parts.join(', ') : 'N/A';
 
-                 // Calculate and format total production string
                  const totalLPS = finLPS * state.count;
                  const totalOPS = finOPS * state.count;
                  const totalParts = [];
                  const totalPrefix = getString('misc.totalProduction');
-                 if (totalLPS > 0) totalParts.push(`+${formatNumber(totalLPS)} L/s`);
-                 if (totalOPS > 0) totalParts.push(`+${formatNumber(totalOPS)} O/s`);
+                 if (totalLPS > 0) totalParts.push(`+${formatNumber(totalLPS)} ${leadSymbol}/s`); // Use symbol
+                 if (totalOPS > 0) totalParts.push(`+${formatNumber(totalOPS)} ${oppSymbol}/s`); // Use symbol
 
-                 // Combine per-building and total (if applicable)
                  effectText = perBuildingEffectText;
                  if (totalParts.length > 0 && state.count > 0) {
                      effectText += ` (${totalPrefix} ${totalParts.join(', ')})`;
@@ -229,8 +218,7 @@ export function updateButtonStates() {
                       tooltipText += `\n${getString('buttons.effectPrefix')} (Total): ${totalParts.join(', ')}`;
                  }
 
-            // Handle non-L/O producing buildings using base strings + dynamic values
-            } else {
+            } else { // Non-L/O producing buildings
                 const effectDescBase = getString(`buildings.${id}.effectDescBase`);
                 const tooltipBase = getString(`buildings.${id}.tooltipBase`);
                 let dynamicPart = "";
@@ -250,7 +238,7 @@ export function updateButtonStates() {
                     dynamicPart = ` (Now: ${currentEffectValFormatted})`;
                 } else if (id === 'successManager') {
                      const currentMultiplier = rates.currentSuccessManagerCVRMultiplier;
-                     currentEffectValFormatted = `x${currentMultiplier.toFixed(2)}`; // Or format percentage bonus
+                     currentEffectValFormatted = `x${currentMultiplier.toFixed(2)}`;
                      dynamicPart = ` (Now: ${currentEffectValFormatted})`;
                 }
 
@@ -259,17 +247,14 @@ export function updateButtonStates() {
                 tooltipText += `\n${costPrefix} x10: ${cTxt10}${afford10 ? '' : ` ${insufficientHint}`}`;
                 tooltipText += `\n${buyTenHint}`;
                 tooltipText += `\n${(tooltipBase !== `buildings.${id}.tooltipBase` ? tooltipBase : '')}`
-                // Append current dynamic effect to tooltip if available
                 if (dynamicPart) {
                     tooltipText += ` (Current total effect: ${currentEffectValFormatted})`;
                 }
             }
 
-            // Update the button's effect text and title (tooltip)
             effEl.textContent = effectText;
             btn.title = tooltipText;
 
-            // Update Building Name Span (using data-attribute)
             const nameSpan = btn.querySelector(`span[data-building-id="${id}"][data-type="name"]`);
             if (nameSpan && nameSpan.textContent !== buildingName) {
                 nameSpan.textContent = buildingName;
@@ -284,7 +269,7 @@ export function updateButtonStates() {
             const containerId = `upgrade-category-${categoryId}`;
             const containerEl = document.getElementById(containerId);
             if (!containerEl) continue;
-            containerEl.innerHTML = ''; // Clear previous buttons
+            containerEl.innerHTML = '';
 
             const currentTierNum = gameState.categoryTiers[categoryId] || 1;
             const tierKey = `tier${currentTierNum}`;
@@ -292,31 +277,33 @@ export function updateButtonStates() {
             if (!upgradesInTier || Object.keys(upgradesInTier).length === 0) continue;
 
             for (const upgradeId in upgradesInTier) {
-                const upgradeConfig = categoryConfig[tierKey][upgradeId]; // Get config from correct tier
+                const upgradeConfig = categoryConfig[tierKey][upgradeId];
                 const upgradeState = gameState.upgrades[upgradeId] || { purchased: false };
 
-                // Create button using helper (fetches static name/desc from uiStrings)
                 const buttonEl = createUpgradeButtonElement(upgradeId, upgradeConfig, categoryId);
 
                 const cost = getUpgradeCost(upgradeId);
                 let afford = false;
                 let cTxt = '?';
                 const costSpan = buttonEl.querySelector('.cost');
-                costSpan.classList.remove('requirement'); // Reset class
+                costSpan.classList.remove('requirement');
                 const costPrefix = getString('buttons.costPrefix');
                 const reqPrefix = getString('buttons.reqPrefix');
+                const moneySymbol = getString('misc.currency.money');
+                const leadSymbol = getString('misc.currency.lead');
+                const oppSymbol = getString('misc.currency.opp');
+                const custSymbol = getString('misc.currency.cust');
 
-                // Handle Customer Requirement vs. Cost
                 if (cost.requiresCustomers && cost.requiresCustomers > 0) {
                     afford = gameState.customers >= cost.requiresCustomers;
-                    cTxt = `${reqPrefix} ${formatNumber(cost.requiresCustomers)} ${getString('misc.currency.cust')}`;
+                    cTxt = `${reqPrefix} ${formatNumber(cost.requiresCustomers)} ${custSymbol}`;
                     costSpan.classList.add('requirement');
-                } else { // Handle standard costs
-                    if (upgradeConfig.costCurrency === 'both') { afford = gameState.leads >= cost.leads && gameState.opportunities >= cost.opps; cTxt = `${costPrefix} ${formatNumber(cost.leads)} L & ${formatNumber(cost.opps)} O`; }
-                    else if (upgradeConfig.costCurrency === 'leads') { afford = gameState.leads >= cost.leads; cTxt = `${costPrefix} ${formatNumber(cost.leads)} L`; }
-                    else if (upgradeConfig.costCurrency === 'opportunities') { afford = gameState.opportunities >= cost.opps; cTxt = `${costPrefix} ${formatNumber(cost.opps)} O`; }
-                    else if (upgradeConfig.costCurrency === 'money') { afford = gameState.money >= cost.money; cTxt = `${costPrefix} $${formatMoney(cost.money)}`; }
-                    else if (upgradeConfig.costCurrency === 'customers') { afford = gameState.customers >= cost.customers; cTxt = `${costPrefix} ${formatNumber(cost.customers)} ${getString('misc.currency.cust')}`; }
+                } else {
+                    if (upgradeConfig.costCurrency === 'both') { afford = gameState.leads >= cost.leads && gameState.opportunities >= cost.opps; cTxt = `${costPrefix} ${formatNumber(cost.leads)} ${leadSymbol} & ${formatNumber(cost.opps)} ${oppSymbol}`; }
+                    else if (upgradeConfig.costCurrency === 'leads') { afford = gameState.leads >= cost.leads; cTxt = `${costPrefix} ${formatNumber(cost.leads)} ${leadSymbol}`; }
+                    else if (upgradeConfig.costCurrency === 'opportunities') { afford = gameState.opportunities >= cost.opps; cTxt = `${costPrefix} ${formatNumber(cost.opps)} ${oppSymbol}`; }
+                    else if (upgradeConfig.costCurrency === 'money') { afford = gameState.money >= cost.money; cTxt = `${costPrefix} ${moneySymbol}${formatMoney(cost.money)}`; }
+                    else if (upgradeConfig.costCurrency === 'customers') { afford = gameState.customers >= cost.customers; cTxt = `${costPrefix} ${formatNumber(cost.customers)} ${custSymbol}`; }
                 }
 
                 if (costSpan) costSpan.textContent = cTxt;
@@ -342,7 +329,7 @@ export function updateButtonStates() {
 
         // --- Update Special Upgrade Buttons ---
         for (const upgradeId in upgradesConfig.special) {
-             if (upgradeId === 'name') continue; // Skip the 'name' property if used in config
+             if (upgradeId === 'name') continue;
              const el = domElements[`upgrade-${upgradeId}`];
              if (!el) continue;
 
@@ -352,49 +339,45 @@ export function updateButtonStates() {
              let afford = false; let cTxt = '?';
              const costSpan = el.querySelector('.cost');
              const nameSpan = el.querySelector(`span[data-upgrade-id="${upgradeId}"][data-type="name"]`);
-             const effSpan = el.querySelector(`span[data-upgrade-id="${upgradeId}"][data-type="description"]`); // Target effect span by data attr
-
-             costSpan.classList.remove('requirement'); // Reset class
+             const effSpan = el.querySelector(`span[data-upgrade-id="${upgradeId}"][data-type="description"]`);
              const costPrefix = getString('buttons.costPrefix');
              const reqPrefix = getString('buttons.reqPrefix');
+             const moneySymbol = getString('misc.currency.money');
+             const leadSymbol = getString('misc.currency.lead');
+             const oppSymbol = getString('misc.currency.opp');
+             const custSymbol = getString('misc.currency.cust');
 
-            // Update static text content if needed (might have been placeholder initially)
+
+             costSpan.classList.remove('requirement');
+
             if (nameSpan && nameSpan.textContent !== getString(`upgrades.${upgradeId}.name`)){
                 nameSpan.textContent = getString(`upgrades.${upgradeId}.name`);
             }
              if (effSpan && upgradeId !== 'playtimeMPSBoost' && effSpan.textContent !== getString(`upgrades.${upgradeId}.description`)){
                  effSpan.textContent = getString(`upgrades.${upgradeId}.description`);
              }
-             // Update base title if needed
              let baseTitle = getString(`upgrades.${upgradeId}.title`);
              if (!baseTitle || baseTitle === `upgrades.${upgradeId}.title`) {
-                 baseTitle = getString(`upgrades.${upgradeId}.description`); // Fallback to desc for title
+                 baseTitle = getString(`upgrades.${upgradeId}.description`);
              }
              if (upgradeId !== 'playtimeMPSBoost' && el.title !== baseTitle) {
                  el.title = baseTitle || '';
              }
 
-
-             // Handle Veteran Pipeline Operator cost display
              if (upgradeId === 'playtimeMPSBoost' && cfg.costCurrency === 'all') {
                  afford = gameState.leads >= cost.leads && gameState.opportunities >= cost.opps && gameState.money >= cost.money;
-                 cTxt = `${costPrefix} ${formatNumber(cost.leads)} L & ${formatNumber(cost.opps)} O & $${formatMoney(cost.money)}`;
+                 cTxt = `${costPrefix} ${formatNumber(cost.leads)} ${leadSymbol} & ${formatNumber(cost.opps)} ${oppSymbol} & ${moneySymbol}${formatMoney(cost.money)}`;
              }
-             // Handle Flexible Workflow cost display
              else if (upgradeId === 'flexibleWorkflow' && cfg.costMoney && cfg.costCustomers) {
                  afford = gameState.money >= cost.money && gameState.customers >= cost.customers;
-                 cTxt = `${reqPrefix} ${formatNumber(cost.customers)} ${getString('misc.currency.cust')} & $${formatMoney(cost.money)}`;
+                 cTxt = `${reqPrefix} ${formatNumber(cost.customers)} ${custSymbol} & ${moneySymbol}${formatMoney(cost.money)}`;
                  costSpan.classList.add('requirement');
              }
-             // Handle Strategic Cost Optimization (Money cost)
              else if (cfg.costCurrency === 'money') {
                  afford = gameState.money >= cost.money;
-                 cTxt = `${costPrefix} $${formatMoney(cost.money)}`;
+                 cTxt = `${costPrefix} ${moneySymbol}${formatMoney(cost.money)}`;
              }
-             else {
-                 console.warn(`Unhandled cost type for special upgrade: ${upgradeId}`);
-                 cTxt = `${costPrefix} ?`;
-             }
+             else { cTxt = `${costPrefix} ?`; }
 
              const purchased = state.purchased === true;
              el.disabled = !afford || purchased || isDisabledGlobal;
@@ -407,11 +390,10 @@ export function updateButtonStates() {
                  el.classList.remove('purchased');
                  if (costSpan) {
                      costSpan.style.display = 'block';
-                     costSpan.textContent = cTxt; // Set combined cost/req text
+                     costSpan.textContent = cTxt;
                  }
                  if (effSpan) {
                     effSpan.style.display = 'block';
-                    // --- Dynamic Update for VPO ---
                     if (upgradeId === 'playtimeMPSBoost') {
                          const elapsedMs = Date.now() - (gameState.gameStartTime || Date.now());
                          const elapsedHours = Math.max(0, elapsedMs / (1000 * 60 * 60));
@@ -419,13 +401,10 @@ export function updateButtonStates() {
                          const MAX_BONUS_PERCENT = 200.0;
                          const progressToCap = Math.min(1.0, elapsedHours / PLAYTIME_CAP_HOURS);
                          const currentBonusPercent = MAX_BONUS_PERCENT * progressToCap;
-                         // Use string replacement
                          effSpan.textContent = getString('upgrades.playtimeMPSBoost.descriptionDynamic', { PERCENT: currentBonusPercent.toFixed(0) });
-                         // Update title dynamically too
                          const titleBase = getString('upgrades.playtimeMPSBoost.titleBase');
                          el.title = titleBase + ` (Currently: +${currentBonusPercent.toFixed(1)}%)`;
                     }
-                    // --- End Dynamic Update ---
                  }
              }
         }
@@ -433,6 +412,7 @@ export function updateButtonStates() {
         // Update toggle button visuals using strings
         updateAcquisitionButtonVisuals();
         updateFlexibleWorkflowToggleButtonVisuals();
+        updateLanguageButtonVisuals(); // Update flag visuals
 
     } catch (e) { console.error("Error in updateButtonStates:", e); }
 }
@@ -446,7 +426,6 @@ function hideModal(modalElement) {
             clearInterval(statsUpdateIntervalId);
             statsUpdateIntervalId = null;
         }
-        // Set first-time flag when modal is dismissed
         if (modalElement === domElements['first-time-modal'] && localStorage.getItem(FIRST_TIME_POPUP_KEY) !== 'shown') {
              localStorage.setItem(FIRST_TIME_POPUP_KEY, 'shown');
              console.log("First time popup flag set via hideModal.");
@@ -458,19 +437,18 @@ export function hideCredits() { hideModal(domElements['credits-modal']); }
 export function showStats() {
     const modal = domElements['stats-modal'];
     if (!modal) return;
-    updateStatsDisplay(); // Update stats before showing
+    updateStatsDisplay();
     showModal(modal);
     if (!statsUpdateIntervalId) {
         statsUpdateIntervalId = setInterval(updateStatsDisplay, STATS_UPDATE_INTERVAL_MS);
     }
 }
 export function hideStats() { hideModal(domElements['stats-modal']); }
-export function showTutorial() { showModal(domElements['tutorial-modal']); /* TODO: Populate list items */ }
+export function showTutorial() { showModal(domElements['tutorial-modal']); }
 export function hideTutorial() { hideModal(domElements['tutorial-modal']); }
 export function showSettings() { showModal(domElements['settings-modal']); }
 export function hideSettings() { hideModal(domElements['settings-modal']); }
 
-// Use strings for win modal
 export function triggerWin() {
     if (isGameWon) return;
     console.log("WIN CONDITION MET!");
@@ -481,25 +459,23 @@ export function triggerWin() {
     updateButtonStates();
     updateAcquisitionButtonVisuals();
     updateFlexibleWorkflowToggleButtonVisuals();
+    updateLanguageButtonVisuals(); // Ensure flags reflect paused state if needed
     saveGame();
-    // Optionally update win modal text here if needed, though static keys handle it now
     showModal(domElements['win-modal']);
 }
 export function closeWinScreen() {
     hideModal(domElements['win-modal']);
-    // Game remains paused and won
     updateButtonStates();
     updateAcquisitionButtonVisuals();
     updateFlexibleWorkflowToggleButtonVisuals();
+    updateLanguageButtonVisuals();
 }
 
-// Use strings for first time modal
 export function showFirstTimeModal() {
-    // Optionally update text here if needed, though static keys handle it now
     showModal(domElements['first-time-modal']);
 }
 export function hideFirstTimeModal() {
-    hideModal(domElements['first-time-modal']); // Will also set the flag via hideModal
+    hideModal(domElements['first-time-modal']);
 }
 
 
@@ -511,7 +487,6 @@ export function updateStatsDisplay() {
         return;
     }
     try {
-        // Numeric updates - labels handled by applyUiStrings
         if(domElements['stat-game-time']) domElements['stat-game-time'].textContent = formatTime(Date.now() - (gameState.gameStartTime || Date.now()));
         if(domElements['stat-lead-clicks']) domElements['stat-lead-clicks'].textContent = formatNumber(gameState.totalLeadClicks);
         if(domElements['stat-opp-clicks']) domElements['stat-opp-clicks'].textContent = formatNumber(gameState.totalOppClicks);
@@ -524,18 +499,20 @@ export function updateStatsDisplay() {
         const failedAcq = Math.max(0, gameState.totalAcquisitionAttempts - gameState.totalSuccessfulAcquisitions);
         if(domElements['stat-acq-failed']) domElements['stat-acq-failed'].textContent = formatNumber(failedAcq);
         if(domElements['stat-powerups-clicked']) domElements['stat-powerups-clicked'].textContent = formatNumber(gameState.totalPowerupsClicked);
-        // Use currency prefix from strings
-        const currencyPrefix = getString('modals.stats.currencyPrefix');
+        const currencyPrefix = getString('misc.currency.money'); // Use money symbol from current lang
         if(domElements['stat-total-money']) domElements['stat-total-money'].textContent = currencyPrefix + formatMoney(gameState.totalMoneyEarned);
     } catch (e) { console.error("Error updating stats display:", e); hideStats(); }
 }
 
-// Use string keys for status messages
 export function displaySaveStatus(msgKey, dur = 3000, replacements = {}) {
     const el = domElements['save-status'];
     if (!el) return;
     if (saveStatusTimeoutId) clearTimeout(saveStatusTimeoutId);
-    const msg = getString(msgKey, replacements); // Get string using the key
+    // Add timestamp automatically if using the 'saved' key
+    if (msgKey === 'misc.saveStatusSaved') {
+        replacements['TIME'] = new Date().toLocaleTimeString();
+    }
+    const msg = getString(msgKey, replacements);
     el.textContent = msg;
     el.classList.add('visible');
     saveStatusTimeoutId = setTimeout(() => {
@@ -544,15 +521,14 @@ export function displaySaveStatus(msgKey, dur = 3000, replacements = {}) {
     }, dur);
 }
 
-// Use strings for powerup display
 export function updateActivePowerupDisplay() {
     const displayEl = domElements['active-powerup-display'];
     if (!displayEl) return;
-    const activeIds = Object.keys(gameState.activeBoosts);
+    const activeIds = Object.keys(gameState.activeBoosts || {});
 
     if (activeIds.length === 0) {
         displayEl.innerHTML = '';
-        displayEl.title = getString('misc.noActivePowerup'); // Use string
+        displayEl.title = getString('misc.noActivePowerup');
         return;
     }
 
@@ -570,7 +546,6 @@ export function updateActivePowerupDisplay() {
         displayEl.title = getString('misc.noActivePowerup');
     } else {
         const remainingSeconds = (remainingTimeMs / 1000).toFixed(1);
-        // Fetch names/descriptions using the boost ID
         const boostName = getString(`powerups.${firstBoostId}.name`, {fallback: boost.name || firstBoostId});
         const boostDesc = getString(`powerups.${firstBoostId}.description`, {fallback: boost.description || 'Effect active'});
 
@@ -579,7 +554,6 @@ export function updateActivePowerupDisplay() {
     }
 }
 
-// Use strings for toggle buttons
 export function updateAcquisitionButtonVisuals() {
     const btn = domElements['toggle-acquisition-button'];
     if (!btn) return;
@@ -587,7 +561,7 @@ export function updateAcquisitionButtonVisuals() {
     const isDisabled = isGameWon || isGamePaused;
 
     const textKey = isPausedByUser ? 'topBar.toggleAcquisitionResume' : 'topBar.toggleAcquisitionPause';
-    const titleKey = isPausedByUser ? 'topBar.toggleAcquisitionPauseTitle' : 'topBar.toggleAcquisitionPauseTitle'; // Title seems same? Check ui_strings if different needed
+    const titleKey = 'topBar.toggleAcquisitionPauseTitle'; // Title seems constant
 
     btn.textContent = getString(textKey);
     btn.title = getString(titleKey);
@@ -595,7 +569,6 @@ export function updateAcquisitionButtonVisuals() {
     btn.disabled = isDisabled;
 }
 
-// Use strings for toggle buttons
 export function updateFlexibleWorkflowToggleButtonVisuals() {
     const btn = domElements['toggle-flexible-workflow'];
     if (!btn) return;
@@ -618,5 +591,17 @@ export function updateFlexibleWorkflowToggleButtonVisuals() {
     btn.title = getString(titleKey);
 }
 
-// Need to import config for FIRST_TIME_POPUP_KEY
-// import * as config from './config.js'; // Already imported via destructured FIRST_TIME_POPUP_KEY
+// --- Language Button Visual Update (NEW FUNCTION) ---
+export function updateLanguageButtonVisuals() {
+    const enButton = domElements['lang-en-button'];
+    const itButton = domElements['lang-it-button'];
+
+    if (enButton) {
+        enButton.classList.toggle('active-lang', currentLanguage === 'en');
+        enButton.classList.toggle('inactive-lang', currentLanguage !== 'en');
+    }
+    if (itButton) {
+        itButton.classList.toggle('active-lang', currentLanguage === 'it');
+        itButton.classList.toggle('inactive-lang', currentLanguage !== 'it');
+    }
+}
