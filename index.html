@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salesforce Pipeline Simulator</title>
+    <!-- Title will be set dynamically -->
+    <title>Loading...</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/x-icon" href="resources/img/favicon.ico">
 
@@ -27,27 +28,33 @@
         <!-- Top Bar -->
         <div class="top-bar">
             <div class="music-player">
-                 <p class="track-info" title="Current background music track">Now Playing: <span id="current-track-name">Track Name</span></p>
+                 <!-- Text content set dynamically -->
+                 <p class="track-info" id="track-info-text" data-string-key-title="topBar.nowPlaying">Now Playing: <span id="current-track-name">Track Name</span></p>
                  <div class="music-controls">
-                    <button id="play-pause-button" title="Play/Pause Music"><span id="play-pause-icon">►</span></button>
-                    <button id="next-track-button" title="Next Track"><span>⏭</span></button>
-                    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.1" title="Adjust Music & SFX Volume">
-                    <button id="mute-button" class="mute-button" title="Mute/Unmute All Audio">🔇</button>
+                    <!-- Title attributes set dynamically -->
+                    <button id="play-pause-button" data-string-key-title="topBar.playButtonTitle"><span id="play-pause-icon">►</span></button>
+                    <button id="next-track-button" data-string-key-title="topBar.nextTrackTitle"><span>⏭</span></button>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.1" data-string-key-title="topBar.volumeSliderTitle">
+                    <button id="mute-button" class="mute-button" data-string-key-title="topBar.muteButtonTitle">🔇</button>
                 </div>
             </div>
             <div class="top-bar-center-status">
-                <div id="active-powerup-display" title="Currently active power-up and its effect"></div>
-                 <p id="save-status" class="save-status-text" title="Indicates save status"></p>
+                 <!-- Title attribute set dynamically -->
+                <div id="active-powerup-display" data-string-key-title="topBar.activePowerupTitle"></div>
+                 <!-- Title attribute set dynamically -->
+                 <p id="save-status" class="save-status-text" data-string-key-title="topBar.saveStatusTitle"></p>
             </div>
             <div class="top-bar-buttons">
-                <button id="toggle-acquisition-button" class="simple-button pause-acq-button" title="Pause/Resume automatic spending of Leads/Opps on customer acquisition attempts">Pause Acq</button>
-                <button id="save-button" class="simple-button save-button" title="Save progress manually">Save Game</button>
-                <button id="delete-save-button" class="simple-button delete-button" title="Delete saved progress (requires confirmation)">Delete Save</button>
-                <button id="settings-button" class="simple-button" title="Game Settings">Settings</button>
-                <button id="stats-button" class="simple-button" title="Show detailed game statistics">Show Stats</button>
-                <button id="tutorial-button" class="simple-button" title="Show game tutorial and explanation">Tutorial</button>
-                <button id="credits-button" class="simple-button" title="Show game credits and attributions">Credits</button>
-                <span id="game-version" title="Current Game Version">v?.??</span>
+                 <!-- Text and Title attributes set dynamically -->
+                <button id="toggle-acquisition-button" class="simple-button pause-acq-button" data-string-key="topBar.toggleAcquisitionPause" data-string-key-title="topBar.toggleAcquisitionPauseTitle">Pause Acq</button>
+                <button id="save-button" class="simple-button save-button" data-string-key="topBar.saveButton" data-string-key-title="topBar.saveButtonTitle">Save Game</button>
+                <button id="delete-save-button" class="simple-button delete-button" data-string-key="topBar.deleteButton" data-string-key-title="topBar.deleteButtonTitle">Delete Save</button>
+                <button id="settings-button" class="simple-button" data-string-key="topBar.settingsButton" data-string-key-title="topBar.settingsButtonTitle">Settings</button>
+                <button id="stats-button" class="simple-button" data-string-key="topBar.statsButton" data-string-key-title="topBar.statsButtonTitle">Show Stats</button>
+                <button id="tutorial-button" class="simple-button" data-string-key="topBar.tutorialButton" data-string-key-title="topBar.tutorialButtonTitle">Tutorial</button>
+                <button id="credits-button" class="simple-button" data-string-key="topBar.creditsButton" data-string-key-title="topBar.creditsButtonTitle">Credits</button>
+                <!-- Version text set dynamically -->
+                <span id="game-version" data-string-key-title="topBar.gameVersionTitle">v?.??</span>
             </div>
         </div>
 
@@ -55,53 +62,61 @@
         <div class="main-content-area">
             <!-- Left Panel (Upgrades) -->
             <div class="side-panel upgrades-panel">
-                <div class="panel-sticky-title">Upgrades & Training</div>
+                <!-- Title set dynamically -->
+                <div class="panel-sticky-title" id="upgrades-panel-title">Upgrades & Training</div>
 
                  <!-- Tiered Upgrade Categories -->
-                 <h4 class="group-title">Manual Generation <span class="toggle-icon"></span></h4>
+                 <!-- Titles set dynamically -->
+                 <h4 class="group-title" data-category-id="manualGen"><span data-string-key="panels.manualGenCat">Manual Generation</span> <span class="toggle-icon"></span></h4>
                  <div id="upgrade-category-manualGen" class="upgrade-category-container"></div>
                  <hr class="side-panel-hr">
-                 <h4 class="group-title">Lead Team Boosts <span class="toggle-icon"></span></h4>
+                 <h4 class="group-title" data-category-id="leadTeamBoosts"><span data-string-key="panels.leadTeamCat">Lead Team Boosts</span> <span class="toggle-icon"></span></h4>
                  <div id="upgrade-category-leadTeamBoosts" class="upgrade-category-container"></div>
                  <hr class="side-panel-hr">
-                 <h4 class="group-title">Opportunity Team Boosts <span class="toggle-icon"></span></h4>
+                 <h4 class="group-title" data-category-id="oppTeamBoosts"><span data-string-key="panels.oppTeamCat">Opportunity Team Boosts</span> <span class="toggle-icon"></span></h4>
                  <div id="upgrade-category-oppTeamBoosts" class="upgrade-category-container"></div>
                  <hr class="side-panel-hr">
-                 <h4 class="group-title">Integrated Solution Boosts <span class="toggle-icon"></span></h4>
+                 <h4 class="group-title" data-category-id="integratedBoosts"><span data-string-key="panels.integratedCat">Integrated Solution Boosts</span> <span class="toggle-icon"></span></h4>
                  <div id="upgrade-category-integratedBoosts" class="upgrade-category-container"></div>
                  <hr class="side-panel-hr">
-                 <h4 class="group-title">Pipeline Efficiency <span class="toggle-icon"></span></h4>
+                 <h4 class="group-title" data-category-id="pipelineEfficiency"><span data-string-key="panels.efficiencyCat">Pipeline Efficiency</span> <span class="toggle-icon"></span></h4>
                  <div id="upgrade-category-pipelineEfficiency" class="upgrade-category-container"></div>
                  <hr class="side-panel-hr">
-                 <h4 class="group-title">Acquisition Enhancement <span class="toggle-icon"></span></h4>
+                 <h4 class="group-title" data-category-id="acquisitionEnhancement"><span data-string-key="panels.acquisitionEnhanceCat">Acquisition Enhancement</span> <span class="toggle-icon"></span></h4>
                  <div id="upgrade-category-acquisitionEnhancement" class="upgrade-category-container"></div>
                  <hr class="side-panel-hr">
-                 <!-- Terminology Change -->
-                 <h4 class="group-title">Acquisition Cost Reduction <span class="toggle-icon"></span></h4>
+                 <h4 class="group-title" data-category-id="acquisitionCost"><span data-string-key="panels.acquisitionCostCat">Acquisition Cost Reduction</span> <span class="toggle-icon"></span></h4>
                  <div id="upgrade-category-acquisitionCost" class="upgrade-category-container"></div>
                  <hr class="side-panel-hr">
-                 <h4 class="group-title">Customer Value Rate <span class="toggle-icon"></span></h4>
+                 <h4 class="group-title" data-category-id="customerValue"><span data-string-key="panels.customerValueCat">Customer Value Rate</span> <span class="toggle-icon"></span></h4>
                  <div id="upgrade-category-customerValue" class="upgrade-category-container"></div>
                  <hr class="side-panel-hr">
-                 <h4 class="group-title">Customer Driven Growth <span class="toggle-icon"></span></h4>
+                 <h4 class="group-title" data-category-id="customerGrowth"><span data-string-key="panels.customerGrowthCat">Customer Driven Growth</span> <span class="toggle-icon"></span></h4>
                  <div id="upgrade-category-customerGrowth" class="upgrade-category-container"></div>
                  <hr class="side-panel-hr">
 
                  <!-- Special Upgrades Section -->
-                 <h4 class="group-title">Special Upgrades <span class="toggle-icon"></span></h4>
+                 <!-- Title set dynamically -->
+                 <h4 class="group-title" data-category-id="special"><span data-string-key="panels.specialUpgradesCat">Special Upgrades</span> <span class="toggle-icon"></span></h4>
                  <div class="upgrade-category-container">
-                     <!-- TODO: Updated Strategic Cost Opt Effect Desc & Terminology -->
-                     <button id="upgrade-costReductStrategic" class="upgrade-button" disabled title="Re-engineers the acquisition process for a massive reduction in cost per attempt (-75% multiplicative).">
-                        <span>Strategic Cost Optimization</span> <span class="cost">Cost: $5M</span> <span class="effect">-75% Acq. Cost</span>
+                     <!-- Text/Title content managed by JS using ui_strings -->
+                     <button id="upgrade-costReductStrategic" class="upgrade-button" disabled>
+                        <span data-upgrade-id="costReductStrategic" data-type="name">Strategic Cost Opt...</span>
+                        <span class="cost">Cost: ...</span>
+                        <span class="effect" data-upgrade-id="costReductStrategic" data-type="description">Effect...</span>
                      </button>
-                     <!-- TODO: Updated VPO Cost Desc -->
-                     <button id="upgrade-playtimeMPSBoost" class="upgrade-button" disabled title="Increases MPS by +100% per hour played (capped at +200% after 2 hours). Requires significant playtime to reach max effect.">
-                         <span>Veteran Pipeline Operator</span> <span class="cost">Cost: 100M L & 100M O & $10M</span> <span class="effect">+MPS based on Playtime</span>
+                     <button id="upgrade-playtimeMPSBoost" class="upgrade-button" disabled>
+                         <span data-upgrade-id="playtimeMPSBoost" data-type="name">Veteran Pipeline Op...</span>
+                         <span class="cost">Cost: ...</span>
+                         <span class="effect" data-upgrade-id="playtimeMPSBoost" data-type="description">Effect...</span>
                      </button>
-                     <button id="upgrade-flexibleWorkflow" class="upgrade-button" disabled title="Purchase to unlock the Flexible Workflow toggle. Balances L/O amounts by shifting generation focus.">
-                        <span>Flexible Workflow</span> <span class="cost">Req: 100 Cust & $10k</span> <span class="effect">Enables Workflow Toggle</span>
+                     <button id="upgrade-flexibleWorkflow" class="upgrade-button" disabled>
+                        <span data-upgrade-id="flexibleWorkflow" data-type="name">Flexible Workflow...</span>
+                        <span class="cost">Req: ...</span>
+                        <span class="effect" data-upgrade-id="flexibleWorkflow" data-type="description">Effect...</span>
                      </button>
-                     <button id="toggle-flexible-workflow" class="simple-button" disabled title="Purchase the Flexible Workflow upgrade first to enable toggling.">
+                     <!-- Text/Title set dynamically -->
+                     <button id="toggle-flexible-workflow" class="simple-button" disabled data-string-key="buttons.activateFlexWorkflow" data-string-key-title="buttons.flexWorkflowNotPurchasedTitle">
                          Activate Flex Workflow
                      </button>
                  </div>
@@ -109,72 +124,77 @@
 
             <!-- Center Area -->
              <div class="center-area">
-                <h1>Salesforce Pipeline Simulator</h1>
+                <!-- Title set dynamically -->
+                <h1 id="main-title">Salesforce Pipeline Simulator</h1>
                 <div class="stats-display">
-                    <p title="Raw potential for opportunities.">Leads: <span id="leads">0</span></p>
-                    <p title="Qualified potential ready for sales engagement.">Opportunities: <span id="opportunities">0</span></p>
-                    <p title="Acquired clients generating revenue.">Customers: <span id="customers">0</span></p>
-                    <p class="money-display" title="Total accumulated wealth!">Money: <span id="money">$0.00</span></p>
+                    <!-- Labels and Titles set dynamically -->
+                    <p data-string-key-title="centerArea.leadsTitle"><span data-string-key="centerArea.leadsLabel">Leads:</span> <span id="leads">0</span></p>
+                    <p data-string-key-title="centerArea.oppsTitle"><span data-string-key="centerArea.oppsLabel">Opportunities:</span> <span id="opportunities">0</span></p>
+                    <p data-string-key-title="centerArea.custTitle"><span data-string-key="centerArea.custLabel">Customers:</span> <span id="customers">0</span></p>
+                    <p class="money-display" data-string-key-title="centerArea.moneyTitle"><span data-string-key="centerArea.moneyLabel">Money:</span> <span id="money">$0.00</span></p>
                     <hr class="stats-hr">
-                    <p title="Rate at which Leads are generated automatically.">Leads/Second: <span id="lps">0 L/s</span></p>
-                    <p title="Rate at which Opportunities are generated automatically.">Opportunities/Second: <span id="ops">0 O/s</span></p>
-                    <p title="Rate at which Money is generated by Customers.">Money/Second: <span id="mps">$0.00/s</span></p>
+                    <p data-string-key-title="centerArea.lpsTitle"><span data-string-key="centerArea.lpsLabel">Leads/Second:</span> <span id="lps">0 L/s</span></p>
+                    <p data-string-key-title="centerArea.opsTitle"><span data-string-key="centerArea.opsLabel">Opportunities/Second:</span> <span id="ops">0 O/s</span></p>
+                    <p data-string-key-title="centerArea.mpsTitle"><span data-string-key="centerArea.mpsLabel">Money/Second:</span> <span id="mps">$0.00/s</span></p>
                     <hr class="stats-hr">
-                    <p id="lead-click-base-p" title="Effective Lead generation per click (Base + Bonus % + Power-ups)">Leads/Click: <span id="leads-per-click">1</span></p>
-                    <p id="opp-click-base-p" title="Effective Opportunity generation per click (Base + Bonus % + Power-ups)">Opps/Click: <span id="opps-per-click">1</span></p>
+                    <p id="lead-click-base-p" data-string-key-title="centerArea.leadsClickTitleBase"><span data-string-key="centerArea.leadsClickLabel">Leads/Click:</span> <span id="leads-per-click">1</span></p>
+                    <p id="opp-click-base-p" data-string-key-title="centerArea.oppsClickTitleBase"><span data-string-key="centerArea.oppsClickLabel">Opps/Click:</span> <span id="opps-per-click">1</span></p>
                     <hr class="stats-hr">
-                    <p title="Attempts per second to convert Lead/Opportunity pairs into a Customer">Acquisition Rate (/s): <span id="car">0.100</span></p>
-                    <p title="Chance for an acquisition attempt to succeed">Acquisition Success (%): <span id="success-chance">25.0%</span></p>
-                    <!-- Terminology Change -->
-                    <p title="Current cost per new Customer attempt (equal Leads & Opportunities)">Acquisition Cost (L&O): <span id="cust-cost">100</span></p>
+                    <p data-string-key-title="centerArea.acqRateTitle"><span data-string-key="centerArea.acqRateLabel">Acquisition Rate (/s):</span> <span id="car">0.100</span></p>
+                    <p data-string-key-title="centerArea.acqSuccessTitle"><span data-string-key="centerArea.acqSuccessLabel">Acquisition Success (%):</span> <span id="success-chance">25.0%</span></p>
+                    <p data-string-key-title="centerArea.acqCostTitle"><span data-string-key="centerArea.acqCostLabel">Acquisition Cost (L&O):</span> <span id="cust-cost">100</span></p>
                     <hr class="stats-hr">
-                    <p title="Money generated per Customer per second">Customer Value Rate ($/Cust/s): <span id="cvr">1.000</span></p>
+                    <p data-string-key-title="centerArea.cvrTitle"><span data-string-key="centerArea.cvrLabel">Customer Value Rate ($/Cust/s):</span> <span id="cvr">1.000</span></p>
                 </div>
                 <div class="click-zone">
-                    <button id="click-lead-button" title="Generate Lead! Click, click, click!"><img src="resources/img/lead.jpeg" alt="Generate Lead"></button>
-                    <button id="click-opp-button" title="Generate Opportunity! Turn potential into reality!"><img src="resources/img/opportunity.jpeg" alt="Generate Opportunity"></button>
+                     <!-- Titles set dynamically -->
+                    <button id="click-lead-button" data-string-key-title="centerArea.clickLeadButtonTitle"><img src="resources/img/lead.jpeg" alt="Generate Lead"></button>
+                    <button id="click-opp-button" data-string-key-title="centerArea.clickOppButtonTitle"><img src="resources/img/opportunity.jpeg" alt="Generate Opportunity"></button>
                 </div>
             </div>
             <!-- End Center Area -->
 
             <!-- Right Panel (Buildables) -->
              <div class="side-panel buildables-panel">
-                <div class="panel-sticky-title">Teams & Features</div>
+                 <!-- Title set dynamically -->
+                <div class="panel-sticky-title" id="buildables-panel-title">Teams & Features</div>
                  <!-- Build Categories -->
-                 <h4 class="group-title">Lead Generation Teams <span class="toggle-icon"></span></h4>
+                 <!-- Titles set dynamically -->
+                 <h4 class="group-title" data-category-id="leadGenTeams"><span data-string-key="panels.leadGenTeamsCat">Lead Generation Teams</span> <span class="toggle-icon"></span></h4>
                  <div class="build-category-container">
-                     <button id="buy-sdr" class="build-button" disabled title="..."> <span class="build-title">SDR (<span class="count" id="sdr-count">0</span>)</span> <span class="effect" id="sdr-effect">...</span> <span class="cost" id="sdr-cost">...</span> </button>
-                     <button id="buy-webform" class="build-button" disabled title="..."> <span class="build-title">Web Form (<span class="count" id="webform-count">0</span>)</span> <span class="effect" id="webform-effect">...</span> <span class="cost" id="webform-cost">...</span> </button>
-                     <button id="buy-pardot" class="build-button" disabled title="..."> <span class="build-title">Pardot Campaign (<span class="count" id="pardot-count">0</span>)</span> <span class="effect" id="pardot-effect">...</span> <span class="cost" id="pardot-cost">...</span> </button>
-                     <button id="buy-nurture" class="build-button" disabled title="..."> <span class="build-title">Nurture Program (<span class="count" id="nurture-count">0</span>)</span> <span class="effect" id="nurture-effect">...</span> <span class="cost" id="nurture-cost">...</span> </button>
-                     <button id="buy-marketingcloud" class="build-button" disabled title="..."> <span class="build-title">Mkt Cloud Journey (<span class="count" id="marketingcloud-count">0</span>)</span> <span class="effect" id="marketingcloud-effect">...</span> <span class="cost" id="marketingcloud-cost">...</span> </button>
+                     <!-- Content managed by JS using ui_strings -->
+                     <button id="buy-sdr" class="build-button" disabled> <span class="build-title"><span data-building-id="sdr" data-type="name">SDR</span> (<span class="count" id="sdr-count">0</span>)</span> <span class="effect" id="sdr-effect">...</span> <span class="cost" id="sdr-cost">...</span> </button>
+                     <button id="buy-webform" class="build-button" disabled> <span class="build-title"><span data-building-id="webform" data-type="name">Web Form</span> (<span class="count" id="webform-count">0</span>)</span> <span class="effect" id="webform-effect">...</span> <span class="cost" id="webform-cost">...</span> </button>
+                     <button id="buy-pardot" class="build-button" disabled> <span class="build-title"><span data-building-id="pardot" data-type="name">Pardot Campaign</span> (<span class="count" id="pardot-count">0</span>)</span> <span class="effect" id="pardot-effect">...</span> <span class="cost" id="pardot-cost">...</span> </button>
+                     <button id="buy-nurture" class="build-button" disabled> <span class="build-title"><span data-building-id="nurture" data-type="name">Nurture Program</span> (<span class="count" id="nurture-count">0</span>)</span> <span class="effect" id="nurture-effect">...</span> <span class="cost" id="nurture-cost">...</span> </button>
+                     <button id="buy-marketingcloud" class="build-button" disabled> <span class="build-title"><span data-building-id="marketingcloud" data-type="name">Mkt Cloud Journey</span> (<span class="count" id="marketingcloud-count">0</span>)</span> <span class="effect" id="marketingcloud-effect">...</span> <span class="cost" id="marketingcloud-cost">...</span> </button>
                  </div>
                  <hr class="side-panel-hr">
-                 <h4 class="group-title">Opportunity Generation Teams <span class="toggle-icon"></span></h4>
+                 <h4 class="group-title" data-category-id="oppGenTeams"><span data-string-key="panels.oppGenTeamsCat">Opportunity Generation Teams</span> <span class="toggle-icon"></span></h4>
                  <div class="build-category-container">
-                      <button id="buy-bdr" class="build-button" disabled title="..."> <span class="build-title">BDR (<span class="count" id="bdr-count">0</span>)</span> <span class="effect" id="bdr-effect">...</span> <span class="cost" id="bdr-cost">...</span> </button>
-                     <button id="buy-qualbot" class="build-button" disabled title="..."> <span class="build-title">Qual Bot (<span class="count" id="qualbot-count">0</span>)</span> <span class="effect" id="qualbot-effect">...</span> <span class="cost" id="qualbot-cost">...</span> </button>
-                     <button id="buy-solutionengineer" class="build-button" disabled title="..."> <span class="build-title">Solution Engineer (<span class="count" id="solutionengineer-count">0</span>)</span> <span class="effect" id="solutionengineer-effect">...</span> <span class="cost" id="solutionengineer-cost">...</span> </button>
-                     <button id="buy-demospec" class="build-button" disabled title="..."> <span class="build-title">Demo Specialist (<span class="count" id="demospec-count">0</span>)</span> <span class="effect" id="demospec-effect">...</span> <span class="cost" id="demospec-cost">...</span> </button>
-                     <button id="buy-proposaldesk" class="build-button" disabled title="..."> <span class="build-title">Proposal Desk (<span class="count" id="proposaldesk-count">0</span>)</span> <span class="effect" id="proposaldesk-effect">...</span> <span class="cost" id="proposaldesk-cost">...</span> </button>
+                      <button id="buy-bdr" class="build-button" disabled> <span class="build-title"><span data-building-id="bdr" data-type="name">BDR</span> (<span class="count" id="bdr-count">0</span>)</span> <span class="effect" id="bdr-effect">...</span> <span class="cost" id="bdr-cost">...</span> </button>
+                     <button id="buy-qualbot" class="build-button" disabled> <span class="build-title"><span data-building-id="qualbot" data-type="name">Qual Bot</span> (<span class="count" id="qualbot-count">0</span>)</span> <span class="effect" id="qualbot-effect">...</span> <span class="cost" id="qualbot-cost">...</span> </button>
+                     <button id="buy-solutionengineer" class="build-button" disabled> <span class="build-title"><span data-building-id="solutionengineer" data-type="name">Solution Engineer</span> (<span class="count" id="solutionengineer-count">0</span>)</span> <span class="effect" id="solutionengineer-effect">...</span> <span class="cost" id="solutionengineer-cost">...</span> </button>
+                     <button id="buy-demospec" class="build-button" disabled> <span class="build-title"><span data-building-id="demospec" data-type="name">Demo Specialist</span> (<span class="count" id="demospec-count">0</span>)</span> <span class="effect" id="demospec-effect">...</span> <span class="cost" id="demospec-cost">...</span> </button>
+                     <button id="buy-proposaldesk" class="build-button" disabled> <span class="build-title"><span data-building-id="proposaldesk" data-type="name">Proposal Desk</span> (<span class="count" id="proposaldesk-count">0</span>)</span> <span class="effect" id="proposaldesk-effect">...</span> <span class="cost" id="proposaldesk-cost">...</span> </button>
                  </div>
                  <hr class="side-panel-hr">
-                 <h4 class="group-title">Integrated Solutions <span class="toggle-icon"></span></h4>
+                 <h4 class="group-title" data-category-id="integratedSolutions"><span data-string-key="panels.integratedSolutionsCat">Integrated Solutions</span> <span class="toggle-icon"></span></h4>
                  <div class="build-category-container">
-                     <button id="buy-integration" class="build-button" disabled title="..."> <span class="build-title">Integration Hub (<span class="count" id="integration-count">0</span>)</span> <span class="effect" id="integration-effect">...</span> <span class="cost" id="integration-cost">...</span> </button>
-                     <button id="buy-platform" class="build-button" disabled title="..."> <span class="build-title">Platform App (<span class="count" id="platform-count">0</span>)</span> <span class="effect" id="platform-effect">...</span> <span class="cost" id="platform-cost">...</span> </button>
-                     <button id="buy-ecosystem" class="build-button" disabled title="..."> <span class="build-title">Partner Ecosystem (<span class="count" id="ecosystem-count">0</span>)</span> <span class="effect" id="ecosystem-effect">...</span> <span class="cost" id="ecosystem-cost">...</span> </button>
-                     <button id="buy-cloudsuite" class="build-button" disabled title="..."> <span class="build-title">Cloud Suite (<span class="count" id="cloudsuite-count">0</span>)</span> <span class="effect" id="cloudsuite-effect">...</span> <span class="cost" id="cloudsuite-cost">...</span> </button>
-                     <button id="buy-hyperscaler" class="build-button" disabled title="..."> <span class="build-title">Hyperscaler (<span class="count" id="hyperscaler-count">0</span>)</span> <span class="effect" id="hyperscaler-effect">...</span> <span class="cost" id="hyperscaler-cost">...</span> </button>
-                     <button id="buy-aidata" class="build-button" disabled title="..."> <span class="build-title">AI Data Cloud (<span class="count" id="aidata-count">0</span>)</span> <span class="effect" id="aidata-effect">...</span> <span class="cost" id="aidata-cost">...</span> </button>
+                     <button id="buy-integration" class="build-button" disabled> <span class="build-title"><span data-building-id="integration" data-type="name">Integration Hub</span> (<span class="count" id="integration-count">0</span>)</span> <span class="effect" id="integration-effect">...</span> <span class="cost" id="integration-cost">...</span> </button>
+                     <button id="buy-platform" class="build-button" disabled> <span class="build-title"><span data-building-id="platform" data-type="name">Platform App</span> (<span class="count" id="platform-count">0</span>)</span> <span class="effect" id="platform-effect">...</span> <span class="cost" id="platform-cost">...</span> </button>
+                     <button id="buy-ecosystem" class="build-button" disabled> <span class="build-title"><span data-building-id="ecosystem" data-type="name">Partner Ecosystem</span> (<span class="count" id="ecosystem-count">0</span>)</span> <span class="effect" id="ecosystem-effect">...</span> <span class="cost" id="ecosystem-cost">...</span> </button>
+                     <button id="buy-cloudsuite" class="build-button" disabled> <span class="build-title"><span data-building-id="cloudsuite" data-type="name">Cloud Suite</span> (<span class="count" id="cloudsuite-count">0</span>)</span> <span class="effect" id="cloudsuite-effect">...</span> <span class="cost" id="cloudsuite-cost">...</span> </button>
+                     <button id="buy-hyperscaler" class="build-button" disabled> <span class="build-title"><span data-building-id="hyperscaler" data-type="name">Hyperscaler</span> (<span class="count" id="hyperscaler-count">0</span>)</span> <span class="effect" id="hyperscaler-effect">...</span> <span class="cost" id="hyperscaler-cost">...</span> </button>
+                     <button id="buy-aidata" class="build-button" disabled> <span class="build-title"><span data-building-id="aidata" data-type="name">AI Data Cloud</span> (<span class="count" id="aidata-count">0</span>)</span> <span class="effect" id="aidata-effect">...</span> <span class="cost" id="aidata-cost">...</span> </button>
                  </div>
                  <hr class="side-panel-hr">
-                 <h4 class="group-title">Customer Success <span class="toggle-icon"></span></h4>
+                 <h4 class="group-title" data-category-id="customerSuccess"><span data-string-key="panels.customerSuccessCat">Customer Success</span> <span class="toggle-icon"></span></h4>
                  <div class="build-category-container">
-                     <button id="buy-acctManager" class="build-button" disabled title="..."> <span class="build-title">Acct Manager (<span class="count" id="acctManager-count">0</span>)</span> <span class="effect" id="acctManager-effect">...</span> <span class="cost" id="acctManager-cost">...</span> </button>
-                     <button id="buy-successArchitect" class="build-button" disabled title="..."> <span class="build-title">Success Architect (<span class="count" id="successArchitect-count">0</span>)</span> <span class="effect" id="successArchitect-effect">...</span> <span class="cost" id="successArchitect-cost">...</span> </button>
-                      <button id="buy-successManager" class="build-button" disabled title="..."> <span class="build-title">Success Manager (<span class="count" id="successManager-count">0</span>)</span> <span class="effect" id="successManager-effect">...</span> <span class="cost" id="successManager-cost">...</span> </button>
-                     <button id="buy-procurementOpt" class="build-button" disabled title="..."> <span class="build-title">Procurement Opt. (<span class="count" id="procurementOpt-count">0</span>)</span> <span class="effect" id="procurementOpt-effect">...</span> <span class="cost" id="procurementOpt-cost">...</span> </button>
+                     <button id="buy-acctManager" class="build-button" disabled> <span class="build-title"><span data-building-id="acctManager" data-type="name">Acct Manager</span> (<span class="count" id="acctManager-count">0</span>)</span> <span class="effect" id="acctManager-effect">...</span> <span class="cost" id="acctManager-cost">...</span> </button>
+                     <button id="buy-successArchitect" class="build-button" disabled> <span class="build-title"><span data-building-id="successArchitect" data-type="name">Success Architect</span> (<span class="count" id="successArchitect-count">0</span>)</span> <span class="effect" id="successArchitect-effect">...</span> <span class="cost" id="successArchitect-cost">...</span> </button>
+                     <button id="buy-successManager" class="build-button" disabled> <span class="build-title"><span data-building-id="successManager" data-type="name">Success Manager</span> (<span class="count" id="successManager-count">0</span>)</span> <span class="effect" id="successManager-effect">...</span> <span class="cost" id="successManager-cost">...</span> </button>
+                     <button id="buy-procurementOpt" class="build-button" disabled> <span class="build-title"><span data-building-id="procurementOpt" data-type="name">Procurement Opt.</span> (<span class="count" id="procurementOpt-count">0</span>)</span> <span class="effect" id="procurementOpt-effect">...</span> <span class="cost" id="procurementOpt-cost">...</span> </button>
                  </div>
                  <hr class="side-panel-hr">
             </div> <!-- End Buildables Panel -->
@@ -186,167 +206,141 @@
     </div> <!-- End game-container -->
 
     <!-- Modals -->
-    <!-- TODO: Add First Time Popup Modal -->
+    <!-- Modal content set dynamically -->
     <div id="first-time-modal" class="modal">
-        <div class="modal-content" style="max-width: 450px;"> <!-- Smaller modal -->
-            <span class="close-button" id="close-first-time-button" title="Close">×</span>
-            <h2>Welcome!</h2>
-            <p style="text-align: center;"><strong>Goal: Reach $1 Billion!</strong></p>
+        <div class="modal-content" style="max-width: 450px;">
+            <span class="close-button" id="close-first-time-button" data-string-key-title="modals.closeButtonTitle">×</span>
+            <h2 data-string-key="modals.firstTime.title">Welcome!</h2>
+            <p style="text-align: center;" data-string-key="modals.firstTime.goal"><strong>Goal: Reach $1 Billion!</strong></p>
             <hr style="margin: 10px 0;">
-            <p><strong>How?</strong></p>
-            <ul style="text-align: left; padding-left: 30px;">
-                <li>Click <strong style="color: #007bff;">Lead</strong> / <strong style="color: #fd7e14;">Opp</strong> buttons (Center).</li>
-                <li>Buy <strong style="color: #495057;">Teams/Features</strong> (Right Panel) for auto L/O per second.</li>
-                <li>L & O automatically try to become <strong style="color: #6f42c1;">Customers</strong> (check Acq. Cost!).</li>
-                <li><strong style="color: #6f42c1;">Customers</strong> generate <strong style="color: #28a745;">Money ($)</strong> per second.</li>
-                <li>Buy <strong style="color: #0056b3;">Upgrades</strong> (Left Panel) to improve everything!</li>
-                <li>Click falling <strong style="color: #ffc107;">Tokens</strong> for boosts!</li>
+            <p><strong data-string-key="modals.firstTime.how">How?</strong></p>
+            <ul style="text-align: left; padding-left: 30px;" id="first-time-steps">
+                <!-- Steps will be populated by JS -->
             </ul>
              <hr style="margin: 10px 0;">
-            <p style="text-align: center; font-size: 0.9em;">(Full tutorial available via top bar button)</p>
-            <button id="ok-first-time-button" class="simple-button" style="margin-top: 15px;">Got It!</button>
+            <p style="text-align: center; font-size: 0.9em;" data-string-key="modals.firstTime.tutorialHint">(Full tutorial available via top bar button)</p>
+            <button id="ok-first-time-button" class="simple-button" style="margin-top: 15px;" data-string-key="modals.firstTime.okButton">Got It!</button>
         </div>
     </div>
 
     <div id="credits-modal" class="modal">
         <div class="modal-content">
-            <span class="close-button" id="close-credits-button" title="Close">×</span>
-            <h2>Credits</h2>
-            <p><strong>Game Design & Development:</strong></p>
-            <ul><li>Tizp</li><li>AI Assistant (Gemini)</li></ul>
-            <p><strong>Music:</strong></p>
-            <p>"Batty McFaddin - Slower"<br> "Pixelland"<br> "Disco con Tutti"<br> "Fox Tale Waltz Part 1 Instrumental"<br> "Mining by Moonlight"<br> "Space Jazz"<br> "Surf Shimmy"<br> <br> All music by Kevin MacLeod (incompetech.com)<br> Licensed under Creative Commons: By Attribution 4.0 License<br> <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">http://creativecommons.org/licenses/by/4.0/</a></p>
-            <p><strong>Sound Effects:</strong></p> <p>"Cash Register Kaching" by Modestas123123 from Pixabay</p>
-            <p>"Collect Point" (collect-5930.mp3) by freesound_community from Pixabay</p>
-            <p><strong>Images:</strong></p>
-            <p>Lead/Opportunity Button Images Generated by Gemini</p>
-            <p>Favicon & Power-up Images: Various memes found online</p>
-            <p><i>Game concept inspired by Cookie Clicker and other incremental games.</i></p>
+            <span class="close-button" id="close-credits-button" data-string-key-title="modals.closeButtonTitle">×</span>
+            <h2 data-string-key="modals.credits.title">Credits</h2>
+            <p><strong data-string-key="modals.credits.designDev">Game Design & Development:</strong></p>
+            <ul>
+                <li data-string-key="modals.credits.dev1">Tizp</li>
+                <li data-string-key="modals.credits.dev2">AI Assistant (Gemini)</li>
+            </ul>
+            <p><strong data-string-key="modals.credits.music">Music:</strong></p>
+            <p data-string-key="modals.credits.musicTracks" class="dynamic-html">[Music List]</p>
+            <p><strong data-string-key="modals.credits.sfx">Sound Effects:</strong></p>
+             <p data-string-key="modals.credits.sfx1">[SFX 1]</p>
+            <p data-string-key="modals.credits.sfx2">[SFX 2]</p>
+            <p><strong data-string-key="modals.credits.images">Images:</strong></p>
+            <p data-string-key="modals.credits.img1">[Image 1]</p>
+            <p data-string-key="modals.credits.img2">[Image 2]</p>
+            <p data-string-key="modals.credits.inspiration" class="dynamic-html">[Inspiration]</p>
         </div>
     </div>
 
     <div id="win-modal" class="modal">
         <div class="modal-content">
-            <span class="close-button" id="close-win-button" title="Close">×</span>
-            <h2>Congratulations!</h2>
-            <p>You've built a pipeline generating over <strong>$1 Billion!</strong></p>
-            <p>You are a true Salesforce Pipeline Master!</p>
-            <p>(Game Paused)</p>
-            <button id="close-win-modal-button" class="simple-button">Keep Playing</button>
+            <span class="close-button" id="close-win-button" data-string-key-title="modals.closeButtonTitle">×</span>
+            <h2 data-string-key="modals.win.title">Congratulations!</h2>
+            <p data-string-key="modals.win.line1" class="dynamic-html">[Win Line 1]</p>
+            <p data-string-key="modals.win.line2">[Win Line 2]</p>
+            <p data-string-key="modals.win.line3">[Win Line 3]</p>
+            <button id="close-win-modal-button" class="simple-button" data-string-key="modals.win.keepPlayingButton">Keep Playing</button>
         </div>
     </div>
 
 
     <div id="stats-modal" class="modal">
         <div class="modal-content">
-            <span class="close-button" id="close-stats-button" title="Close">×</span>
-            <h2>Statistics</h2>
+            <span class="close-button" id="close-stats-button" data-string-key-title="modals.closeButtonTitle">×</span>
+            <h2 data-string-key="modals.stats.title">Statistics</h2>
             <div class="stats-list">
-                <p>Game Time: <span id="stat-game-time">0s</span></p> <hr>
-                <p>Lead Clicks: <span id="stat-lead-clicks">0</span></p>
-                <p>Opportunity Clicks: <span id="stat-opp-clicks">0</span></p>
-                <p>Manual Leads: <span id="stat-manual-leads">0</span></p>
-                <p>Manual Opportunities: <span id="stat-manual-opps">0</span></p> <hr>
-                <p>Auto Leads Generated: <span id="stat-auto-leads">0</span></p>
-                <p>Auto Opportunities Generated: <span id="stat-auto-opps">0</span></p> <hr>
-                <p>Acquisition Attempts: <span id="stat-acq-attempts">0</span></p>
-                <p>Successful Acquisitions: <span id="stat-acq-success">0</span></p>
-                <p>Failed Acquisitions: <span id="stat-acq-failed">0</span></p> <hr>
-                <p>Power-ups Clicked: <span id="stat-powerups-clicked">0</span></p> <hr>
-                <p>Total Money Earned: $<span id="stat-total-money">0.00</span></p>
+                <!-- Labels set dynamically -->
+                <p><span data-string-key="modals.stats.gameTime">Game Time:</span> <span id="stat-game-time">0s</span></p> <hr>
+                <p><span data-string-key="modals.stats.leadClicks">Lead Clicks:</span> <span id="stat-lead-clicks">0</span></p>
+                <p><span data-string-key="modals.stats.oppClicks">Opportunity Clicks:</span> <span id="stat-opp-clicks">0</span></p>
+                <p><span data-string-key="modals.stats.manualLeads">Manual Leads:</span> <span id="stat-manual-leads">0</span></p>
+                <p><span data-string-key="modals.stats.manualOpps">Manual Opportunities:</span> <span id="stat-manual-opps">0</span></p> <hr>
+                <p><span data-string-key="modals.stats.autoLeads">Auto Leads Generated:</span> <span id="stat-auto-leads">0</span></p>
+                <p><span data-string-key="modals.stats.autoOpps">Auto Opportunities Generated:</span> <span id="stat-auto-opps">0</span></p> <hr>
+                <p><span data-string-key="modals.stats.acqAttempts">Acquisition Attempts:</span> <span id="stat-acq-attempts">0</span></p>
+                <p><span data-string-key="modals.stats.acqSuccess">Successful Acquisitions:</span> <span id="stat-acq-success">0</span></p>
+                <p><span data-string-key="modals.stats.acqFailed">Failed Acquisitions:</span> <span id="stat-acq-failed">0</span></p> <hr>
+                <p><span data-string-key="modals.stats.powerupsClicked">Power-ups Clicked:</span> <span id="stat-powerups-clicked">0</span></p> <hr>
+                <!-- MODIFIED: Removed hardcoded $ -->
+                <p><span data-string-key="modals.stats.totalMoney">Total Money Earned:</span> <span id="stat-total-money">$0.00</span></p>
             </div>
         </div>
     </div>
 
     <div id="tutorial-modal" class="modal">
         <div class="modal-content">
-             <span class="close-button" id="close-tutorial-button" title="Close">×</span>
-             <h2>Tutorial: How to Play</h2>
-             <p>Welcome to the <strong>Salesforce Pipeline Simulator!</strong> Your goal is to build a massive sales pipeline and reach <strong>$1 Billion</strong> in revenue.</p>
-             <h4>Core Resources:</h4>
-             <ul>
-                <li><strong>Leads (L):</strong> Raw potential. Generated via clicks or Teams/Features. Spent on upgrades, Teams/Features, & Acquisition.</li>
-                <li><strong>Opportunities (Opps/O):</strong> Qualified potential. Generated via clicks or Teams/Features. Spent on upgrades, Teams/Features, & Acquisition.</li>
-                <li><strong>Customers (Cust):</strong> Source of revenue! Acquired by spending L & O. Required (not spent) for 'Customer Driven Growth' upgrades.</li>
-                <li><strong>Money ($):</strong> Your score! Generated by Customers. Spent on efficiency upgrades & Customer Success buildings.</li>
+             <span class="close-button" id="close-tutorial-button" data-string-key-title="modals.closeButtonTitle">×</span>
+             <h2 data-string-key="modals.tutorial.title">Tutorial: How to Play</h2>
+             <p data-string-key="modals.tutorial.welcome" class="dynamic-html">[Welcome Text]</p>
+             <h4 data-string-key="modals.tutorial.coreResourcesTitle">Core Resources:</h4>
+             <ul id="tutorial-core-resources">
+                 <!-- Populated by JS -->
              </ul>
-             <h4>Generating Resources:</h4>
-             <ul>
-                <li><strong>Manual Clicks:</strong> Click Lead/Opp buttons in center. Upgrades boost amount/click.</li>
-                <li><strong>Teams & Features (Right Panel):</strong> Buy items to generate L/S or O/S automatically. Costs increase per purchase. Shift+Click to buy 10.</li>
+             <h4 data-string-key="modals.tutorial.generatingTitle">Generating Resources:</h4>
+             <ul id="tutorial-generating">
+                  <!-- Populated by JS -->
              </ul>
-             <!-- Terminology Change -->
-             <h4>Getting Customers (Acquisition):</h4>
-             <ul>
-                <li>Game automatically attempts to convert L & O into Customers.</li>
-                <li><strong>Acquisition Cost:</strong> L & O cost per attempt (shown in center stats). Increases with Customers, reducible by upgrades and buildings (e.g., Acct Managers).</li>
-                <li><strong>Acquisition Rate (CAR):</strong> Attempts/second. Increase via upgrades.</li>
-                <li><strong>Acquisition Success:</strong> % chance an attempt succeeds. Increase via upgrades. Failure still costs L & O!</li>
-                <li><strong>Pause Acquisition:</strong> Top bar button pauses L/O consumption for attempts.</li>
+             <h4 data-string-key="modals.tutorial.acquisitionTitle">Getting Customers (Acquisition):</h4>
+             <ul id="tutorial-acquisition">
+                  <!-- Populated by JS -->
              </ul>
-             <h4>Generating Money:</h4>
-             <ul>
-                <li>Each Customer generates $/sec based on <strong>Customer Value Rate (CVR)</strong>.</li>
-                <li>Increase CVR via upgrades and buildings (e.g., Success Architects, Success Managers).</li>
+             <h4 data-string-key="modals.tutorial.generatingMoneyTitle">Generating Money:</h4>
+             <ul id="tutorial-generating-money">
+                  <!-- Populated by JS -->
              </ul>
-             <h4>Upgrades & Training (Left Panel):</h4>
-             <ul>
-                 <li>Spend L, O, $, or meet Customer requirements for upgrades to:
-                     <ul>
-                         <li>Boost manual clicks.</li>
-                         <li>Boost Team/Feature output (multipliers, percentages, synergies).</li>
-                         <li>Improve overall efficiency.</li>
-                         <!-- Terminology Change -->
-                         <li>Improve Acquisition Rate (CAR), Success %, or reduce Acquisition Cost.</li>
-                         <li>Increase Customer Value Rate (CVR).</li>
-                         <li>Purchase special upgrades (e.g., Flexible Workflow, Veteran Pipeline Operator).</li>
-                         <!-- Terminology Change -->
-                         <li>Gain bonuses by meeting Customer thresholds for 'Customer Driven Growth' upgrades (-Acquisition Cost, +Output, +CVR).</li>
-                     </ul>
-                 </li>
-                 <li><strong>Tiered Upgrades:</strong> Purchase all Tier 1 upgrades in a category to unlock powerful Tier 2 upgrades.</li>
-                 <li><strong>Collapsible Categories:</strong> Click the [-] / [+] on category titles to hide/show their contents.</li>
+             <h4 data-string-key="modals.tutorial.upgradesTitle">Upgrades & Training (Left Panel):</h4>
+             <ul id="tutorial-upgrades">
+                 <li data-string-key="modals.tutorial.upgradesSpend">[Upgrades Spend Intro]</li>
+                 <ul id="tutorial-upgrades-list">
+                    <!-- Populated by JS -->
+                 </ul>
+                 <li data-string-key="modals.tutorial.upgradesTiered" class="dynamic-html">[Tiered Upgrades]</li>
+                 <li data-string-key="modals.tutorial.upgradesCollapse" class="dynamic-html">[Collapse Categories]</li>
             </ul>
-             <h4>Teams & Features (Right Panel):</h4>
-             <ul>
-                <li>Purchase buildings for passive L/S, O/S, or other effects.</li>
-                 <!-- Terminology Change & Updated Descriptions -->
-                <li><strong>Customer Success Buildings:</strong> Provide unique bonuses like reducing Acquisition Cost (Acct Manager -5%), boosting CVR based on Integrated buildings (Success Architect +10%/10), reducing the cost of other buildings (Procurement Opt. -5%), or boosting Base CVR multiplicatively (Success Manager +5% each).</li>
-                <li><strong>Collapsible Categories:</strong> Click the [-] / [+] on category titles to hide/show their contents.</li>
+             <h4 data-string-key="modals.tutorial.teamsTitle">Teams & Features (Right Panel):</h4>
+             <ul id="tutorial-teams">
+                  <!-- Populated by JS -->
             </ul>
-             <h4>Special Upgrades:</h4>
-             <ul>
-                <li><strong>Flexible Workflow:</strong> Purchase to unlock a toggle button. When active, reduces the generation rate of the resource you currently have *more* of (L or O) by 50%, and adds that generation rate to the resource you have *less* of. Aims to balance the *total amounts* of Leads and Opportunities. Deactivates automatically when amounts become roughly equal.</li>
-                <li><strong>Veteran Pipeline Operator:</strong> Increases your Money per Second based on total playtime. The bonus starts at 0% and increases by +100% MPS per hour played, capping at a maximum of +200% bonus after 2 hours of playtime. Costs L, O, and $.</li>
-                 <!-- Terminology Change -->
-                 <li><strong>Strategic Cost Optimization:</strong> Massively reduces Acquisition Cost (-75%). Costs $.</li>
+             <h4 data-string-key="modals.tutorial.specialUpgradesTitle">Special Upgrades:</h4>
+             <ul id="tutorial-special-upgrades">
+                 <!-- Populated by JS -->
             </ul>
-             <h4>Power-ups (Falling Tokens):</h4>
-             <ul>
-                 <li>Occasionally (check often!), circular tokens will fall from the top of the screen.</li>
-                <li>Click a token before it disappears off the bottom to activate a temporary boost!</li>
-                <li>Possible boosts include increased L/S & O/S, more powerful clicks, increased M/S, or higher CVR.</li>
+             <h4 data-string-key="modals.tutorial.powerupsTitle">Power-ups (Falling Tokens):</h4>
+             <ul id="tutorial-powerups">
+                 <!-- Populated by JS -->
             </ul>
-             <h4>Goal & Saving:</h4>
-             <ul>
-                 <li>Reach <strong>$1 Billion</strong>!</li>
-                 <li>Auto-saves every 30 seconds. Use top bar buttons for manual save/delete.</li>
+             <h4 data-string-key="modals.tutorial.goalSavingTitle">Goal & Saving:</h4>
+             <ul id="tutorial-goal-saving">
+                 <!-- Populated by JS -->
              </ul>
-             <p>Good luck!</p>
+             <p data-string-key="modals.tutorial.goodLuck">Good luck!</p>
         </div>
     </div>
 
     <div id="settings-modal" class="modal">
         <div class="modal-content">
-            <span class="close-button" id="close-settings-button" title="Close">×</span>
-            <h2>Settings</h2>
+            <span class="close-button" id="close-settings-button" data-string-key-title="modals.closeButtonTitle">×</span>
+            <h2 data-string-key="modals.settings.title">Settings</h2>
             <div class="settings-content">
-                 <p>Game controls and options.</p>
+                 <p data-string-key="modals.settings.description">Game controls and options.</p>
                  <hr style="margin: 15px 0;">
-                 <button id="soft-refresh-button" class="simple-button" title="Reloads the game state from the last save and restarts intervals. Useful if UI seems stuck. Does NOT clear progress.">
+                 <!-- Text/Title set dynamically -->
+                 <button id="soft-refresh-button" class="simple-button" data-string-key="modals.settings.softRefreshButton" data-string-key-title="modals.settings.softRefreshButtonTitle">
                      Soft Refresh Game
                  </button>
-                 <p style="font-size: 0.8em; color: #666; margin-top: 5px;">
+                 <p style="font-size: 0.8em; color: #666; margin-top: 5px;" data-string-key="modals.settings.softRefreshWarning">
                      (Reloads from last save - any unsaved progress might be lost)
                  </p>
             </div>

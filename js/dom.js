@@ -11,6 +11,8 @@ const essentialIds = [
     'click-lead-button', 'click-opp-button', 'background-music', 'volume-slider',
     'mute-button', 'powerup-spawn-area', 'active-powerup-display', 'save-status',
     'toggle-acquisition-button', 'toggle-flexible-workflow'
+    // NOTE: IDs added for string population are not strictly *essential* for game logic,
+    // but are essential for the UI text to appear correctly. We handle warnings separately.
 ];
 
 export function cacheDOMElements() {
@@ -38,17 +40,23 @@ export function cacheDOMElements() {
         'stats-modal', 'close-stats-button',
         'tutorial-modal', 'close-tutorial-button',
         'settings-modal', 'close-settings-button', 'soft-refresh-button',
-        'first-time-modal', 'close-first-time-button', 'ok-first-time-button', // TODO: Added first time modal elements
+        'first-time-modal', 'close-first-time-button', 'ok-first-time-button',
         // Stats Modal Content Spans
         'stat-game-time', 'stat-lead-clicks', 'stat-opp-clicks', 'stat-manual-leads', 'stat-manual-opps',
         'stat-auto-leads', 'stat-auto-opps', 'stat-acq-attempts', 'stat-acq-success', 'stat-acq-failed',
         'stat-total-money', 'stat-powerups-clicked',
         // Misc
-        'powerup-spawn-area'
+        'powerup-spawn-area',
+        // IDs added for String Population
+        'main-title',               // <-- ADDED
+        'upgrades-panel-title',     // <-- ADDED
+        'buildables-panel-title',   // <-- ADDED
+        'track-info-text'           // <-- ADDED
     ];
 
     let foundCount = 0;
     let missingEssential = [];
+    let missingWarnings = []; // Track non-essential missing elements
 
     // Cache standard elements by ID
     idsToCache.forEach(id => {
@@ -57,16 +65,19 @@ export function cacheDOMElements() {
             domElements[id] = el;
             foundCount++;
         } else {
-            console.warn(`DOM Element not found: ${id}`);
+            // Distinguish between essential errors and warnings
             if (essentialIds.includes(id)) {
                 console.error(`CRITICAL: Essential DOM Element not found: ${id}`);
                 missingEssential.push(id);
+            } else {
+                // Log non-essential missing elements as warnings
+                 console.warn(`DOM Element not found: ${id}`);
+                 missingWarnings.push(id); // Keep track for summary warning if needed
             }
         }
     });
 
     // Cache Building Button related elements dynamically
-    // console.log("Caching building elements..."); // Reduce noise
     for (const id in buildingsConfig) {
         const buyButtonId = `buy-${id}`;
         const countSpanId = `${id}-count`;
@@ -81,12 +92,15 @@ export function cacheDOMElements() {
                     domElements[elId] = el;
                     foundCount++;
                 }
-                // No warning needed here, expected if buttons aren't rendered yet
+                // No warning needed here, expected if buttons aren't rendered yet by JS
             }
         });
     }
 
     console.log(`Finished DOM Caching. Found: ${foundCount} elements.`);
+    if (missingWarnings.length > 0) {
+        console.warn(`Missing non-essential elements (may affect UI text): ${missingWarnings.join(', ')}`);
+    }
     if (missingEssential.length > 0) {
          console.error("Missing essential elements:", missingEssential.join(', '));
          alert("Fatal Error: Essential UI elements are missing. The game cannot start correctly. Check the console (F12) for details.");
