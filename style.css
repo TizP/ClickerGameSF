@@ -58,7 +58,7 @@ body {
 .stats-display { margin-bottom: 25px; font-size: 1.15em; background-color: #e9ecef; padding: 15px 25px; border-radius: 6px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); min-width: 360px; width: 95%; max-width: 550px; flex-shrink: 0; box-sizing: border-box; }
 .stats-display p { margin: 5px 0; line-height: 1.45; display: flex; justify-content: space-between; align-items: baseline; }
 .stats-display p span { font-weight: bold; margin-left: 15px; white-space: nowrap; }
-#leads, #lps, #leads-per-click { color: #007bff; } #opportunities, #ops, #opps-per-click { color: #fd7e14; } #customers { color: #6f42c1; } #money, #mps { color: #28a745; } #car { color: #ffc107; } #success-chance { color: #17a2b8; } #cvr { color: #dc3545; } #cust-cost { color: #5a6268; }
+#leads, #lps, #leads-per-click { color: #007bff; } #opportunities, #ops, #opps-per-click { color: #fd7e14; } #customers { color: #6f42c1; } #money, #mps { color: #28a745; } #car { color: #ffc107; } #success-chance { color: #17a2b8; } #cvr { color: #dc3545; } #cust-cost { color: #5a6268; } /* Represents Acquisition Cost */
 .money-display { font-size: 1.3em; font-weight: bold; margin-top: 10px !important; margin-bottom: 10px !important; }
 .stats-hr { border: 0; height: 1px; background-color: #ccc; margin: 8px 0; width: 100%; }
 .click-zone { margin-top: 20px; display: flex; gap: 30px; justify-content: center; align-items: center; flex-shrink: 0; }
@@ -116,18 +116,13 @@ body {
 
 /* --- Power-up Styles --- */
 #powerup-spawn-area { position: absolute; top: 70px; /* Below top bar */ left: 0; width: 100%; height: calc(100% - 70px); /* Fill remaining height */ overflow: hidden; /* Hide overflow */ pointer-events: none; /* Don't block clicks on elements behind */ z-index: 500; /* High z-index */ }
-.powerup-token { position: absolute; width: 90px; height: 90px; border-radius: 50%; border: 3px solid #aaa; box-shadow: 0 3px 7px rgba(0, 0, 0, 0.35); cursor: pointer; display: flex; align-items: center; justify-content: center; pointer-events: auto; /* Allow clicks on token */ user-select: none; z-index: 501; transition: transform 0.1s ease-out, box-shadow 0.1s ease-out; overflow: hidden; /* Ensure image stays within bounds */ /* Apply BOTH animations */ animation: fallAnimation 8000ms linear forwards, /* Fall down once */ rotateContainerAnimation 4000ms linear infinite; /* Rotate container infinitely */ }
-.powerup-token-image { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; /* Image is also round */ /* No separate animation needed on image if container rotates */ }
-.powerup-token:hover { /* Hover effect still applies to the container */ transform: scale(1.1); /* Keep hover scale separate */ box-shadow: 0 5px 10px rgba(0, 0, 0, 0.45); animation-play-state: paused; /* Optional: Pause rotation on hover? */ }
+.powerup-token { position: absolute; width: 90px; height: 90px; border-radius: 50%; border: 3px solid #aaa; box-shadow: 0 3px 7px rgba(0, 0, 0, 0.35); cursor: pointer; display: flex; align-items: center; justify-content: center; pointer-events: auto; /* Allow clicks on token */ user-select: none; z-index: 501; transition: transform 0.1s ease-out, box-shadow 0.1s ease-out; overflow: hidden; /* Apply FALL animation only */ animation: fallAnimation 8000ms linear forwards; /* Fall down once, rotating within */ }
+.powerup-token-image { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; /* Image is also round */ }
+.powerup-token:hover { /* Hover effect still applies to the container */ transform: scale(1.1); /* Keep hover scale separate */ box-shadow: 0 5px 10px rgba(0, 0, 0, 0.45); animation-play-state: paused; /* Pause fall/rotation on hover */ }
 
 /* --- Animations --- */
-@keyframes fallAnimation { from { transform: translateY(-100px) rotate(0deg); /* Start rotation from 0 */ opacity: 0.8; } to { transform: translateY(calc(100vh - 70px - 15px - 90px)) rotate(720deg); /* Rotate twice during fall */ opacity: 1; } }
-/* Renamed animation for clarity */
-@keyframes rotateContainerAnimation { from { /* transform: rotate(0deg); NO transform here - handled by fall */ } to { /* transform: rotate(360deg); NO transform here - handled by fall */ /* We can use a dummy property or keep it empty if fall handles rotation */ border-color: #aaa; /* Dummy change to keep animation valid */ } /* If fall handles rotation, this might not be needed */
-}
-/* Separate rotation just for testing if fall doesn't work */
-/* @keyframes rotateOnly { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } */
-
+@keyframes fallAnimation { from { transform: translateY(-100px) rotate(0deg); /* Start rotation from 0 */ opacity: 0.8; } 50% { transform: translateY(calc(50vh - 35px - 45px)) rotate(360deg); /* Mid-point */ } to { transform: translateY(calc(100vh - 70px - 15px - 90px)) rotate(720deg); /* Rotate twice during fall */ opacity: 1; } }
+/* Removed separate rotate animation */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 
 /* --- Modal Styles --- */
@@ -151,6 +146,11 @@ body {
 .stats-list hr { border: 0; height: 1px; background-color: #eee; margin: 12px 0; }
 #tutorial-modal .modal-content { max-width: 650px; }
 #tutorial-modal h4 { margin-top: 20px; margin-bottom: 8px; color: #495057; }
+/* TODO: Styles for First Time Modal */
+#first-time-modal .modal-content { max-width: 450px; /* Keep it smaller */ }
+#first-time-modal h2 { text-align: center; }
+#first-time-modal ul { list-style-type: '✓ '; /* Use checkmarks or similar */ padding-left: 25px; }
+#first-time-modal li { margin-bottom: 8px; }
 
 /* --- Scrollbar styling --- */
 .side-panel::-webkit-scrollbar, .center-area::-webkit-scrollbar { width: 8px; }

@@ -76,6 +76,7 @@
                  <h4 class="group-title">Acquisition Enhancement <span class="toggle-icon"></span></h4>
                  <div id="upgrade-category-acquisitionEnhancement" class="upgrade-category-container"></div>
                  <hr class="side-panel-hr">
+                 <!-- Terminology Change -->
                  <h4 class="group-title">Acquisition Cost Reduction <span class="toggle-icon"></span></h4>
                  <div id="upgrade-category-acquisitionCost" class="upgrade-category-container"></div>
                  <hr class="side-panel-hr">
@@ -88,12 +89,14 @@
 
                  <!-- Special Upgrades Section -->
                  <h4 class="group-title">Special Upgrades <span class="toggle-icon"></span></h4>
-                 <div class="upgrade-category-container"> <!-- Wrap specials for consistency -->
-                     <button id="upgrade-costReductStrategic" class="upgrade-button" disabled title="Re-engineers the acquisition process for a massive reduction in cost per attempt (-33% multiplicative).">
-                        <span>Strategic Cost Optimization</span> <span class="cost">Cost: $5M</span> <span class="effect">-33% Acq. Cost</span>
+                 <div class="upgrade-category-container">
+                     <!-- TODO: Updated Strategic Cost Opt Effect Desc & Terminology -->
+                     <button id="upgrade-costReductStrategic" class="upgrade-button" disabled title="Re-engineers the acquisition process for a massive reduction in cost per attempt (-75% multiplicative).">
+                        <span>Strategic Cost Optimization</span> <span class="cost">Cost: $5M</span> <span class="effect">-75% Acq. Cost</span>
                      </button>
+                     <!-- TODO: Updated VPO Cost Desc -->
                      <button id="upgrade-playtimeMPSBoost" class="upgrade-button" disabled title="Increases MPS by +100% per hour played (capped at +200% after 2 hours). Requires significant playtime to reach max effect.">
-                         <span>Veteran Pipeline Operator</span> <span class="cost">Req: 1k Cust & $10M</span> <span class="effect">+MPS based on Playtime</span>
+                         <span>Veteran Pipeline Operator</span> <span class="cost">Cost: 100M L & 100M O & $10M</span> <span class="effect">+MPS based on Playtime</span>
                      </button>
                      <button id="upgrade-flexibleWorkflow" class="upgrade-button" disabled title="Purchase to unlock the Flexible Workflow toggle. Balances L/O amounts by shifting generation focus.">
                         <span>Flexible Workflow</span> <span class="cost">Req: 100 Cust & $10k</span> <span class="effect">Enables Workflow Toggle</span>
@@ -122,6 +125,7 @@
                     <hr class="stats-hr">
                     <p title="Attempts per second to convert Lead/Opportunity pairs into a Customer">Acquisition Rate (/s): <span id="car">0.100</span></p>
                     <p title="Chance for an acquisition attempt to succeed">Acquisition Success (%): <span id="success-chance">25.0%</span></p>
+                    <!-- Terminology Change -->
                     <p title="Current cost per new Customer attempt (equal Leads & Opportunities)">Acquisition Cost (L&O): <span id="cust-cost">100</span></p>
                     <hr class="stats-hr">
                     <p title="Money generated per Customer per second">Customer Value Rate ($/Cust/s): <span id="cvr">1.000</span></p>
@@ -169,9 +173,8 @@
                  <div class="build-category-container">
                      <button id="buy-acctManager" class="build-button" disabled title="..."> <span class="build-title">Acct Manager (<span class="count" id="acctManager-count">0</span>)</span> <span class="effect" id="acctManager-effect">...</span> <span class="cost" id="acctManager-cost">...</span> </button>
                      <button id="buy-successArchitect" class="build-button" disabled title="..."> <span class="build-title">Success Architect (<span class="count" id="successArchitect-count">0</span>)</span> <span class="effect" id="successArchitect-effect">...</span> <span class="cost" id="successArchitect-cost">...</span> </button>
+                      <button id="buy-successManager" class="build-button" disabled title="..."> <span class="build-title">Success Manager (<span class="count" id="successManager-count">0</span>)</span> <span class="effect" id="successManager-effect">...</span> <span class="cost" id="successManager-cost">...</span> </button>
                      <button id="buy-procurementOpt" class="build-button" disabled title="..."> <span class="build-title">Procurement Opt. (<span class="count" id="procurementOpt-count">0</span>)</span> <span class="effect" id="procurementOpt-effect">...</span> <span class="cost" id="procurementOpt-cost">...</span> </button>
-                     <!-- TODO: Added Success Manager Button -->
-                     <button id="buy-successManager" class="build-button" disabled title="..."> <span class="build-title">Success Manager (<span class="count" id="successManager-count">0</span>)</span> <span class="effect" id="successManager-effect">...</span> <span class="cost" id="successManager-cost">...</span> </button>
                  </div>
                  <hr class="side-panel-hr">
             </div> <!-- End Buildables Panel -->
@@ -183,6 +186,28 @@
     </div> <!-- End game-container -->
 
     <!-- Modals -->
+    <!-- TODO: Add First Time Popup Modal -->
+    <div id="first-time-modal" class="modal">
+        <div class="modal-content" style="max-width: 450px;"> <!-- Smaller modal -->
+            <span class="close-button" id="close-first-time-button" title="Close">×</span>
+            <h2>Welcome!</h2>
+            <p style="text-align: center;"><strong>Goal: Reach $1 Billion!</strong></p>
+            <hr style="margin: 10px 0;">
+            <p><strong>How?</strong></p>
+            <ul style="text-align: left; padding-left: 30px;">
+                <li>Click <strong style="color: #007bff;">Lead</strong> / <strong style="color: #fd7e14;">Opp</strong> buttons (Center).</li>
+                <li>Buy <strong style="color: #495057;">Teams/Features</strong> (Right Panel) for auto L/O per second.</li>
+                <li>L & O automatically try to become <strong style="color: #6f42c1;">Customers</strong> (check Acq. Cost!).</li>
+                <li><strong style="color: #6f42c1;">Customers</strong> generate <strong style="color: #28a745;">Money ($)</strong> per second.</li>
+                <li>Buy <strong style="color: #0056b3;">Upgrades</strong> (Left Panel) to improve everything!</li>
+                <li>Click falling <strong style="color: #ffc107;">Tokens</strong> for boosts!</li>
+            </ul>
+             <hr style="margin: 10px 0;">
+            <p style="text-align: center; font-size: 0.9em;">(Full tutorial available via top bar button)</p>
+            <button id="ok-first-time-button" class="simple-button" style="margin-top: 15px;">Got It!</button>
+        </div>
+    </div>
+
     <div id="credits-modal" class="modal">
         <div class="modal-content">
             <span class="close-button" id="close-credits-button" title="Close">×</span>
@@ -202,12 +227,12 @@
 
     <div id="win-modal" class="modal">
         <div class="modal-content">
-            <span class="close-button" id="close-win-button" title="Close">×</span> <!-- Changed ID -->
+            <span class="close-button" id="close-win-button" title="Close">×</span>
             <h2>Congratulations!</h2>
             <p>You've built a pipeline generating over <strong>$1 Billion!</strong></p>
             <p>You are a true Salesforce Pipeline Master!</p>
             <p>(Game Paused)</p>
-            <button id="close-win-modal-button" class="simple-button">Keep Playing</button> <!-- Changed ID -->
+            <button id="close-win-modal-button" class="simple-button">Keep Playing</button>
         </div>
     </div>
 
@@ -250,6 +275,7 @@
                 <li><strong>Manual Clicks:</strong> Click Lead/Opp buttons in center. Upgrades boost amount/click.</li>
                 <li><strong>Teams & Features (Right Panel):</strong> Buy items to generate L/S or O/S automatically. Costs increase per purchase. Shift+Click to buy 10.</li>
              </ul>
+             <!-- Terminology Change -->
              <h4>Getting Customers (Acquisition):</h4>
              <ul>
                 <li>Game automatically attempts to convert L & O into Customers.</li>
@@ -270,10 +296,12 @@
                          <li>Boost manual clicks.</li>
                          <li>Boost Team/Feature output (multipliers, percentages, synergies).</li>
                          <li>Improve overall efficiency.</li>
-                         <li>Improve Acquisition Rate (CAR), Success %, or reduce Cost.</li>
+                         <!-- Terminology Change -->
+                         <li>Improve Acquisition Rate (CAR), Success %, or reduce Acquisition Cost.</li>
                          <li>Increase Customer Value Rate (CVR).</li>
                          <li>Purchase special upgrades (e.g., Flexible Workflow, Veteran Pipeline Operator).</li>
-                         <li>Gain bonuses by meeting Customer thresholds for 'Customer Driven Growth' upgrades.</li>
+                         <!-- Terminology Change -->
+                         <li>Gain bonuses by meeting Customer thresholds for 'Customer Driven Growth' upgrades (-Acquisition Cost, +Output, +CVR).</li>
                      </ul>
                  </li>
                  <li><strong>Tiered Upgrades:</strong> Purchase all Tier 1 upgrades in a category to unlock powerful Tier 2 upgrades.</li>
@@ -282,13 +310,16 @@
              <h4>Teams & Features (Right Panel):</h4>
              <ul>
                 <li>Purchase buildings for passive L/S, O/S, or other effects.</li>
-                <li><strong>Customer Success Buildings:</strong> Provide unique bonuses like reducing Acquisition Cost (Acct Manager), boosting CVR based on other buildings (Success Architect), reducing the cost of other buildings (Procurement Opt.), or directly boosting CVR (Success Manager).</li>
+                 <!-- Terminology Change & Updated Descriptions -->
+                <li><strong>Customer Success Buildings:</strong> Provide unique bonuses like reducing Acquisition Cost (Acct Manager -5%), boosting CVR based on Integrated buildings (Success Architect +10%/10), reducing the cost of other buildings (Procurement Opt. -5%), or boosting Base CVR multiplicatively (Success Manager +5% each).</li>
                 <li><strong>Collapsible Categories:</strong> Click the [-] / [+] on category titles to hide/show their contents.</li>
             </ul>
              <h4>Special Upgrades:</h4>
              <ul>
                 <li><strong>Flexible Workflow:</strong> Purchase to unlock a toggle button. When active, reduces the generation rate of the resource you currently have *more* of (L or O) by 50%, and adds that generation rate to the resource you have *less* of. Aims to balance the *total amounts* of Leads and Opportunities. Deactivates automatically when amounts become roughly equal.</li>
-                <li><strong>Veteran Pipeline Operator:</strong> Increases your Money per Second based on total playtime. The bonus starts at 0% and increases by +100% MPS per hour played, capping at a maximum of +200% bonus after 2 hours of playtime.</li>
+                <li><strong>Veteran Pipeline Operator:</strong> Increases your Money per Second based on total playtime. The bonus starts at 0% and increases by +100% MPS per hour played, capping at a maximum of +200% bonus after 2 hours of playtime. Costs L, O, and $.</li>
+                 <!-- Terminology Change -->
+                 <li><strong>Strategic Cost Optimization:</strong> Massively reduces Acquisition Cost (-75%). Costs $.</li>
             </ul>
              <h4>Power-ups (Falling Tokens):</h4>
              <ul>

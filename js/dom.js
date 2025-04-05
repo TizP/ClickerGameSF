@@ -11,8 +11,6 @@ const essentialIds = [
     'click-lead-button', 'click-opp-button', 'background-music', 'volume-slider',
     'mute-button', 'powerup-spawn-area', 'active-powerup-display', 'save-status',
     'toggle-acquisition-button', 'toggle-flexible-workflow'
-    // Note: Building/Upgrade buttons are dynamically generated or handled by specific logic,
-    // but their containers/associated elements might be essential implicitly.
 ];
 
 export function cacheDOMElements() {
@@ -20,7 +18,7 @@ export function cacheDOMElements() {
     const idsToCache = [
         // Core Display Spans
         'leads', 'opportunities', 'customers', 'money', 'lps', 'ops', 'mps',
-        'leads-per-click', 'opps-per-click', 'car', 'success-chance', 'cvr', 'cust-cost',
+        'leads-per-click', 'opps-per-click', 'car', 'success-chance', 'cvr', 'cust-cost', // 'cust-cost' represents Acquisition Cost
         'lead-click-base-p', 'opp-click-base-p',
         // Clicker Buttons
         'click-lead-button', 'click-opp-button',
@@ -36,18 +34,17 @@ export function cacheDOMElements() {
         'background-music', 'sfx-purchase', 'sfx-powerup-click',
         // Modals & Controls
         'credits-modal', 'close-credits-button',
-        'win-modal', 'close-win-button', 'close-win-modal-button', // TODO: Added close button for win modal
+        'win-modal', 'close-win-button', 'close-win-modal-button',
         'stats-modal', 'close-stats-button',
         'tutorial-modal', 'close-tutorial-button',
         'settings-modal', 'close-settings-button', 'soft-refresh-button',
+        'first-time-modal', 'close-first-time-button', 'ok-first-time-button', // TODO: Added first time modal elements
         // Stats Modal Content Spans
         'stat-game-time', 'stat-lead-clicks', 'stat-opp-clicks', 'stat-manual-leads', 'stat-manual-opps',
         'stat-auto-leads', 'stat-auto-opps', 'stat-acq-attempts', 'stat-acq-success', 'stat-acq-failed',
         'stat-total-money', 'stat-powerups-clicked',
         // Misc
         'powerup-spawn-area'
-        // Note: Tiered upgrade category containers (e.g., 'upgrade-category-manualGen') are implicitly used
-        // by ID in ui.js, but don't strictly need caching here as they are looked up when needed.
     ];
 
     let foundCount = 0;
@@ -60,7 +57,7 @@ export function cacheDOMElements() {
             domElements[id] = el;
             foundCount++;
         } else {
-            console.warn(`DOM Element not found: ${id}`); // Warn for any missing standard ID
+            console.warn(`DOM Element not found: ${id}`);
             if (essentialIds.includes(id)) {
                 console.error(`CRITICAL: Essential DOM Element not found: ${id}`);
                 missingEssential.push(id);
@@ -68,8 +65,8 @@ export function cacheDOMElements() {
         }
     });
 
-    // Cache Building Button related elements dynamically based on config
-    console.log("Caching building elements...");
+    // Cache Building Button related elements dynamically
+    // console.log("Caching building elements..."); // Reduce noise
     for (const id in buildingsConfig) {
         const buyButtonId = `buy-${id}`;
         const countSpanId = `${id}-count`;
@@ -78,14 +75,13 @@ export function cacheDOMElements() {
         const ids = [buyButtonId, countSpanId, costSpanId, effectSpanId];
 
         ids.forEach(elId => {
-            const el = document.getElementById(elId);
-            if (el) {
-                domElements[elId] = el;
-                foundCount++;
-            } else {
-                // This is expected during initial load before buttons are potentially generated,
-                // but good to know if they are *persistently* missing after UI updates.
-                 // console.warn(`DOM Element for building ${id} not found: ${elId}`);
+            if (!domElements[elId]) { // Only cache if not already found by idsToCache
+                const el = document.getElementById(elId);
+                if (el) {
+                    domElements[elId] = el;
+                    foundCount++;
+                }
+                // No warning needed here, expected if buttons aren't rendered yet
             }
         });
     }

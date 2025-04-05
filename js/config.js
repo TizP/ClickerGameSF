@@ -1,8 +1,9 @@
 // js/config.js
 "use strict";
 
-export const GAME_VERSION = "v1.38-todo-updates"; // Version bump for TODO updates
+export const GAME_VERSION = "v1.39-balance-first-popup"; // Version bump
 export const SAVE_KEY = `salesforcePipelineSaveData_v${GAME_VERSION}`; // Updated key
+export const FIRST_TIME_POPUP_KEY = `salesforcePipelineFirstTime_v${GAME_VERSION}`; // Key for first time popup flag
 export const TICK_INTERVAL_MS = 100;
 export const DISPLAY_UPDATE_INTERVAL_MS = 250;
 export const BUTTON_UPDATE_INTERVAL_MS = 1000;
@@ -16,8 +17,8 @@ export const MONEY_FORMAT_THRESHOLD = 10000;
 export const FLEX_WORKFLOW_AMOUNT_EQUALITY_THRESHOLD = 1;
 
 // --- Powerup Constants ---
-export const POWERUP_SPAWN_INTERVAL_MS = 10000; // Reduced for testing if needed, original was ~5min average
-export const POWERUP_CHANCE_PER_INTERVAL = 0.0333; // Roughly 1 spawn every 5 mins (1 / (0.0333 * (60000 / 10000)))
+export const POWERUP_SPAWN_INTERVAL_MS = 10000;
+export const POWERUP_CHANCE_PER_INTERVAL = 0.0333;
 export const POWERUP_FALL_DURATION_MS = 8000;
 export const POWERUP_SFX_CLICK_ID = 'sfx-powerup-click';
 export const POWERUP_TOKEN_SIZE = 90;
@@ -42,6 +43,7 @@ export const playlist = [
 ];
 
 // --- Building & Upgrade Configurations ---
+// Terminology Change: "Acq. Cost" used instead of "Customer Cost"
 export const buildingsConfig = {
     // Lead Gen
     sdr:            { baseCost: 10,     costCurrency: 'leads', baseLPS: 1,    name: "SDR",                 flavour: "Sales Development Reps dial for dollars, finding initial interest."},
@@ -64,27 +66,27 @@ export const buildingsConfig = {
     aidata:         { baseCostLeads: 150000000, baseCostOpps: 150000000, costCurrency: 'both', baseLPS: 1650000, baseOPS: 1650000, name: "AI Data Cloud",     flavour: "Leverage AI across your data landscape for unprecedented pipeline insights."},
     // Customer Success
     acctManager: { // TODO: Changed Acct Manager
-        baseCost: 1000, costCurrency: 'money', name: "Acct Manager",
+        baseCost: 1000000, // Increased base cost
+        costCurrency: 'money', name: "Acct Manager",
         flavour: "Account Managers improve retention and build relationships.",
-        effectDesc: "-10% Acq. Cost", // Buffed effect desc
-        // Removed costMultiplierOverride
+        effectDesc: "-5% Acq. Cost", // Nerfed effect desc
+        costMultiplierOverride: 1.20 // Added increased cost multiplier
     },
-    successArchitect: { // TODO: Changed Success Architect
+    successArchitect: {
         baseCost: 1000000, costCurrency: 'money', name: "Success Architect",
         flavour: "Success Architects ensure customers achieve their goals.",
-        effectDesc: "+10% Base CVR per 10 Int. Solns" // Buffed effect desc
+        effectDesc: "+10% Base CVR per 10 Int. Solns" // Effect buff already done
     },
-    procurementOpt: {
+    procurementOpt: { // TODO: Changed Procurement Opt
         baseCost: 10000000, costCurrency: 'money', name: "Procurement Opt.",
         flavour: "Optimizes internal spending, reducing operational overhead.",
-        effectDesc: "-1% Other Bldg Cost"
+        effectDesc: "-5% Other Bldg Cost" // Buffed effect desc
     },
-     // TODO: Added Success Manager
-     successManager: {
+     successManager: { // TODO: Changed Success Manager
          baseCost: 500000, costCurrency: 'money', name: "Success Manager",
          flavour: "Dedicated managers focusing on customer health and value realization.",
-         effectDesc: "+$0.50 Base CVR", // Simple effect
-         baseCVRBonus: 0.50 // Store bonus directly for engine use
+         effectDesc: "+5% Base CVR", // Changed effect description
+         effectMultiplierCVR: 1.05 // Store as multiplier for easier calculation
      },
  };
 
@@ -166,18 +168,18 @@ export const upgradesConfig = {
         },
         tier2: {
             acqEnhanceMastery1: { name: "Master Closer Program", cost: 5000000, costCurrency: 'opportunities', effect: (state) => { state.baseCAR += 2.00; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.15); }, description: "+2.00 Acq. Rate/s, +15% Acq. Success" },
-            acqEnhanceMastery2: { name: "Deal Velocity Engine", cost: 25000000, costCurrency: 'leads', effect: (state) => { state.baseCAR += 5.00; state.customerCostReductionMultiplier *= 0.67; }, description: "+5.00 Acq. Rate/s, -33% Customer Cost" }
+            acqEnhanceMastery2: { name: "Deal Velocity Engine", cost: 25000000, costCurrency: 'leads', effect: (state) => { state.baseCAR += 5.00; state.customerCostReductionMultiplier *= 0.67; }, description: "+5.00 Acq. Rate/s, -33% Acquisition Cost" } // Terminology
         }
     },
-    acquisitionCost: {
+    acquisitionCost: { // Terminology
         name: "Acquisition Cost Reduction",
         tier1: {
-            costReduct1: { name: "Lead Qual. Refinement", cost: 5000, costCurrency: 'leads', effect: (state) => { state.customerCostReductionMultiplier *= 0.90; }, description: "-10% Customer Cost" },
-            costReduct2: { name: "ICP Tuning", cost: 50000, costCurrency: 'leads', effect: (state) => { state.customerCostReductionMultiplier *= 0.80; }, description: "-20% Customer Cost" },
-            costReduct3: { name: "Targeted Marketing Segments", cost: 300000, costCurrency: 'leads', effect: (state) => { state.customerCostReductionMultiplier *= 0.70; }, description: "-30% Customer Cost" },
+            costReduct1: { name: "Lead Qual. Refinement", cost: 5000, costCurrency: 'leads', effect: (state) => { state.customerCostReductionMultiplier *= 0.90; }, description: "-10% Acquisition Cost" }, // Terminology
+            costReduct2: { name: "ICP Tuning", cost: 50000, costCurrency: 'leads', effect: (state) => { state.customerCostReductionMultiplier *= 0.80; }, description: "-20% Acquisition Cost" }, // Terminology
+            costReduct3: { name: "Targeted Marketing Segments", cost: 300000, costCurrency: 'leads', effect: (state) => { state.customerCostReductionMultiplier *= 0.70; }, description: "-30% Acquisition Cost" }, // Terminology
         },
         tier2: {
-            costReductionMastery: { name: "Acquisition Cost Mastery", cost: 5000000, costCurrency: 'leads', effect: (state) => { state.customerCostReductionMultiplier *= 0.50; }, description: "-50% Customer Cost" }
+            costReductionMastery: { name: "Acquisition Cost Mastery", cost: 5000000, costCurrency: 'leads', effect: (state) => { state.customerCostReductionMultiplier *= 0.50; }, description: "-50% Acquisition Cost" } // Terminology
         }
     },
     customerValue: {
@@ -193,23 +195,40 @@ export const upgradesConfig = {
             cvrMastery: { name: "Customer Value Mastery", cost: 500000000, costCurrency: 'leads', effect: (state) => { state.cvrMultiplierBonus = (state.cvrMultiplierBonus || 1.0) * 2.00; }, description: "x2 Value Rate" }
         }
     },
-     customerGrowth: { // TODO: Changed Customer Growth
+     customerGrowth: {
         name: "Customer Driven Growth",
         tier1: {
             custGrowth1: { name: "Loyal Customer Referrals", requiresCustomers: 10, effect: (state) => { state.custUpgradeBonusCAR += 0.10; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.03); }, description: "+0.1 Acq Rate/s, +3% Success" },
             custGrowth2: { name: "Customer Advisory Board", requiresCustomers: 50, effect: (state) => { state.custUpgradeBonusCAR += 0.50; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.05); }, description: "+0.5 Acq Rate/s, +5% Success" },
             custGrowth3: { name: "Voice of Customer Program", requiresCustomers: 250, effect: (state) => { state.custUpgradeBonusCAR += 1.50; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.10); state.custUpgradeBonusCVR += 3.00; }, description: "+1.5 Acq Rate/s, +10% Success, +$3 CVR" },
-            custGrowth4: { name: "Strategic Account Management", requiresCustomers: 1000, effect: (state) => { state.customerCostReductionMultiplier *= 0.85; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.10); state.custUpgradeBonusCVR += 7.00; }, description: "-15% Acq Cost, +10% Success, +$7 CVR" },
-            custGrowth5: { name: "Community Champion Program", requiresCustomers: 5000, effect: (state) => { state.customerCostReductionMultiplier *= 0.75; state.custGlobalMultiplier = (state.custGlobalMultiplier || 1.0) * 1.25; state.cvrCustomerMultiplier = (state.cvrCustomerMultiplier || 1.0) * 1.25; }, description: "-25% Acq Cost, +25% Output, +25% CVR" },
+            custGrowth4: { name: "Strategic Account Management", requiresCustomers: 1000, effect: (state) => { state.customerCostReductionMultiplier *= 0.85; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.10); state.custUpgradeBonusCVR += 7.00; }, description: "-15% Acq Cost, +10% Success, +$7 CVR" }, // Terminology
+            custGrowth5: { name: "Community Champion Program", requiresCustomers: 5000, effect: (state) => { state.customerCostReductionMultiplier *= 0.75; state.custGlobalMultiplier = (state.custGlobalMultiplier || 1.0) * 1.25; state.cvrCustomerMultiplier = (state.cvrCustomerMultiplier || 1.0) * 1.25; }, description: "-25% Acq Cost, +25% Output, +25% CVR" }, // Terminology
         },
         tier2: {
-             custGrowthMastery: { name: "Customer Growth Mastery", requiresCustomers: 15000, effect: (state) => { state.custUpgradeBonusCAR += 2.50; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.10); state.customerCostReductionMultiplier *= 0.67; state.cvrCustomerMultiplier = (state.cvrCustomerMultiplier || 1.0) * 1.33; state.custGlobalMultiplier = (state.custGlobalMultiplier || 1.0) * 1.33; }, description: "+2.5 CAR, +10% Success, -33% Cost, +33% CVR, +33% Output" }
+             custGrowthMastery: { name: "Customer Growth Mastery", requiresCustomers: 15000, effect: (state) => { state.custUpgradeBonusCAR += 2.50; state.acquisitionSuccessChance = Math.min(1.0, state.acquisitionSuccessChance + 0.10); state.customerCostReductionMultiplier *= 0.67; state.cvrCustomerMultiplier = (state.cvrCustomerMultiplier || 1.0) * 1.33; state.custGlobalMultiplier = (state.custGlobalMultiplier || 1.0) * 1.33; }, description: "+2.5 CAR, +10% Success, -33% Cost, +33% CVR, +33% Output" } // Cost terminology ok here? Assume yes.
         }
     },
     special: {
         name: "Special Upgrades",
-        costReductStrategic: { name: "Strategic Cost Optimization", cost: 5000000, costCurrency: 'money', effect: (state) => { state.customerCostReductionMultiplier *= 0.67; }, description: "-33% Acq. Cost" },
-        playtimeMPSBoost: { name: "Veteran Pipeline Operator", costMoney: 10000000, costCustomers: 1000, description: "Increases MPS by +100% per hour played (capped at +200% after 2 hours)." },
-        flexibleWorkflow: { name: "Flexible Workflow", costMoney: 10000, costCustomers: 100, description: "Enables Workflow Toggle" },
+        costReductStrategic: { // TODO: Changed Strategic Cost Opt
+            name: "Strategic Cost Optimization",
+            cost: 5000000, costCurrency: 'money',
+            effect: (state) => { state.customerCostReductionMultiplier *= 0.25; }, // Buffed effect (1 - 0.75 = 0.25)
+            description: "-75% Acq. Cost" // Buffed description & Terminology
+        },
+        playtimeMPSBoost: { // TODO: Changed Veteran Pipeline Operator Cost
+            name: "Veteran Pipeline Operator",
+            costLeads: 100000000, // New cost
+            costOpps: 100000000, // New cost
+            costMoney: 10000000, // New cost
+            costCurrency: 'all', // Custom flag to indicate all 3 are needed
+            description: "Increases MPS by +100% per hour played (capped at +200% after 2 hours)."
+        },
+        flexibleWorkflow: {
+             name: "Flexible Workflow",
+             costMoney: 10000,
+             costCustomers: 100, // Use requiresCustomers instead? Keep as cost for now.
+             description: "Enables Workflow Toggle"
+         },
     }
  };

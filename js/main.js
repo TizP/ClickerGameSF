@@ -1,15 +1,17 @@
 // js/main.js - Main entry point
 "use strict";
 
-import { GAME_VERSION, TICK_INTERVAL_MS, DISPLAY_UPDATE_INTERVAL_MS, BUTTON_UPDATE_INTERVAL_MS, AUTO_SAVE_INTERVAL_MS, POWERUP_SPAWN_INTERVAL_MS, WIN_AMOUNT, playlist } from './config.js';
+// Import config first to access constants like FIRST_TIME_POPUP_KEY
+import { GAME_VERSION, FIRST_TIME_POPUP_KEY, TICK_INTERVAL_MS, DISPLAY_UPDATE_INTERVAL_MS, BUTTON_UPDATE_INTERVAL_MS, AUTO_SAVE_INTERVAL_MS, POWERUP_SPAWN_INTERVAL_MS, WIN_AMOUNT, playlist } from './config.js';
 import { cacheDOMElements, domElements } from './dom.js';
 import { gameState, isGameWon, isGamePaused, setGamePaused, setGameWon, getDefaultGameState, initializeStructureState } from './state.js';
 import { loadGame, saveGame } from './saveLoad.js';
 import { setVolume, loadTrack, updateMuteButtonVisuals, playCurrentTrack, pauseCurrentTrack, updatePlayPauseIcon } from './audio.js';
-import { updateDisplay, updateButtonStates, triggerWin, hideSettings, displaySaveStatus, updateAcquisitionButtonVisuals, updateFlexibleWorkflowToggleButtonVisuals } from './ui.js';
+// Import new modal functions
+import { updateDisplay, updateButtonStates, triggerWin, hideSettings, displaySaveStatus, updateAcquisitionButtonVisuals, updateFlexibleWorkflowToggleButtonVisuals, showFirstTimeModal } from './ui.js';
 import { setupEventListeners } from './events.js';
 import { gameLoop, calculateDerivedStats } from './engine.js';
-import { trySpawnPowerup, startPowerupSpawning, stopPowerupSpawning, removeActivePowerupToken, restartBoostTimersOnLoad } from './powerups.js'; // Ensure powerup imports are correct
+import { trySpawnPowerup, startPowerupSpawning, stopPowerupSpawning, removeActivePowerupToken, restartBoostTimersOnLoad } from './powerups.js';
 
 // --- Interval Management ---
 let gameLoopIntervalId = null;
@@ -20,22 +22,17 @@ let autoSaveIntervalId = null;
 
 // Exported for use in saveLoad.js and softRefreshGame
 export function stopAllIntervals() {
-    // Clear primary game loops
     if (gameLoopIntervalId) { clearInterval(gameLoopIntervalId); gameLoopIntervalId = null; }
     if (displayUpdateIntervalId) { clearInterval(displayUpdateIntervalId); displayUpdateIntervalId = null; }
     if (buttonUpdateIntervalId) { clearInterval(buttonUpdateIntervalId); buttonUpdateIntervalId = null; }
     if (autoSaveIntervalId) { clearInterval(autoSaveIntervalId); autoSaveIntervalId = null; }
-
-    // Stop powerup spawning via its dedicated function
-    stopPowerupSpawning(); // Calls the function from powerups.js
-
+    stopPowerupSpawning();
     console.log("All primary intervals and powerup spawning stopped.");
 }
 
 // Exported for use in softRefreshGame and initializeGame
 export function startGameIntervals() {
-    // Ensure no duplicates if called again, also ensures powerups are stopped before restart
-    stopAllIntervals();
+    stopAllIntervals(); // Ensure clean state
 
     // Start core game logic loop
     gameLoopIntervalId = setInterval(gameLoop, TICK_INTERVAL_MS);
@@ -48,16 +45,12 @@ export function startGameIntervals() {
     console.log(`Button update loop started (${BUTTON_UPDATE_INTERVAL_MS}ms).`);
 
     // Start autosave
-    autoSaveIntervalId = setInterval(() => {
-        // Don't save if paused by win condition? Or allow saving always? Current: Allow saving.
-        saveGame();
-    }, AUTO_SAVE_INTERVAL_MS);
+    autoSaveIntervalId = setInterval(() => { saveGame(); }, AUTO_SAVE_INTERVAL_MS);
     console.log(`Autosave started (${AUTO_SAVE_INTERVAL_MS}ms).`);
 
-    // Start powerup spawning (will self-check if paused/won internally)
-    // This should only start if the game is NOT paused and NOT won after initialization/refresh
+    // Start powerup spawning only if game is active
     if (!isGamePaused && !isGameWon) {
-        startPowerupSpawning(); // Calls the function from powerups.js
+        startPowerupSpawning();
     } else {
         console.log("Powerup spawning not started (game paused or won).");
     }
@@ -69,63 +62,47 @@ export function softRefreshGame() {
         console.log("Performing soft refresh...");
         displaySaveStatus("Refreshing from save...", 2000);
 
-        // 1. Stop everything (including powerups)
+        // 1. Stop everything
         stopAllIntervals();
-        pauseCurrentTrack(); // Ensure music stops during reload
+        pauseCurrentTrack();
 
-        // 2. Reload game state from localStorage
-        // loadGame updates global gameState, calls calculateDerivedStats & restartBoostTimersOnLoad
+        // 2. Reload game state
         const loadSuccess = loadGame();
 
-        // 3. Re-apply audio state based on loaded gameState
+        // 3. Re-apply audio state
         if (domElements['volume-slider']) {
              let savedVol = Number(gameState.lastVolume);
              if (isNaN(savedVol) || savedVol < 0 || savedVol > 1) savedVol = 0.1;
-             // Set slider value based on mute state FIRST
              domElements['volume-slider'].value = gameState.isMuted ? 0 : savedVol;
-             // Then call setVolume to apply volume/mute state correctly to elements
              setVolume(domElements['volume-slider'].value);
-        } else {
-            console.warn("Volume slider not found, cannot restore volume state.");
         }
-        updateMuteButtonVisuals(); // Ensure mute button reflects potentially loaded mute state
-
+        updateMuteButtonVisuals();
         if (domElements['background-music'] && playlist && playlist.length > 0) {
              const trackIndexToLoad = gameState.currentTrackIndex || 0;
-             // Determine if music should play based on loaded state and NOT being muted
-             const shouldResumePlay = (loadSuccess && gameState.musicShouldBePlaying === true && !gameState.isMuted);
-
-             loadTrack(trackIndexToLoad, gameState.musicShouldBePlaying ?? false); // Load track, set intent based on loaded state
-             // handleCanPlay (triggered by loadTrack) will attempt playback if intent is true and NOT muted
-             updatePlayPauseIcon(); // Update icon based on loaded intent/state
-        } else {
-             console.warn("Music player or playlist missing, cannot restore music state.");
+             loadTrack(trackIndexToLoad, gameState.musicShouldBePlaying ?? false);
+             updatePlayPauseIcon();
         }
 
-
-        // 4. Update UI completely based on reloaded state
+        // 4. Update UI
         updateDisplay();
-        updateButtonStates(); // Regenerates dynamic buttons
+        updateButtonStates();
         updateAcquisitionButtonVisuals();
         updateFlexibleWorkflowToggleButtonVisuals();
 
-        // 5. Restart intervals based on game state AFTER loading
-         setGameWon(gameState.money >= WIN_AMOUNT); // Re-check win condition after load
-         if (isGameWon) {
-             // If game is won after load, ensure it stays paused
+        // 5. Restart intervals based on loaded state
+        setGameWon(gameState.money >= WIN_AMOUNT);
+        if (isGameWon) {
              setGamePaused(true);
              console.log("Game is won after refresh, intervals not restarted.");
-             // Ensure UI reflects paused state
              updateAcquisitionButtonVisuals();
              updateFlexibleWorkflowToggleButtonVisuals();
-         } else {
-             // If not won, unpause and restart intervals
+        } else {
              setGamePaused(false);
-             startGameIntervals(); // Starts all loops, including powerups if conditions met
+             startGameIntervals();
              console.log("Game intervals restarted after refresh.");
-         }
+        }
 
-        // 6. Close settings modal if open
+        // 6. Close settings modal
         hideSettings();
         displaySaveStatus("Refresh complete.", 2000);
         console.log("Soft refresh complete.");
@@ -136,7 +113,16 @@ export function softRefreshGame() {
 // --- Initialization ---
 function initializeGame() {
     console.log(`--- Initializing Game ${GAME_VERSION} ---`);
+    let isFirstTime = false; // Flag to track if this is the first launch
+
     try {
+        // Check for first-time flag BEFORE loading game data
+        if (localStorage.getItem(FIRST_TIME_POPUP_KEY) !== 'shown') {
+            isFirstTime = true;
+            console.log("First time playing this version detected.");
+            // Don't set the flag yet, set it when the modal is closed.
+        }
+
         cacheDOMElements(); // Cache static elements first
         if (domElements['game-version']) {
             domElements['game-version'].textContent = `${GAME_VERSION}`;
@@ -144,55 +130,55 @@ function initializeGame() {
     } catch (e) {
         console.error("DOM Caching Error:", e);
         alert("Fatal Error during initialization (DOM Caching). Check console.");
-        return; // Stop initialization if essential elements are missing
+        return;
     }
 
     try {
-        // Load game data (handles defaults/resetting if necessary)
-        // This calls initializeStructureState, calculateDerivedStats, restartBoostTimersOnLoad
-        const loadedSuccessfully = loadGame(); // Returns true if loaded from save, false otherwise
+        // Load game data (or get defaults)
+        const loadedSuccessfully = loadGame();
 
-        // Initialize Audio Player State based on loaded gameState
+        // Initialize Audio Player State
         if (domElements['background-music'] && domElements['volume-slider']) {
              let initialVol = Number(gameState.lastVolume);
              if(isNaN(initialVol) || initialVol < 0 || initialVol > 1) initialVol = 0.1;
              domElements['volume-slider'].value = gameState.isMuted ? 0 : initialVol;
-             setVolume(); // Applies volume and handles mute state visuals/audio elements
-
-             // Load initial track, set play intent from loaded state
+             setVolume();
              loadTrack(gameState.currentTrackIndex || 0, gameState.musicShouldBePlaying ?? false);
-             updatePlayPauseIcon(); // Set initial icon state
-             updateMuteButtonVisuals(); // Set initial mute button state
-
-        } else {
-            console.warn("Audio elements missing, cannot initialize music player state.");
+             updatePlayPauseIcon();
+             updateMuteButtonVisuals();
         }
 
-        // Perform initial UI draw based on loaded/default state
-        updateDisplay(); // Update numbers/rates
-        updateButtonStates(); // CRITICAL: Draw dynamic buttons *after* load/state init
-        updateAcquisitionButtonVisuals(); // Update toggle state
-        updateFlexibleWorkflowToggleButtonVisuals(); // Update toggle state
+        // Perform initial UI draw
+        updateDisplay();
+        updateButtonStates(); // Draw dynamic buttons
+        updateAcquisitionButtonVisuals();
+        updateFlexibleWorkflowToggleButtonVisuals();
 
-        // Attach event listeners AFTER elements are potentially created by updateButtonStates
+        // Attach event listeners AFTER elements are ready
         setupEventListeners();
 
-        // Check win condition immediately after load
-        setGameWon(gameState.money >= WIN_AMOUNT); // Set the flag based on loaded money
+        // Check win condition
+        setGameWon(gameState.money >= WIN_AMOUNT);
         if (isGameWon) {
              console.log("Game loaded in a 'Won' state.");
-             setGamePaused(true); // Ensure game starts paused if won
-             triggerWin(); // Show the win modal immediately if loaded in won state
+             setGamePaused(true);
+             triggerWin(); // Show win modal
         }
 
         // Start game loops only if not won
         if (!isGameWon) {
-            setGamePaused(false); // Ensure game is not paused on initial load unless won
-            startGameIntervals(); // Starts game loop, UI updates, autosave, and powerups
+            setGamePaused(false);
+            startGameIntervals(); // Start loops (includes powerup start check)
         } else {
-            // Ensure UI reflects paused state even if loops aren't running (already done by triggerWin)
+            // Ensure UI reflects paused state if won
             updateAcquisitionButtonVisuals();
             updateFlexibleWorkflowToggleButtonVisuals();
+        }
+
+        // TODO: Show first-time modal if needed, AFTER game is initialized
+        if (isFirstTime) {
+            // Use a small delay to ensure the main UI is rendered
+            setTimeout(showFirstTimeModal, 500);
         }
 
         console.log("--- Game Initialized ---");
@@ -200,7 +186,6 @@ function initializeGame() {
     } catch(error) {
          console.error("Error during Game Initialization:", error);
          alert("A critical error occurred during game initialization. Please check the console (F12) for details. The game may not function correctly.");
-         // Optionally try to stop intervals if they somehow started
          stopAllIntervals();
     }
 }
@@ -208,20 +193,14 @@ function initializeGame() {
 // --- Global Error Handling ---
 window.addEventListener('error', (event) => {
     console.error('Unhandled global error:', event.message, event.filename, event.lineno, event.colno, event.error);
-    // Display a user-friendly message? Stop intervals?
-    // alert('An unexpected error occurred. Please check the console (F12) and consider refreshing.');
-    // stopAllIntervals(); // Maybe stop the game to prevent further errors
 });
 window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', event.reason);
-     // alert('An unexpected promise error occurred. Please check the console (F12).');
 });
 
 // --- Start the game ---
-// Use DOMContentLoaded to ensure HTML is fully parsed before running JS
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeGame);
 } else {
-    // DOMContentLoaded has already fired
     initializeGame();
 }
