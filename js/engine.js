@@ -44,10 +44,10 @@ export function getBuildingCost(id) {
     const state = gameState.buildings[id];
     if (!cfg || !state) return { leads: Infinity, opps: Infinity, money: Infinity };
     const count = state.count || 0;
-    let costMultiplier = BUILDING_COST_MULTIPLIER;
-    if (id === 'acctManager' && cfg.costMultiplierOverride) {
-        costMultiplier = cfg.costMultiplierOverride;
-    }
+    const costMultiplier = BUILDING_COST_MULTIPLIER; // TODO: Removed Acct Manager override check
+    // if (id === 'acctManager' && cfg.costMultiplierOverride) {
+    //     costMultiplier = cfg.costMultiplierOverride;
+    // }
     let baseCostLeads = cfg.baseCostLeads || 0;
     let baseCostOpps = cfg.baseCostOpps || 0;
     let baseCostMoney = cfg.baseCost || 0;
@@ -79,10 +79,70 @@ export function getBuildingCost(id) {
     };
 }
 
+// Calculate the cumulative cost for buying multiple buildings
+// Used for Shift+Click buy x10
+export function getCumulativeBuildingCost(id, quantity) {
+    const cfg = buildingsConfig[id];
+    const state = gameState.buildings[id];
+    if (!cfg || !state || quantity <= 0) return { leads: Infinity, opps: Infinity, money: Infinity };
+
+    const currentCount = state.count || 0;
+    const costMultiplier = BUILDING_COST_MULTIPLIER;
+    const reductionMultiplier = (id !== 'procurementOpt') ? (gameState.otherBuildingCostMultiplier || 1.0) : 1.0;
+
+    let totalCostLeads = 0;
+    let totalCostOpps = 0;
+    let totalCostMoney = 0;
+
+    for (let i = 0; i < quantity; i++) {
+        const countForThisPurchase = currentCount + i;
+        let baseCostLeads = cfg.baseCostLeads || 0;
+        let baseCostOpps = cfg.baseCostOpps || 0;
+        let baseCostMoney = cfg.baseCost || 0;
+
+        let costLeads = 0;
+        let costOpps = 0;
+        let costMoney = 0;
+
+        if (cfg.costCurrency === 'both') {
+            costLeads = Math.ceil(baseCostLeads * Math.pow(costMultiplier, countForThisPurchase));
+            costOpps = Math.ceil(baseCostOpps * Math.pow(costMultiplier, countForThisPurchase));
+        } else if (cfg.costCurrency === 'leads') {
+            costLeads = Math.ceil(baseCostMoney * Math.pow(costMultiplier, countForThisPurchase));
+        } else if (cfg.costCurrency === 'opportunities') {
+            costOpps = Math.ceil(baseCostMoney * Math.pow(costMultiplier, countForThisPurchase));
+        } else if (cfg.costCurrency === 'money') {
+            costMoney = Math.ceil(baseCostMoney * Math.pow(costMultiplier, countForThisPurchase));
+        }
+
+        costLeads = Math.ceil(costLeads * reductionMultiplier);
+        costOpps = Math.ceil(costOpps * reductionMultiplier);
+        costMoney = Math.ceil(costMoney * reductionMultiplier);
+
+        totalCostLeads += Math.max(1, costLeads);
+        totalCostOpps += Math.max(1, costOpps);
+        totalCostMoney += Math.max(1, costMoney);
+    }
+
+    return {
+        leads: totalCostLeads,
+        opps: totalCostOpps,
+        money: totalCostMoney
+    };
+}
+
+
 export function getUpgradeCost(id) {
     const found = findUpgradeConfigById(id);
     if (!found) return { leads: Infinity, opps: Infinity, money: Infinity, customers: Infinity };
     const cfg = found.config;
+
+    // TODO: Check for requiresCustomers first
+    if (cfg.requiresCustomers) {
+        return { requiresCustomers: cfg.requiresCustomers || 0, leads: 0, opps: 0, money: 0, customers: 0 }; // Return requirement separately
+    }
+
+    // Existing cost logic
     if (cfg.costMoney && cfg.costCustomers) {
         return { money: cfg.costMoney || 0, customers: cfg.costCustomers || 0, leads: 0, opps: 0 };
     }
@@ -95,11 +155,11 @@ export function getUpgradeCost(id) {
         return { leads: 0, opps: cfg.cost || 0, money: 0, customers: 0 };
     } else if (cfg.costCurrency === 'money') {
         return { money: cfg.cost || 0, leads: 0, opps: 0, customers: 0 };
-    } else if (cfg.costCurrency === 'customers') {
+    } else if (cfg.costCurrency === 'customers') { // This might become deprecated if all cust upgrades use requiresCustomers
         return { customers: cfg.cost || 0, leads: 0, opps: 0, money: 0 };
     }
     console.warn(`Could not determine cost structure for upgrade: ${id}`);
-    return { leads: Infinity, opps: Infinity, money: Infinity, customers: Infinity };
+    return { leads: Infinity, opps: Infinity, money: Infinity, customers: Infinity, requiresCustomers: Infinity };
 }
 
 export function getCurrentCustomerCost() {
@@ -119,17 +179,21 @@ export function calculateDerivedStats() {
     const acctManagerCount = gameState.buildings['acctManager']?.count || 0;
     const successArchitectCount = gameState.buildings['successArchitect']?.count || 0;
     const procurementOptCount = gameState.buildings['procurementOpt']?.count || 0;
+    const successManagerCount = gameState.buildings['successManager']?.count || 0; // TODO: Added Success Manager
+
     const procurementReduction = Math.pow(0.99, procurementOptCount);
     gameState.otherBuildingCostMultiplier = procurementReduction;
     currentRates.currentProcurementOptCostReduction = procurementReduction;
-    const acctManagerReduction = Math.pow(0.95, acctManagerCount);
+
+    const acctManagerReduction = Math.pow(0.90, acctManagerCount); // TODO: Changed Acct Manager reduction to 0.90
     currentRates.currentAcctManagerCostReduction = acctManagerReduction;
+
     let integratedBuildingCount = 0;
     const integratedBuildingIds = ['integration', 'platform', 'ecosystem', 'cloudsuite', 'hyperscaler', 'aidata'];
     integratedBuildingIds.forEach(id => {
         integratedBuildingCount += gameState.buildings[id]?.count || 0;
     });
-    const successArchitectCVRBonusPercent = Math.floor(integratedBuildingCount / 10) * 0.02;
+    const successArchitectCVRBonusPercent = Math.floor(integratedBuildingCount / 10) * 0.10; // TODO: Changed Success Architect bonus to 0.10
     currentRates.currentSuccessArchitectCVRBonus = successArchitectCVRBonusPercent;
 
     // Standard calculations
@@ -137,6 +201,11 @@ export function calculateDerivedStats() {
     let workingCAR = gameState.baseCAR || 0.1;
     let workingCVR = gameState.baseCVR || 1.0;
     workingCVR *= (1 + successArchitectCVRBonusPercent);
+
+    // TODO: Add Success Manager base CVR bonus
+    if (buildingsConfig.successManager && buildingsConfig.successManager.baseCVRBonus) {
+        workingCVR += successManagerCount * buildingsConfig.successManager.baseCVRBonus;
+    }
 
     // Multipliers
     const globalEff = gameState.buildingEfficiencyMultiplier || 1.0;
@@ -153,7 +222,8 @@ export function calculateDerivedStats() {
 
     // Building production loop
     for (const id in buildingsConfig) {
-        if (['acctManager', 'successArchitect', 'procurementOpt'].includes(id)) continue;
+        // Exclude all non-producing Customer Success buildings from this loop
+        if (['acctManager', 'successArchitect', 'procurementOpt', 'successManager'].includes(id)) continue;
         const cfg = buildingsConfig[id];
         const count = gameState.buildings[id]?.count || 0;
         if (count > 0) {
@@ -228,7 +298,7 @@ export function calculateDerivedStats() {
     let baseMPS = (gameState.customers || 0) * workingCVR;
     if (gameState.upgrades['playtimeMPSBoost']?.purchased) {
         const PLAYTIME_CAP_HOURS = 2.0;
-        const MAX_BONUS_MULTIPLIER = 3.0;
+        const MAX_BONUS_MULTIPLIER = 3.0; // 1.0 base + 200% bonus = 3.0 multiplier
         const elapsedMs = Date.now() - (gameState.gameStartTime || Date.now());
         const elapsedHours = Math.max(0, elapsedMs / (1000 * 60 * 60));
         const progressToCap = Math.min(1.0, elapsedHours / PLAYTIME_CAP_HOURS);
@@ -275,12 +345,15 @@ export function gameLoop() {
                     gameState.leads -= cost; gameState.opportunities -= cost;
                     if (Math.random() < gameState.acquisitionSuccessChance) {
                         gameState.totalSuccessfulAcquisitions++; gameState.customerCountForCostIncrease++; gameState.customers++;
+                    } else {
+                        // Track failures if needed, but state already has attempts and success
                     }
                 } else {
-                    accumulatedAcquisitionAttempts += (attemptsToMake - i);
+                    accumulatedAcquisitionAttempts += (attemptsToMake - i); // Add back attempts that couldn't be made
                     break;
                 }
             }
+            // Ensure resources don't go negative due to floating point issues
             if (gameState.leads < 0) gameState.leads = 0;
             if (gameState.opportunities < 0) gameState.opportunities = 0;
         }
@@ -296,7 +369,7 @@ export function gameLoop() {
         if (Math.abs(currentLeads - currentOpps) <= FLEX_WORKFLOW_AMOUNT_EQUALITY_THRESHOLD) {
             gameState.flexibleWorkflowActive = false;
             console.log("Flexible Workflow automatically deactivated.");
-            updateFlexibleWorkflowToggleButtonVisuals();
+            updateFlexibleWorkflowToggleButtonVisuals(); // Update button state
         }
     }
     if (!isGameWon && gameState.money >= WIN_AMOUNT) {
@@ -306,5 +379,6 @@ export function gameLoop() {
 
 // Getter for current rates
 export function getCurrentRates() {
+    // Return a shallow copy to prevent direct modification of internal state
     return { ...currentRates };
 }

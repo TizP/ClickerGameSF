@@ -4,7 +4,7 @@ import { domElements } from './dom.js';
 import { gameState, isGamePaused, isGameWon } from './state.js';
 import { buildingsConfig, upgradesConfig } from './config.js';
 // Import helpers needed for purchase logic and updates
-import { getBuildingCost, getUpgradeCost, calculateDerivedStats, getCurrentRates, findUpgradeConfigById } from './engine.js';
+import { getBuildingCost, getUpgradeCost, calculateDerivedStats, getCurrentRates, findUpgradeConfigById, getCumulativeBuildingCost } from './engine.js';
 import { updateDisplay, updateButtonStates, showCredits, hideCredits, showStats, hideStats, showTutorial, hideTutorial, showSettings, hideSettings, closeWinScreen, updateAcquisitionButtonVisuals, updateFlexibleWorkflowToggleButtonVisuals } from './ui.js';
 import { playSoundEffect, togglePlayPause, setVolume, playNextTrack, toggleMute } from './audio.js';
 import { saveGame, deleteSave } from './saveLoad.js';
@@ -15,7 +15,11 @@ import { softRefreshGame } from './main.js';
 function checkTierCompletion(categoryId) {
     if (!categoryId || categoryId === 'special') return false;
     const categoryConfig = upgradesConfig[categoryId];
-    if (!categoryConfig || !categoryConfig.tier1) return false; // Check only based on Tier 1
+    // Ensure Tier 1 exists in the config for this category
+    if (!categoryConfig || !categoryConfig.tier1) {
+        // console.warn(`Tier 1 config not found for category: ${categoryId}`);
+        return false;
+    }
 
     // Iterate through all upgrades defined in Tier 1 of the category config
     for (const upgradeId in categoryConfig.tier1) {
@@ -26,22 +30,25 @@ function checkTierCompletion(categoryId) {
         }
     }
     // If the loop completes without returning false, all T1 upgrades are purchased
+    // console.log(`Tier 1 check passed for ${categoryId}`);
     return true;
 }
 
 // --- Purchase Functions ---
-function buyBuilding(id) {
+// TODO: Updated buyBuilding to handle Shift+Click for x10 purchase
+function buyBuilding(id, shiftHeld = false) {
     // Prevent actions if game inactive
     if (isGamePaused || isGameWon) return;
     const cfg = buildingsConfig[id];
     const state = gameState.buildings[id];
     if (!cfg || !state) { console.error(`Building config or state not found for ID: ${id}`); return; }
 
-    const cost = getBuildingCost(id); // Calculates current cost based on count & multipliers
+    const quantityToBuy = shiftHeld ? 10 : 1;
+    const cost = shiftHeld ? getCumulativeBuildingCost(id, quantityToBuy) : getBuildingCost(id); // Get cost for 1 or 10
     const curr = cfg.costCurrency;
     let afford = false;
 
-    // Check affordability based on currency type
+    // Check affordability based on currency type and quantity
     if (curr === 'both') { if (gameState.leads >= cost.leads && gameState.opportunities >= cost.opps) { gameState.leads -= cost.leads; gameState.opportunities -= cost.opps; afford = true; } }
     else if (curr === 'leads') { if (gameState.leads >= cost.leads) { gameState.leads -= cost.leads; afford = true; } }
     else if (curr === 'opportunities') { if (gameState.opportunities >= cost.opps) { gameState.opportunities -= cost.opps; afford = true; } }
@@ -49,14 +56,21 @@ function buyBuilding(id) {
 
     // If affordable, process the purchase
     if (afford) {
-        state.count++; // Increment building count
+        state.count += quantityToBuy; // Increment building count by quantity purchased
         playSoundEffect('sfx-purchase'); // Play sound
         calculateDerivedStats(); // Recalculate rates immediately
         updateDisplay(); // Update resource numbers
         updateButtonStates(); // Update button costs and availability
+    } else {
+        // Optional: Provide feedback if trying Shift+Click and cannot afford
+        if (shiftHeld) {
+             console.log(`Cannot afford to buy 10 ${cfg.name}.`);
+             // Maybe flash the button red briefly? (Requires CSS and timeout)
+        }
     }
 }
 
+// TODO: Updated buyUpgrade to handle Customer Requirements
 function buyUpgrade(upgradeId) {
     // Prevent actions if game inactive
     if (isGamePaused || isGameWon) return;
@@ -71,24 +85,37 @@ function buyUpgrade(upgradeId) {
     // Prevent purchase if already bought or state is missing
     if (!state || state.purchased) return;
 
-    const cost = getUpgradeCost(upgradeId); // Calculates cost based on config
+    const cost = getUpgradeCost(upgradeId); // Calculates cost or requirement
     let afford = false;
+    let meetsRequirement = false;
 
-    // Check affordability based on various cost types
-    if (cfg.costMoney && cfg.costCustomers) { // Handles Flexible Workflow & Playtime Boost
-        if (gameState.money >= cost.money && gameState.customers >= cost.customers) {
-            gameState.money -= cost.money;
-            gameState.customers -= cost.customers;
-            afford = true;
+    // 1. Check Customer Requirement FIRST
+    if (cost.requiresCustomers && cost.requiresCustomers > 0) {
+        if (gameState.customers >= cost.requiresCustomers) {
+            meetsRequirement = true; // Mark requirement as met
+            afford = true; // Considered 'affordable' if requirement met, no cost deduction needed
+        }
+    } else {
+        // 2. If no customer requirement, check standard costs
+        if (cfg.costMoney && cfg.costCustomers) { // Handles special upgrades like Flexible Workflow, Playtime Boost
+            if (gameState.money >= cost.money && gameState.customers >= cost.customers) {
+                gameState.money -= cost.money;
+                gameState.customers -= cost.customers; // Deduct cost
+                afford = true;
+            }
+        }
+        else if (cfg.costCurrency === 'both') { if (gameState.leads >= cost.leads && gameState.opportunities >= cost.opps) { gameState.leads -= cost.leads; gameState.opportunities -= cost.opps; afford = true; } }
+        else if (cfg.costCurrency === 'leads') { if (gameState.leads >= cost.leads) { gameState.leads -= cost.leads; afford = true; } }
+        else if (cfg.costCurrency === 'opportunities') { if (gameState.opportunities >= cost.opps) { gameState.opportunities -= cost.opps; afford = true; } }
+        else if (cfg.costCurrency === 'money') { if (gameState.money >= cost.money) { gameState.money -= cost.money; afford = true; } }
+        else if (cfg.costCurrency === 'customers') { // Deprecated? Only use requiresCustomers now
+            console.warn(`Upgrade ${upgradeId} uses 'costCurrency: customers'. Consider using 'requiresCustomers'.`);
+            if (gameState.customers >= cost.customers) { gameState.customers -= cost.customers; afford = true; }
         }
     }
-    else if (cfg.costCurrency === 'both') { if (gameState.leads >= cost.leads && gameState.opportunities >= cost.opps) { gameState.leads -= cost.leads; gameState.opportunities -= cost.opps; afford = true; } }
-    else if (cfg.costCurrency === 'leads') { if (gameState.leads >= cost.leads) { gameState.leads -= cost.leads; afford = true; } }
-    else if (cfg.costCurrency === 'opportunities') { if (gameState.opportunities >= cost.opps) { gameState.opportunities -= cost.opps; afford = true; } }
-    else if (cfg.costCurrency === 'money') { if (gameState.money >= cost.money) { gameState.money -= cost.money; afford = true; } }
-    else if (cfg.costCurrency === 'customers') { if (gameState.customers >= cost.customers) { gameState.customers -= cost.customers; afford = true; } }
 
-    // If affordable, process the purchase
+
+    // If affordable (met cost OR requirement), process the purchase
     if (afford) {
         state.purchased = true; // Mark as purchased
         playSoundEffect('sfx-purchase'); // Play sound
@@ -115,7 +142,7 @@ function buyUpgrade(upgradeId) {
 
 // --- Action Toggles ---
 function toggleAcquisitionPause() { if (isGameWon || isGamePaused) return; gameState.isAcquisitionPaused = !gameState.isAcquisitionPaused; updateAcquisitionButtonVisuals(); }
-function toggleFlexibleWorkflow() { if (isGamePaused || isGameWon || !gameState.upgrades['flexibleWorkflow']?.purchased) return; gameState.flexibleWorkflowActive = !gameState.flexibleWorkflowActive; console.log(`Flexible Workflow manually ${gameState.flexibleWorkflowActive ? 'activated' : 'deactivated'}.`); calculateDerivedStats(); updateDisplay(); updateFlexibleWorkflowToggleButtonVisuals(); }
+function toggleFlexibleWorkflow() { if (isGamePaused || isGameWon || !gameState.upgrades['flexibleWorkflow']?.purchased) return; gameState.flexibleWorkflowActive = !gameState.flexibleWorkflowActive; console.log(`Flexible Workflow manually ${gameState.flexibleWorkflowActive ? 'activated' : 'deactivated'}.`); calculateDerivedStats(); /* Recalc needed */ updateDisplay(); updateFlexibleWorkflowToggleButtonVisuals(); }
 
 // --- Category Collapse/Expand ---
 function toggleCategoryCollapse(event) {
@@ -141,18 +168,59 @@ export function setupEventListeners() {
     console.log("--- Attaching Listeners ---");
 
     // --- Clickers ---
-    domElements['click-lead-button']?.addEventListener('click', () => { if (isGamePaused || isGameWon) return; const rates = getCurrentRates(); const clickBoost = gameState.activeBoosts?.['clickBoost']; const baseClickMultiplier = gameState.globalClickMultiplier || 1.0; const powerupClickMultiplier = clickBoost ? (1.0 + clickBoost.magnitude) : 1.0; const totalClickMultiplier = baseClickMultiplier * powerupClickMultiplier; let baseAmt = gameState.leadsPerClick; let currentLPS = rates.leadsPerSecond; let percentBonusVal = gameState.leadClickPercentBonus || 0; let percentBonusAmt = currentLPS * percentBonusVal; if (isNaN(percentBonusAmt) || !isFinite(percentBonusAmt)) percentBonusAmt = 0; let amt = (baseAmt + percentBonusAmt) * totalClickMultiplier; if (isNaN(amt) || !isFinite(amt) || amt <=0) return; gameState.leads += amt; gameState.totalLeadClicks++; gameState.totalManualLeads += amt; updateDisplay(); });
-    domElements['click-opp-button']?.addEventListener('click', () => { if (isGamePaused || isGameWon) return; const rates = getCurrentRates(); const clickBoost = gameState.activeBoosts?.['clickBoost']; const baseClickMultiplier = gameState.globalClickMultiplier || 1.0; const powerupClickMultiplier = clickBoost ? (1.0 + clickBoost.magnitude) : 1.0; const totalClickMultiplier = baseClickMultiplier * powerupClickMultiplier; let baseAmt = gameState.opportunitiesPerClick; let currentOPS = rates.opportunitiesPerSecond; let percentBonusVal = gameState.oppClickPercentBonus || 0; let percentBonusAmt = currentOPS * percentBonusVal; if (isNaN(percentBonusAmt) || !isFinite(percentBonusAmt)) percentBonusAmt = 0; let amt = (baseAmt + percentBonusAmt) * totalClickMultiplier; if (isNaN(amt) || !isFinite(amt) || amt <=0) return; gameState.opportunities += amt; gameState.totalOppClicks++; gameState.totalManualOpps += amt; updateDisplay(); });
+    domElements['click-lead-button']?.addEventListener('click', () => {
+        if (isGamePaused || isGameWon) return;
+        const rates = getCurrentRates(); // Get current rates for bonus calc
+        const clickBoost = gameState.activeBoosts?.['clickBoost'];
+        const baseClickMultiplier = gameState.globalClickMultiplier || 1.0;
+        const powerupClickMultiplier = clickBoost ? (1.0 + clickBoost.magnitude) : 1.0;
+        const totalClickMultiplier = baseClickMultiplier * powerupClickMultiplier;
+        let baseAmt = gameState.leadsPerClick;
+        let currentLPS = rates.leadsPerSecond;
+        let percentBonusVal = gameState.leadClickPercentBonus || 0;
+        let percentBonusAmt = currentLPS * percentBonusVal;
+        if (isNaN(percentBonusAmt) || !isFinite(percentBonusAmt)) percentBonusAmt = 0;
+        let amt = (baseAmt + percentBonusAmt) * totalClickMultiplier;
+        if (isNaN(amt) || !isFinite(amt) || amt <=0) amt = (amt <= 0 ? 0 : baseAmt * totalClickMultiplier); // Fallback if bonus calc fails
+        if (amt > 0) {
+            gameState.leads += amt;
+            gameState.totalLeadClicks++;
+            gameState.totalManualLeads += amt;
+            updateDisplay(); // Update display only if something changed
+        }
+    });
+    domElements['click-opp-button']?.addEventListener('click', () => {
+        if (isGamePaused || isGameWon) return;
+        const rates = getCurrentRates(); // Get current rates for bonus calc
+        const clickBoost = gameState.activeBoosts?.['clickBoost'];
+        const baseClickMultiplier = gameState.globalClickMultiplier || 1.0;
+        const powerupClickMultiplier = clickBoost ? (1.0 + clickBoost.magnitude) : 1.0;
+        const totalClickMultiplier = baseClickMultiplier * powerupClickMultiplier;
+        let baseAmt = gameState.opportunitiesPerClick;
+        let currentOPS = rates.opportunitiesPerSecond;
+        let percentBonusVal = gameState.oppClickPercentBonus || 0;
+        let percentBonusAmt = currentOPS * percentBonusVal;
+        if (isNaN(percentBonusAmt) || !isFinite(percentBonusAmt)) percentBonusAmt = 0;
+        let amt = (baseAmt + percentBonusAmt) * totalClickMultiplier;
+        if (isNaN(amt) || !isFinite(amt) || amt <=0) amt = (amt <= 0 ? 0 : baseAmt * totalClickMultiplier); // Fallback if bonus calc fails
+        if (amt > 0) {
+            gameState.opportunities += amt;
+            gameState.totalOppClicks++;
+            gameState.totalManualOpps += amt;
+            updateDisplay(); // Update display only if something changed
+        }
+    });
 
     // --- Building Purchases (Event Delegation on Buildables Panel) ---
     const buildPanel = document.querySelector('.buildables-panel');
     if (buildPanel) {
         buildPanel.addEventListener('click', (event) => {
             const targetButton = event.target.closest('.build-button');
-            if (targetButton && targetButton.id && targetButton.id.startsWith('buy-')) {
+            if (targetButton && !targetButton.disabled && targetButton.id && targetButton.id.startsWith('buy-')) { // Check !disabled
                 const buildingId = targetButton.id.substring(4);
                 if (buildingsConfig[buildingId]) {
-                    buyBuilding(buildingId);
+                    const shiftHeld = event.shiftKey; // Check if Shift key is pressed
+                    buyBuilding(buildingId, shiftHeld); // Pass shift key status
                 } else {
                     console.warn(`Clicked build button with unrecognized ID: ${buildingId}`);
                 }
@@ -165,9 +233,10 @@ export function setupEventListeners() {
     if (upgradePanel) {
         upgradePanel.addEventListener('click', (event) => {
             const targetButton = event.target.closest('.upgrade-button');
-            if (targetButton && targetButton.id) {
+            if (targetButton && !targetButton.disabled && targetButton.id) { // Check !disabled
+                // Use dataset if available (for tiered), fallback to ID parsing (for special)
                 const upgradeId = targetButton.dataset.upgradeId || targetButton.id.substring(8);
-                if (findUpgradeConfigById(upgradeId)) {
+                if (findUpgradeConfigById(upgradeId)) { // Check if it's a valid upgrade ID
                     buyUpgrade(upgradeId);
                 } else {
                     console.warn(`Clicked upgrade button with unrecognized ID: ${upgradeId}`);
@@ -182,7 +251,8 @@ export function setupEventListeners() {
 
     // --- Music Controls ---
     domElements['play-pause-button']?.addEventListener('click', togglePlayPause);
-    domElements['volume-slider']?.addEventListener('input', () => setVolume());
+    domElements['volume-slider']?.addEventListener('input', () => setVolume()); // Use input for smoother updates
+    domElements['volume-slider']?.addEventListener('change', () => setVolume()); // Ensure final value is set
     domElements['next-track-button']?.addEventListener('click', playNextTrack);
     domElements['background-music']?.addEventListener('ended', playNextTrack);
     domElements['mute-button']?.addEventListener('click', () => toggleMute());
@@ -191,9 +261,10 @@ export function setupEventListeners() {
     const setupModal = (buttonId, modalId, showFn, hideFn) => {
         const openBtn = domElements[buttonId];
         const modal = domElements[modalId];
-        const closeBtn = domElements[`close-${buttonId.replace('-button', '')}-button`];
+        const closeBtn = domElements[`close-${buttonId.replace('-button', '')}-button`]; // Auto-find close button ID
         openBtn?.addEventListener('click', showFn);
         closeBtn?.addEventListener('click', hideFn);
+        // Close modal if clicking outside the content area
         modal?.addEventListener('click', (e) => { if (e.target === modal) hideFn(); });
     };
     setupModal('credits-button', 'credits-modal', showCredits, hideCredits);
@@ -211,5 +282,5 @@ export function setupEventListeners() {
     domElements['toggle-acquisition-button']?.addEventListener('click', toggleAcquisitionPause);
     domElements['toggle-flexible-workflow']?.addEventListener('click', toggleFlexibleWorkflow);
 
-    console.log("--- Listeners Attached (including collapse toggle) ---");
+    console.log("--- Listeners Attached ---");
 }
