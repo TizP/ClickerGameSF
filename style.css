@@ -1,3 +1,4 @@
+/* --- START OF MODIFIED FILE style.css --- */
 /* --- Base Styles --- */
 html {
     height: 100%;
@@ -118,10 +119,23 @@ body {
 #powerup-spawn-area { position: absolute; top: 70px; /* Below top bar */ left: 0; width: 100%; height: calc(100% - 70px); /* Fill remaining height */ overflow: hidden; /* Hide overflow */ pointer-events: none; /* Don't block clicks on elements behind */ z-index: 500; /* High z-index */ }
 .powerup-token { position: absolute; width: 90px; height: 90px; border-radius: 50%; border: 3px solid #aaa; box-shadow: 0 3px 7px rgba(0, 0, 0, 0.35); cursor: pointer; display: flex; align-items: center; justify-content: center; pointer-events: auto; /* Allow clicks on token */ user-select: none; z-index: 501; transition: transform 0.1s ease-out, box-shadow 0.1s ease-out; overflow: hidden; /* Apply FALL animation only */ animation: fallAnimation 8000ms linear forwards; /* Fall down once, rotating within */ }
 .powerup-token-image { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; /* Image is also round */ }
-.powerup-token:hover { /* Hover effect still applies to the container */ transform: scale(1.1); /* Keep hover scale separate */ box-shadow: 0 5px 10px rgba(0, 0, 0, 0.45); animation-play-state: paused; /* Pause fall/rotation on hover */ }
+.powerup-token:hover { /* Hover effect still applies to the container */ transform: scale(1.1); /* Keep hover scale separate */ box-shadow: 0 5px 10px rgba(0, 0, 0, 0.45); }
 
 /* --- Animations --- */
-@keyframes fallAnimation { from { transform: translateY(-100px) rotate(0deg); /* Start rotation from 0 */ opacity: 0.8; } 50% { transform: translateY(calc(50vh - 35px - 45px)) rotate(360deg); /* Mid-point */ } to { transform: translateY(calc(100vh - 70px - 15px - 90px)) rotate(720deg); /* Rotate twice during fall */ opacity: 1; } }
+@keyframes fallAnimation {
+    from {
+        transform: translateY(-100px) rotate(0deg); /* Start rotation from 0 */
+        opacity: 0.8;
+    }
+    50% {
+        transform: translateY(calc(50vh - 35px - 45px)) rotate(360deg); /* Mid-point */
+    }
+    to {
+        /* MODIFIED: Changed target Y position to fall further down (off-screen) */
+        transform: translateY(105vh) rotate(720deg); /* Rotate twice during fall */
+        opacity: 1;
+    }
+}
 /* Removed separate rotate animation */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -157,3 +171,4 @@ body {
 .side-panel::-webkit-scrollbar-track, .center-area::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
 .side-panel::-webkit-scrollbar-thumb, .center-area::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
 .side-panel::-webkit-scrollbar-thumb:hover, .center-area::-webkit-scrollbar-thumb:hover { background: #aaa; }
+/* --- END OF MODIFIED FILE style.css --- */

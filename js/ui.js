@@ -207,18 +207,17 @@ export function updateButtonStates() {
             // Handle non-L/O producing buildings
             } else if (id === 'acctManager') {
                 const currentReduction = 1.0 - rates.currentAcctManagerCostReduction;
-                // Terminology Change
                 effectText = `${cfg.effectDesc} (Now: ${formatPercent(currentReduction, 1)})`;
                 tooltipText += `\nReduces the Acquisition Cost per attempt by 5% multiplicatively per manager. (Current total effect: ${formatPercent(currentReduction, 1)})`;
-            } else if (id === 'successArchitect') {
-                const currentBonus = rates.currentSuccessArchitectCVRBonus;
-                effectText = `${cfg.effectDesc} (Now: +${formatPercent(currentBonus, 1)})`;
-                tooltipText += `\nIncreases the base Customer Value Rate (CVR) by 10% for every 10 buildings owned in the 'Integrated Solutions' category. (Current bonus: +${formatPercent(currentBonus, 1)})`;
-            } else if (id === 'procurementOpt') { // TODO: Updated Proc Opt effect display
+            } else if (id === 'successArchitect') { // MODIFIED HERE
+                const currentBonus = rates.currentSuccessArchitectCVRBonus; // This is now the total bonus % (e.g., 0.15)
+                effectText = `${cfg.effectDesc} (Now: +${formatPercent(currentBonus, 1)})`; // Display total bonus
+                tooltipText += `\nIncreases the base Customer Value Rate (CVR) by +5% for each Architect, for every 10 buildings owned in 'Integrated Solutions'. (Current total bonus: +${formatPercent(currentBonus, 1)})`; // Updated tooltip description
+            } else if (id === 'procurementOpt') {
                 const currentReduction = 1.0 - rates.currentProcurementOptCostReduction;
                 effectText = `${cfg.effectDesc} (Now: ${formatPercent(currentReduction, 1)})`;
                 tooltipText += `\nReduces the purchase cost of all other buildings by 5% multiplicatively per optimizer. (Current total effect: ${formatPercent(currentReduction, 1)})`;
-            } else if (id === 'successManager') { // TODO: Updated Success Manager display
+            } else if (id === 'successManager') {
                  const currentMultiplier = rates.currentSuccessManagerCVRMultiplier;
                  const currentBonusPercent = (currentMultiplier - 1.0) * 100;
                  effectText = `${cfg.effectDesc} (Now: x${currentMultiplier.toFixed(2)})`; // Show multiplier
@@ -303,7 +302,7 @@ export function updateButtonStates() {
              const costSpan = el.querySelector('.cost');
              costSpan.classList.remove('requirement'); // Reset class
 
-             // TODO: Handle Veteran Pipeline Operator cost display
+             // Handle Veteran Pipeline Operator cost display
              if (upgradeId === 'playtimeMPSBoost' && cfg.costCurrency === 'all') {
                  afford = gameState.leads >= cost.leads && gameState.opportunities >= cost.opps && gameState.money >= cost.money;
                  cTxt = `Cost: ${formatNumber(cost.leads)} L & ${formatNumber(cost.opps)} O & $${formatMoney(cost.money)}`;
@@ -372,7 +371,7 @@ function hideModal(modalElement) {
             clearInterval(statsUpdateIntervalId);
             statsUpdateIntervalId = null;
         }
-        // TODO: Also hide first-time modal if clicking outside or close button
+        // Also hide first-time modal if clicking outside or close button
          if (modalElement === domElements['first-time-modal']) {
              // Maybe set the flag here too? Or only on OK button?
              // localStorage.setItem(FIRST_TIME_POPUP_KEY, 'shown');
@@ -416,7 +415,7 @@ export function closeWinScreen() {
     updateFlexibleWorkflowToggleButtonVisuals();
 }
 
-// TODO: Add functions for first-time modal
+// Add functions for first-time modal
 export function showFirstTimeModal() {
     const modal = domElements['first-time-modal'];
     showModal(modal);

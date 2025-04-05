@@ -1,7 +1,7 @@
 // js/config.js
 "use strict";
 
-export const GAME_VERSION = "v1.39-balance-first-popup"; // Version bump
+export const GAME_VERSION = "v1.40-arch-stack-nerf"; // Version bump
 export const SAVE_KEY = `salesforcePipelineSaveData_v${GAME_VERSION}`; // Updated key
 export const FIRST_TIME_POPUP_KEY = `salesforcePipelineFirstTime_v${GAME_VERSION}`; // Key for first time popup flag
 export const TICK_INTERVAL_MS = 100;
@@ -65,24 +65,24 @@ export const buildingsConfig = {
     hyperscaler:    { baseCostLeads: 25000000,baseCostOpps: 25000000,costCurrency: 'both', baseLPS: 310000,  baseOPS: 310000,  name: "Hyperscaler",         flavour: "Run on a global hyperscaler infrastructure for ultimate pipeline scalability."},
     aidata:         { baseCostLeads: 150000000, baseCostOpps: 150000000, costCurrency: 'both', baseLPS: 1650000, baseOPS: 1650000, name: "AI Data Cloud",     flavour: "Leverage AI across your data landscape for unprecedented pipeline insights."},
     // Customer Success
-    acctManager: { // TODO: Changed Acct Manager
-        baseCost: 1000000, // Increased base cost
+    acctManager: {
+        baseCost: 1000000,
         costCurrency: 'money', name: "Acct Manager",
         flavour: "Account Managers improve retention and build relationships.",
         effectDesc: "-5% Acq. Cost", // Nerfed effect desc
         costMultiplierOverride: 1.20 // Added increased cost multiplier
     },
-    successArchitect: {
+    successArchitect: { // MODIFIED HERE
         baseCost: 1000000, costCurrency: 'money', name: "Success Architect",
-        flavour: "Success Architects ensure customers achieve their goals.",
-        effectDesc: "+10% Base CVR per 10 Int. Solns" // Effect buff already done
+        flavour: "Success Architects ensure customers achieve their goals by leveraging integrations.",
+        effectDesc: "+5% Base CVR per Arch. per 10 Int. Solns" // Updated effect description
     },
-    procurementOpt: { // TODO: Changed Procurement Opt
+    procurementOpt: {
         baseCost: 10000000, costCurrency: 'money', name: "Procurement Opt.",
         flavour: "Optimizes internal spending, reducing operational overhead.",
         effectDesc: "-5% Other Bldg Cost" // Buffed effect desc
     },
-     successManager: { // TODO: Changed Success Manager
+     successManager: {
          baseCost: 500000, costCurrency: 'money', name: "Success Manager",
          flavour: "Dedicated managers focusing on customer health and value realization.",
          effectDesc: "+5% Base CVR", // Changed effect description
@@ -210,13 +210,13 @@ export const upgradesConfig = {
     },
     special: {
         name: "Special Upgrades",
-        costReductStrategic: { // TODO: Changed Strategic Cost Opt
+        costReductStrategic: {
             name: "Strategic Cost Optimization",
             cost: 5000000, costCurrency: 'money',
             effect: (state) => { state.customerCostReductionMultiplier *= 0.25; }, // Buffed effect (1 - 0.75 = 0.25)
             description: "-75% Acq. Cost" // Buffed description & Terminology
         },
-        playtimeMPSBoost: { // TODO: Changed Veteran Pipeline Operator Cost
+        playtimeMPSBoost: {
             name: "Veteran Pipeline Operator",
             costLeads: 100000000, // New cost
             costOpps: 100000000, // New cost

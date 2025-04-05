@@ -13,7 +13,7 @@ let currentRates = {
     customerValueRate: 0,
     moneyPerSecond: 0,
     currentAcctManagerCostReduction: 1.0,
-    currentSuccessArchitectCVRBonus: 0,
+    currentSuccessArchitectCVRBonus: 0, // This will now store the total % bonus (e.g., 0.15 for +15%)
     currentProcurementOptCostReduction: 1.0,
     currentSuccessManagerCVRMultiplier: 1.0, // Add multiplier for Success Manager
 };
@@ -45,7 +45,6 @@ export function getBuildingCost(id) {
     const state = gameState.buildings[id];
     if (!cfg || !state) return { leads: Infinity, opps: Infinity, money: Infinity };
     const count = state.count || 0;
-    // TODO: Use override for Acct Manager again
     const costMultiplier = (id === 'acctManager' && cfg.costMultiplierOverride)
         ? cfg.costMultiplierOverride
         : BUILDING_COST_MULTIPLIER;
@@ -148,7 +147,7 @@ export function getUpgradeCost(id) {
     if (cfg.requiresCustomers) {
         return { requiresCustomers: cfg.requiresCustomers || 0, leads: 0, opps: 0, money: 0, customers: 0 };
     }
-    // TODO: Handle Veteran Pipeline Operator special cost
+    // Handle Veteran Pipeline Operator special cost
     if (id === 'playtimeMPSBoost' && cfg.costCurrency === 'all') {
          return {
              leads: cfg.costLeads || 0,
@@ -204,25 +203,26 @@ export function calculateDerivedStats() {
     const procurementOptCount = gameState.buildings['procurementOpt']?.count || 0;
     const successManagerCount = gameState.buildings['successManager']?.count || 0;
 
-    // TODO: Updated Procurement Opt calculation (-5%)
+    // Procurement Opt calculation (-5%)
     const procurementReduction = Math.pow(0.95, procurementOptCount);
     gameState.otherBuildingCostMultiplier = procurementReduction;
     currentRates.currentProcurementOptCostReduction = procurementReduction;
 
-    // TODO: Updated Acct Manager calculation (-5%)
+    // Acct Manager calculation (-5%)
     const acctManagerReduction = Math.pow(0.95, acctManagerCount);
     currentRates.currentAcctManagerCostReduction = acctManagerReduction;
 
-    // Success Architect calculation (+10% per 10) - No change needed
+    // Success Architect calculation (+5% per Arch per 10) - MODIFIED HERE
     let integratedBuildingCount = 0;
     const integratedBuildingIds = ['integration', 'platform', 'ecosystem', 'cloudsuite', 'hyperscaler', 'aidata'];
     integratedBuildingIds.forEach(id => {
         integratedBuildingCount += gameState.buildings[id]?.count || 0;
     });
-    const successArchitectCVRBonusPercent = Math.floor(integratedBuildingCount / 10) * 0.10;
-    currentRates.currentSuccessArchitectCVRBonus = successArchitectCVRBonusPercent;
+    const integratedBlocks = Math.floor(integratedBuildingCount / 10);
+    const successArchitectCVRBonusPercent = successArchitectCount * integratedBlocks * 0.05; // Nerfed to 5% and now includes Architect count
+    currentRates.currentSuccessArchitectCVRBonus = successArchitectCVRBonusPercent; // Store the total bonus percentage
 
-    // TODO: Calculate Success Manager CVR Multiplier (+5% each)
+    // Calculate Success Manager CVR Multiplier (+5% each)
     const successManagerMultiplier = buildingsConfig.successManager?.effectMultiplierCVR
         ? Math.pow(buildingsConfig.successManager.effectMultiplierCVR, successManagerCount)
         : 1.0;
@@ -234,7 +234,8 @@ export function calculateDerivedStats() {
     let workingCVR = gameState.baseCVR || 1.0;
 
     // Apply BASE CVR bonuses BEFORE multipliers
-    workingCVR *= (1 + successArchitectCVRBonusPercent); // Apply Success Architect % bonus
+    // MODIFIED HERE: Apply the calculated TOTAL bonus percentage
+    workingCVR *= (1 + successArchitectCVRBonusPercent);
 
     // Apply Multipliers
     const globalEff = gameState.buildingEfficiencyMultiplier || 1.0;
